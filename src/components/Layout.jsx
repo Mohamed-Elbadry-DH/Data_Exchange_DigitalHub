@@ -2,7 +2,6 @@ import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutGrid, Table2, FileText, Users, Settings, LogOut, Bell,
-  PanelRightClose, PanelRightOpen,
 } from "lucide-react";
 import { user } from "../data/mock";
 
@@ -62,7 +61,7 @@ export default function Layout({ children, title, breadcrumb }) {
                 aria-label={collapsed ? "توسيع القائمة الجانبية" : "طي القائمة الجانبية"}
                 title={collapsed ? "توسيع القائمة الجانبية" : "طي القائمة الجانبية"}
               >
-                {collapsed ? <PanelRightOpen size={18} /> : <PanelRightClose size={18} />}
+                <img src="/panel-left.svg" alt="" width="25" height="25" aria-hidden="true" />
               </button>
             </div>
             <nav className="mt-4" aria-label="التنقل الرئيسي">
