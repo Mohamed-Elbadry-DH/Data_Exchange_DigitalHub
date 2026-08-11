@@ -7,14 +7,14 @@ import {
   Users, Building2, FileText, CircleCheckBig, FilePenLine, TriangleAlert,
   FileSearch, ChevronDown, Calendar,
 } from "lucide-react";
-import Layout from "../components/Layout";
+import Layout from "../../components/ga/GaLayout";
 import {
   ChartPieIcon, ChartLineIcon, ChartColumnIcon, ChartBarIcon, LifeBuoyIcon,
-} from "../components/ChartTypeIcons";
+} from "../../components/ChartTypeIcons";
 import {
   kpis, approvalStatusCards, exchangeStatusCards, approvalPie, monthlyApproved,
   statusDonut, statusDonutTotal, topOrgs,
-} from "../data/mock";
+} from "../../data/mockGa";
 
 const ICONS = { Users, Building2, FileText, CircleCheckBig, FilePenLine, TriangleAlert, FileSearch };
 

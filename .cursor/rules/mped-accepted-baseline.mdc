@@ -42,6 +42,21 @@ navy `#1f254b` · navy-deep `#052c65` · primary `#1b75ff` · primary-2 `#0986ed
 - Inputs 52px white border `#D8D8D8`, icon on the **left**, placeholder `#ADB5BD`; primary buttons height `65.61px` radius `11.72px` bg `#0747A5`; OTP four 58×58 boxes `dir="ltr"`
 - `roles` in `mock.js` keeps the 6 role definitions for future flows; signed-in name + role show in the topbar; sidebar تسجيل الخروج calls `signOut()` → `/login`
 
+## General admin module (`/ga`) — isolated clone
+- Files: `src/components/ga/GaLayout.jsx` (NAV prefixed `/ga`), `src/pages/ga/*` (copies of the supervisor pages), `src/data/mockGa.js` (`export * from "./mock"` — declare an export locally to diverge), `src/auth/roleHome.js` (`homePathForRole` from `demoUsers[].home`)
+- Only touch `src/pages/ga/**`, `src/components/ga/**`, `src/data/mockGa.js` when building general admin; **never** edit the supervisor pages to serve it
+- `detailPath` / `backTo` are `/ga/forms` and `/ga/required`
+
+## Cross-module integration — `src/domain/` (isolation is UI-only)
+- One product: a request moves between roles, so shared business logic lives in `src/domain/` and is **never** forked per module
+- `src/domain/roles.js` `ROLES` (6 labels matching `demoUsers[].role`) · `src/domain/workflow.js` `STAGES` (7 stages, each with its owner role) + `stageIndex` / `stageById` / `ownsStage` / `nextStage` · `src/domain/notes.js` `loadNotes` / `saveNotes` on the single key `mped-notes-${id}`
+- Notes are shared between both modules; author = `useAuth().name` (fallback `d.officer`)
+- Stage-driven buttons must derive from `STAGES` / `ownsStage(role, stageId)`, not per-page role literals
+- `mockGa.js` overrides **presentation only** (KPI labels, chart series, columns); requests / notes / users stay single-sourced
+- New writes (create request, advance stage) go into `src/domain/`, called from both modules — no module-scoped storage keys
+- Route groups: `RequireAuth allow={["مشرف الإدارة العامة"]}` for `/`, `allow={["الإدارة العامة"]}` for `/ga`; a role outside its module is redirected to its own home
+- Still to build from `الإدارة العامة.pdf`: 3 indicator groups + إنشاء طلب بيان, create-statement-form page, 7-stage stepper detail with stage-driven actions, attachments table, الدرجات العلمية matrix, PDF list columns/filters
+
 ## Rules of engagement
 - Prefer extending existing patterns over new visual systems
 - Keep Arabic copy; RTL layout; LTR only for charts/email/phone where already done

@@ -4,7 +4,7 @@ export const user = {
   notifications: 6,
 };
 
-/** Demo accounts listed in the login email picker — only the supervisor flow is built */
+/** Demo accounts listed in the login email picker — `home` is the landing route of a built flow */
 export const demoUsers = [
   {
     id: "decision-maker",
@@ -29,6 +29,7 @@ export const demoUsers = [
     email: "supervisor@capmas.gov.eg",
     password: "Mped@2026",
     enabled: true,
+    home: "/",
   },
   {
     id: "general-admin",
@@ -36,7 +37,8 @@ export const demoUsers = [
     name: "أ. سارة علي",
     email: "general.admin@capmas.gov.eg",
     password: "Mped@2026",
-    enabled: false,
+    enabled: true,
+    home: "/ga",
   },
   {
     id: "external-entity-supervisor",

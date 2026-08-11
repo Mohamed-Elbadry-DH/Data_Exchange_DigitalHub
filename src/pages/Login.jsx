@@ -65,6 +65,7 @@ export default function Login() {
         name: account.name,
         role: account.role,
         allowed: account.enabled,
+        home: account.home,
       });
       navigate("/verify");
     }, 600);

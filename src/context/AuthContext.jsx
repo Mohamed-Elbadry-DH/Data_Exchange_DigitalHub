@@ -46,9 +46,10 @@ export function AuthProvider({ children }) {
       role: session?.role ?? "",
       name: session?.name ?? "",
       allowed: session?.allowed ?? false,
+      home: session?.home ?? "/",
       code: session?.code ?? "",
-      signIn({ email, name, role, allowed }) {
-        update({ email, name, role, allowed, stage: "otp", code: randomCode() });
+      signIn({ email, name, role, allowed, home }) {
+        update({ email, name, role, allowed, home, stage: "otp", code: randomCode() });
       },
       issueCode() {
         const code = randomCode();

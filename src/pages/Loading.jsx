@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthShell, { Spinner } from "../components/AuthShell";
 import { useAuth } from "../context/AuthContext";
+import { homePathForRole } from "../auth/roleHome";
 
 const DURATION = 3000;
 
@@ -12,10 +13,10 @@ export default function Loading() {
   useEffect(() => {
     const t = setTimeout(() => {
       finishLoading();
-      navigate("/", { replace: true });
+      navigate(homePathForRole(role), { replace: true });
     }, DURATION);
     return () => clearTimeout(t);
-  }, [finishLoading, navigate]);
+  }, [finishLoading, navigate, role]);
 
   return (
     <AuthShell>

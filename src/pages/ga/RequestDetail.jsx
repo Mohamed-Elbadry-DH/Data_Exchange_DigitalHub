@@ -3,13 +3,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   Clock, User, Monitor, FileClock, Download, FileSpreadsheet, FileIcon, Plus,
 } from "lucide-react";
-import Layout from "../components/Layout";
-import StatusBadge from "../components/StatusBadge";
-import SuccessModal from "../components/SuccessModal";
-import RequestEditModal from "../components/RequestEditModal";
-import { requestDetailById } from "../data/mock";
-import { loadNotes, saveNotes } from "../domain/notes";
-import { useAuth } from "../context/AuthContext";
+import Layout from "../../components/ga/GaLayout";
+import StatusBadge from "../../components/StatusBadge";
+import SuccessModal from "../../components/SuccessModal";
+import RequestEditModal from "../../components/RequestEditModal";
+import { requestDetailById } from "../../data/mockGa";
+import { loadNotes, saveNotes } from "../../domain/notes";
+import { useAuth } from "../../context/AuthContext";
 
 function InfoTile({ icon: Icon, label, value, sub }) {
   return (
@@ -408,7 +408,7 @@ export default function RequestDetail({ mode = "forms" }) {
   const navigate = useNavigate();
   const { name } = useAuth();
 
-  const backTo = isRequired ? "/required" : "/forms";
+  const backTo = isRequired ? "/ga/required" : "/ga/forms";
   const backLabel = isRequired ? "البيانات المطلوبة" : "نماذج البيان";
   const showEditRequest = d.status !== "تعديل";
   const showApprove = d.status !== "تعديل" && d.status !== "معتمدة";

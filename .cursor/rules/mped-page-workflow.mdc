@@ -6,9 +6,10 @@ alwaysApply: true
 # Next-page workflow
 
 ## Before coding a new screen
-1. Reuse `Layout` (title or in-page breadcrumb like RequestDetail).
+0. Identify the module: supervisor (`src/pages/*`, `Layout`, `mock.js`) or general admin (`src/pages/ga/*`, `GaLayout`, `mockGa.js`). Never edit one to serve the other.
+1. Reuse `Layout` / `GaLayout` (title or in-page breadcrumb like RequestDetail).
 2. Mirror spacing/typography from the closest accepted page (Dashboard / RequestList / RequestDetail / UsersList).
-3. Put data in `src/data/mock.js`; keep Arabic field labels.
+3. Put **presentation** data in the module's mock file; keep Arabic field labels. Business data both modules act on (requests, notes, users, stages) belongs in `src/domain/` — see the baseline rule's integration section.
 4. Wire route in `src/App.jsx` and nav only if product asks.
 
 ## Known gaps (likely next work)
@@ -20,7 +21,8 @@ alwaysApply: true
 | Dashboard period | Static button | Dropdown; keep button chrome |
 | Required detail ids 6–10 | Titles ≠ `requestDetailById` | Add matching detail entries / tables |
 | Create request / edit matrix | Display-only | New flows; keep `#DDEBF4` matrix look |
-| Auth | Simulated login/OTP/loading shipped for مشرف الإدارة العامة only | Build the other 5 role flows next; abstract to real API later |
+| الإدارة العامة module | Isolated clone live at `/ga`, still identical to supervisor | Reshape per `الإدارة العامة.pdf`: 3 indicator groups + إنشاء طلب بيان, create-statement-form page, 7-stage stepper, attachments table, الدرجات العلمية matrix, PDF list columns/filters — edit `src/pages/ga/**` only |
+| Auth | Simulated login/OTP/loading shipped for مشرف الإدارة العامة + الإدارة العامة | Build the remaining 4 role flows next; abstract to real API later |
 | API | Mock only | Abstract later; don't break mock UX |
 
 ## Pattern checklist for every new page

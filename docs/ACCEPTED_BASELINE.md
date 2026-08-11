@@ -34,9 +34,10 @@ Arabic RTL admin for **منصة تبادل البيانات (Data Exchange)**.
 | `/users` | Users | Add / edit / pause / delete modals |
 | `/login` | Login | Demo user picker fills email + password → `/verify` |
 | `/verify` | Verification code | Random 4-digit code typed in automatically → `/loading` |
-| `/loading` | Loading | 3s spinner → `/` |
+| `/loading` | Loading | 3s spinner → role home |
+| `/ga`, `/ga/forms`, `/ga/forms/:id`, `/ga/required`, `/ga/required/:id`, `/ga/users` | General admin module | Isolated clone — see section 10 |
 
-All app routes above are wrapped in `RequireAuth`; the three auth routes are wrapped in `RequireStage`.
+Supervisor routes are wrapped in `RequireAuth allow={["مشرف الإدارة العامة"]}`, general admin routes in `RequireAuth allow={["الإدارة العامة"]}`; the three auth routes are wrapped in `RequireStage`. A role landing outside its module is redirected to `homePathForRole(role)`.
 
 Sidebar **الإعدادات** is still unrouted; **تسجيل الخروج** now signs out and returns to `/login`.
 
@@ -173,6 +174,53 @@ Page-local patterns to copy (not extract unless needed): Dashboard `ChartCard` /
 - Replacing Cairo / inventing a new palette
 - Backend/API without a separate decision
 - Changing chart card height (345) or selector frame (217×39) without a design ask
+
+---
+
+## 10. General admin module (`/ga`)
+
+Built as an **isolated clone** so the accepted supervisor screens can never regress while the general admin flow is shaped from `الإدارة العامة.pdf`.
+
+```
+src/components/ga/GaLayout.jsx   copy of Layout, NAV prefixed with /ga (+ end on /ga)
+src/pages/ga/Dashboard.jsx       copies of the supervisor pages; only imports,
+src/pages/ga/RequestList.jsx     detailPath and the notes storage key differ
+src/pages/ga/FormsList.jsx       detailPath="/ga/forms"
+src/pages/ga/RequiredList.jsx    detailPath="/ga/required"
+src/pages/ga/RequestDetail.jsx   backTo "/ga/..."; notes come from src/domain/notes
+src/pages/ga/UsersList.jsx
+src/data/mockGa.js               `export * from "./mock"` — declare an export locally to diverge
+src/auth/roleHome.js             homePathForRole(role) reads `home` from `demoUsers`
+```
+
+Rules while working here:
+- Edit only `src/pages/ga/**`, `src/components/ga/**` and `src/data/mockGa.js`. Never change the supervisor pages to serve the general admin.
+- Shared chrome (`StatusBadge`, `FilterModal`, `UserFormModal`, `ConfirmModal`, `SuccessModal`, `RequestEditModal`, `ChartTypeIcons`) is reused as-is; if a general-admin variant is needed, add it under `src/components/ga/`.
+- Landing route per role comes from `demoUsers[].home` (`/` supervisor, `/ga` general admin).
+
+## 10.1 Cross-module integration (`src/domain/`)
+
+The modules are isolated in **UI only**. They are one product, and a request travels between roles, so anything both modules act on lives in `src/domain/` and is never forked per module:
+
+```
+src/domain/roles.js      ROLES — the six role labels, matching demoUsers[].role
+src/domain/workflow.js   STAGES (7) with the owner role per stage + stageIndex /
+                         stageById / ownsStage / nextStage
+src/domain/notes.js      loadNotes / saveNotes on one key `mped-notes-${id}`
+```
+
+- **Notes are shared.** Both `RequestDetail` pages read and write the same key, so a note added in `/ga` shows up for the supervisor. The author is the signed-in user (`useAuth().name`), falling back to the request officer.
+- **Stage ownership is shared.** Stage-driven buttons in either module must derive from `STAGES` / `ownsStage(role, stageId)` instead of hard-coding role checks per page.
+- **`mockGa.js` overrides presentation only** (KPI labels, chart series, column sets). Overriding requests, notes or users there would let the two modules disagree about the same record.
+- When a new flow needs writes (create request, advance stage), add the mutation to `src/domain/` and call it from both modules rather than storing it under a module-scoped key.
+
+Still to build from the PDF (design differs from the supervisor clone):
+1. Dashboard: three indicator groups (مؤشرات عامة / مؤشرات تبادل نماذج البيان / مؤشرات استيفاء البيانات) and an «إنشاء طلب بيان» action.
+2. New page: طلب إنشاء نموذج البيان (توجيه الطلب إلى، العنوان، الإدارة المسؤولة، النشرة، الجهة المسؤولة، النطاق الجغرافي، وصف البيان، المنهجية، نوع/السنة، الدورية وتفصيلها، فترة التجميع، تاريخ الاستحقاق، فترة السماح، رفع الملف).
+3. Request detail: 7-stage stepper (إنشاء → مراجعة → اعتماد نموذج البيان → استيفاء البيانات → مراجعة البيانات → اعتماد نهائي → غلق الطلب) with header tiles الحالة / المسؤول الحالي / الجهة الحالية / المرحلة الحالية, and stage-driven actions (طلب تعديل، اعتماد و إرساله لمشرف الإدارة، إرسال للجهة، غلق الطلب).
+4. Attachments tab as a real table (اسم الملف، نوع الملف، تاريخ الرفع، الحجم، رفع بواسطة، إجراءات) plus the empty state «لا يوجد نموذج بيان للعرض».
+5. استيفاء البيانات matrix for الدرجات العلمية (دبلوم/ماجستير/دكتوراه × ذكور/إناث × مصري/وافد، rows محافظات + التخصص).
+6. List columns and filters per the PDF (المرحلة، الحالة، موجه إلى، تاريخ الإنشاء، مسح الكل).
 
 ---
 
