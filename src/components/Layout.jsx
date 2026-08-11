@@ -41,11 +41,11 @@ export default function Layout({ children, title, breadcrumb }) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <div className="min-h-screen overflow-x-hidden overflow-y-auto bg-gray-100 p-4" dir="rtl">
-      <div className="mx-auto bg-page rounded-sm shadow-2xl flex shrink-0" style={{ width: "1920px", height: "1215px" }}>
+    <div className="h-dvh w-full overflow-auto bg-[#1b1d22]" dir="rtl">
+      <div className="min-h-full min-w-[1100px] w-full max-w-[1920px] mx-auto bg-page flex shadow-2xl">
         {/* sidebar (right, RTL) — declared first so it lands on the right in the RTL flex row */}
         <aside
-          className={`sticky top-0 self-stretch min-h-full bg-navy shrink-0 flex flex-col justify-between transition-[width] duration-300 ease-in-out overflow-hidden ${
+          className={`sticky top-0 h-dvh bg-navy shrink-0 flex flex-col justify-between transition-[width] duration-300 ease-in-out overflow-y-auto overflow-x-hidden ${
             collapsed ? "w-[121px]" : "w-[329px]"
           }`}
         >
@@ -85,21 +85,21 @@ export default function Layout({ children, title, breadcrumb }) {
         </aside>
 
         {/* main content */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 min-h-dvh">
           {/* topbar */}
-          <div className="h-[74px] bg-white flex items-center justify-between px-7 shrink-0">
-            <div className="text-right">
+          <div className="h-[74px] bg-white flex items-center justify-between px-4 sm:px-7 shrink-0 sticky top-0 z-10">
+            <div className="text-right min-w-0">
               {breadcrumb ? (
                 <div className="flex items-center gap-2 text-[15px] text-muted">
                   <button onClick={() => navigate(-1)} className="hover:text-primary">{breadcrumb}</button>
                   <span>‹</span>
-                  <span className="text-[rgba(0,0,0,0.9)] font-semibold">{title}</span>
+                  <span className="text-[rgba(0,0,0,0.9)] font-semibold truncate">{title}</span>
                 </div>
               ) : (
-                <h1 className="text-[26px] font-bold text-[rgba(0,0,0,0.9)]">{title}</h1>
+                <h1 className="text-[22px] sm:text-[26px] font-bold text-[rgba(0,0,0,0.9)] truncate">{title}</h1>
               )}
             </div>
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4 sm:gap-6 shrink-0">
               <button className="relative w-8 h-8 flex items-center justify-center text-[#404040]">
                 <Bell size={22} />
                 {user.notifications > 0 && (
@@ -109,7 +109,7 @@ export default function Layout({ children, title, breadcrumb }) {
                 )}
               </button>
               <div className="flex items-center gap-3">
-                <div className="text-right leading-tight">
+                <div className="text-right leading-tight hidden sm:block">
                   <div className="font-semibold text-[15px] text-[rgba(0,0,0,0.9)]">{user.name}</div>
                   <div className="text-[13px] text-primary">{user.role}</div>
                 </div>
@@ -122,7 +122,7 @@ export default function Layout({ children, title, breadcrumb }) {
             </div>
           </div>
 
-          <div className="flex-1">{children}</div>
+          <div className="flex-1 overflow-auto">{children}</div>
         </div>
       </div>
     </div>
