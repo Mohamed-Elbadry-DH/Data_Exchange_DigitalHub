@@ -19,19 +19,19 @@ function SidebarItem({ to, label, icon: Icon, collapsed }) {
       title={collapsed ? label : undefined}
       aria-label={collapsed ? label : undefined}
       className={({ isActive }) =>
-        `flex items-center gap-3 my-1 rounded-lg py-3 text-[15px] transition-colors ${
-          collapsed ? "justify-center mx-auto px-0" : "justify-start mx-3 px-4"
+        `flex items-center my-1 rounded-[6px] text-[15px] transition-colors shrink-0 ${
+          collapsed
+            ? "justify-center mx-auto h-[50px] w-[97px] gap-0"
+            : "justify-start mx-[33px] h-[50px] w-[264px] gap-3 px-4"
         } ${
           isActive
-            ? `bg-primary text-white font-semibold ${collapsed ? "w-[60%]" : "w-full"}`
-            : "text-white/80 hover:bg-white/10 w-full"
+            ? "bg-primary text-white font-semibold"
+            : "text-white/80 hover:bg-white/10"
         }`
       }
     >
-      <Icon size={25} strokeWidth={2} />
-      <span className={`transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
-        {label}
-      </span>
+      <Icon size={25} strokeWidth={2} className="shrink-0" />
+      {!collapsed && <span className="whitespace-nowrap">{label}</span>}
     </NavLink>
   );
 }
@@ -45,16 +45,18 @@ export default function Layout({ children, title, breadcrumb }) {
       <div className="w-full max-w-[1920px] bg-page rounded-sm shadow-2xl flex overflow-hidden" style={{ minHeight: 860 }}>
         {/* sidebar (right, RTL) — declared first so it lands on the right in the RTL flex row */}
         <aside
-          className={`sticky top-0 h-screen max-h-[860px] bg-navy shrink-0 flex flex-col justify-between transition-[width] duration-300 ease-in-out ${
-            collapsed ? "w-[76px]" : "w-[264px]"
+          className={`sticky top-0 self-stretch min-h-full bg-navy shrink-0 flex flex-col justify-between transition-[width] duration-300 ease-in-out overflow-hidden ${
+            collapsed ? "w-[121px]" : "w-[329px]"
           }`}
         >
           <div>
-            <div className={`flex items-center border-b border-white/10 py-5 transition-all duration-300 ${collapsed ? "justify-center px-2" : "justify-between px-5"}`}>
-              <div className={`text-right transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
-                <div className="text-white font-bold text-[16px] whitespace-nowrap">منصة تبادل البيانات</div>
-                <div className="text-white/50 text-[12px]">Data Exchange</div>
-              </div>
+            <div className={`flex items-center border-b border-white/10 py-5 transition-all duration-300 ${collapsed ? "justify-center px-0" : "justify-between px-5"}`}>
+              {!collapsed && (
+                <div className="text-right">
+                  <div className="text-white font-bold text-[16px] whitespace-nowrap">منصة تبادل البيانات</div>
+                  <div className="text-white/50 text-[12px]">Data Exchange</div>
+                </div>
+              )}
               <button
                 onClick={() => setCollapsed((value) => !value)}
                 className="w-9 h-9 rounded flex items-center justify-center text-white/70 hover:text-white transition-colors shrink-0"
@@ -64,20 +66,20 @@ export default function Layout({ children, title, breadcrumb }) {
                 <img src="/panel-left.svg" alt="" width="25" height="25" aria-hidden="true" />
               </button>
             </div>
-            <nav className="mt-4" aria-label="التنقل الرئيسي">
+            <nav className={`mt-4 flex flex-col ${collapsed ? "items-center" : ""}`} aria-label="التنقل الرئيسي">
               {NAV.map((n) => (
                 <SidebarItem key={n.to} {...n} collapsed={collapsed} />
               ))}
             </nav>
           </div>
-          <div className="pb-4">
-            <button className={`w-full flex items-center gap-3 py-3 text-white/70 hover:text-white text-[14px] transition-all duration-300 ${collapsed ? "justify-center px-0" : "px-9"}`} title={collapsed ? "الإعدادات" : undefined} aria-label="الإعدادات">
-              <Settings size={collapsed ? 25 : 18} />
-              <span className={`transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>الإعدادات</span>
+          <div className={`pb-4 flex flex-col ${collapsed ? "items-center" : ""}`}>
+            <button className={`flex items-center h-[50px] text-white/70 hover:text-white text-[14px] transition-all duration-300 ${collapsed ? "justify-center w-[97px] gap-0" : "w-full justify-start gap-3 px-9"}`} title={collapsed ? "الإعدادات" : undefined} aria-label="الإعدادات">
+              <Settings size={25} className="shrink-0" />
+              {!collapsed && <span className="whitespace-nowrap">الإعدادات</span>}
             </button>
-            <button className={`w-full flex items-center gap-3 py-3 text-white/70 hover:text-white text-[14px] transition-all duration-300 ${collapsed ? "justify-center px-0" : "px-9"}`} title={collapsed ? "تسجيل الخروج" : undefined} aria-label="تسجيل الخروج">
-              <LogOut size={collapsed ? 25 : 18} />
-              <span className={`transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>تسجيل الخروج</span>
+            <button className={`flex items-center h-[50px] text-white/70 hover:text-white text-[14px] transition-all duration-300 ${collapsed ? "justify-center w-[97px] gap-0" : "w-full justify-start gap-3 px-9"}`} title={collapsed ? "تسجيل الخروج" : undefined} aria-label="تسجيل الخروج">
+              <LogOut size={25} className="shrink-0" />
+              {!collapsed && <span className="whitespace-nowrap">تسجيل الخروج</span>}
             </button>
           </div>
         </aside>
