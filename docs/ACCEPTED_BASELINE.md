@@ -107,7 +107,8 @@ Org Y-labels: **single line**; Y-axis width ~230; hbar domain may exceed 100 to 
 - Info tiles: icon well **60×60**, radius 15, bg `#2563EB4D`
 - Tabs: Cairo; active text `#052C65`, underline `#0986ED`
 - KV tables: `#D8D8D8` borders + full-height center divider; min-height ~385
-- **نموذج البيان / استيفاء:** `DataMatrixTable` — headers, first column, totals use **`#DDEBF4`**; schema **per statement** (population, industry, students, graduates, hospitals, etc.)
+- **نموذج البيان:** `DataMatrixTable` headers/row labels `#DDEBF4` — **empty cells (`-`)**, structure only (no numbers)
+- **استيفاء البيانات** (required mode only): same schema **with filled mock data** + totals row
 - Notes: add / save / cancel / list / delete; persist `localStorage` key `mped-notes-${requestId}`
 - Approve / request-edit → existing success/edit modals
 

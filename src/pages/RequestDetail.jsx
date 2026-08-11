@@ -193,8 +193,21 @@ function DataMatrixTable({ table, showTotals = false }) {
   );
 }
 
+function blankTable(table) {
+  if (!table?.rows?.length) return table;
+  const leafCount = getLeafCount(table);
+  return {
+    ...table,
+    rows: table.rows.map((row) => ({
+      ...row,
+      values: Array.from({ length: leafCount }, () => "-"),
+    })),
+  };
+}
+
 function FormDataTab({ d }) {
-  return <DataMatrixTable table={d.formTable} showTotals />;
+  // نماذج البيان = هيكل فارغ بدون أرقام؛ البيانات تظهر في استيفاء البيانات المطلوبة فقط
+  return <DataMatrixTable table={blankTable(d.formTable)} showTotals={false} />;
 }
 
 function FulfillmentTab({ d }) {
@@ -452,7 +465,7 @@ export default function RequestDetail({ mode = "forms" }) {
                   key={t.key}
                   type="button"
                   onClick={() => setTab(t.key)}
-                  className={`h-[47px] w-full font-[Cairo] font-medium text-[22px] lg:text-[25px] leading-none whitespace-nowrap text-right flex items-center justify-start border-b-[3px] transition-colors ${
+                  className={`h-[47px] w-full font-[Cairo] font-medium text-[22px] leading-none whitespace-nowrap flex items-center justify-center border-b-[3px] transition-colors ${
                     active
                       ? "text-[#052C65] border-[#0986ED]"
                       : "text-[#7F8999] border-transparent hover:text-[#052C65]"
