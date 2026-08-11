@@ -70,8 +70,8 @@ export default function Dashboard() {
   return (
     <Layout title="لوحة التحكم">
       <div className="p-8 space-y-8">
-        <div className="flex justify-start">
-          <button className="flex items-center gap-2 bg-white rounded-lg px-4 py-2 text-[14px] text-[#404040] shadow-sm">
+        <div className="flex">
+          <button className="flex items-center gap-2 bg-white rounded-lg px-4 py-2 text-[14px] text-[#404040] shadow-sm ms-0">
             <Calendar size={16} className="text-primary" />
             النصف الأول من عام 2026
             <ChevronDown size={14} />
