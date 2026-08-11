@@ -32,9 +32,9 @@ Arabic RTL admin for **منصة تبادل البيانات (Data Exchange)**.
 | `/required` | Required list | Shared `RequestList` |
 | `/required/:id` | Request detail | `mode="required"` — 5 tabs |
 | `/users` | Users | Add / edit / pause / delete modals |
-| `/login` | Login | Email + password → `/verify` |
-| `/verify` | Verification code | 4 digits + resend → `/select-role` |
-| `/select-role` | Role selection | 6 role cards → `/` |
+| `/login` | Login | Demo user picker fills email + password → `/verify` |
+| `/verify` | Verification code | Random 4-digit code typed in automatically → `/loading` |
+| `/loading` | Loading | 3s spinner → `/` |
 
 All app routes above are wrapped in `RequireAuth`; the three auth routes are wrapped in `RequireStage`.
 
@@ -125,15 +125,17 @@ Org Y-labels: **single line**; Y-axis width ~230; hbar domain may exceed 100 to 
 
 ## 6b. Authentication (mock)
 
-Flow: `/login` → `/verify` → `/select-role` → protected app.
+Simulated demo flow: `/login` → `/verify` → `/loading` (3s) → protected app.
 
-- State in `src/context/AuthContext.jsx` (`AuthProvider` / `useAuth`), persisted in `localStorage` key **`mped-auth`** as `{ email, stage, role }` with `stage: "otp" | "role" | "ready"`.
-- `signIn(email)` accepts any valid email + password ≥ 6 chars. `verifyCode` only accepts **`2239`** (from the design). `resendCode` restarts a 60s countdown. `chooseRole(name)` sets `stage:"ready"`.
-- Guards in `src/components/RequireAuth.jsx`: `RequireAuth` (outlet for app routes) redirects by stage; `RequireStage` keeps a ready user out of the auth screens.
-- Shared chrome `src/components/AuthShell.jsx`: page bg `#f5f6fa`, `/dots.png` halftone top-left + rotated bottom-right, centered card `rounded-2xl` bg `#E9EDF1` (`width` prop — **440** for login/verify, **980** for roles), logo `/logo-mark.png` + «منصة تبادل البيانات» navy-deep bold 20 + `Data Exchange` muted 13 LTR. `Spinner` uses `/spinner.png`.
-- Fields: 52px high, white, border `#D8D8D8`, leading icon on the right (RTL), value `dir="ltr"`. Primary buttons 52px `bg-navy-deep`.
-- OTP: four 58×58 boxes in `dir="ltr"` with auto-advance, Backspace step-back, and paste support.
-- Roles come from `roles` in `src/data/mock.js` (6 roles, 4 responsibilities each, lucide icon name); the chosen role name feeds the topbar role line in `Layout`.
+- State in `src/context/AuthContext.jsx` (`AuthProvider` / `useAuth`), persisted in `localStorage` key **`mped-auth`** as `{ email, name, role, allowed, code, stage }` with `stage: "otp" | "loading" | "ready"`.
+- `signIn({ email, name, role, allowed })` also generates a random 4-digit `code`. `issueCode()` regenerates it on resend. `verifyCode(code)` compares against the generated code and moves to `stage:"loading"`. `finishLoading()` sets `stage:"ready"`. `signOut()` clears the key.
+- **Only مشرف الإدارة العامة (`enabled: true`) reaches the dashboard.** The other five demo users pass verification and then show «تدفق ... قيد التطوير حالياً» instead of navigating.
+- Guards in `src/components/RequireAuth.jsx`: `RequireAuth` (outlet for app routes) redirects by stage via `STAGE_ROUTE = { otp: "/verify", loading: "/loading" }`; `RequireStage` keeps a ready user out of the auth screens.
+- Shared chrome `src/components/AuthShell.jsx`: frame `min-w-[1100px]` / `max-w-[1920px]` on `#1b1d22`, page bg `#F6F7F8`, `/dots.png` halftone top-right + rotated bottom-left sized at 34.72% of frame width (666.67 of the 1920 canvas) at 0.6 opacity. Card **660.8 × 561.6** min, radius `26.67px`, bg `#E9ECEF`, shadow `0 5.33px 5.33px #00000040`, uniform `gap-[35px]`, content column capped at `contentWidth` (478.94). Logo `/auth-logo.png`. `Spinner` uses `/spinner.png`.
+- Fields: 52px high, white, border `#D8D8D8`, icon on the **left**, value `dir="ltr"`, placeholder `#ADB5BD`. Primary buttons: height `65.61px`, radius `11.72px`, bg `#0747A5`.
+- Login email field opens a picker of `demoUsers` (order: صانع القرار، أخصائي تقنية النظم والمعلومات، مشرف الإدارة العامة، الإدارة العامة، مشرف الجهة الخارجية، الجهة الخارجية) and auto-fills email + password; unavailable roles carry a «قيد التطوير» badge.
+- OTP: four read-only 58×58 boxes in `dir="ltr"`; the generated code types itself in one digit every 450ms, the confirm and resend buttons stay disabled while typing, and a filled box turns its border `primary`.
+- `roles` in `src/data/mock.js` keeps the 6 role definitions with responsibilities for the future role screens; the signed-in name and role feed the topbar in `Layout`.
 
 ---
 

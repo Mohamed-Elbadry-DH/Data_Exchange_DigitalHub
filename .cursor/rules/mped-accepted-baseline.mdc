@@ -35,11 +35,12 @@ navy `#1f254b` · navy-deep `#052c65` · primary `#1b75ff` · primary-2 `#0986ed
 - Actions: hide both buttons if `تعديل`; hide approve only if `معتمدة`; otherwise show both
 
 ## Auth (mock)
-- Flow `/login` → `/verify` → `/select-role` → protected app; state in `src/context/AuthContext.jsx`, `localStorage` key `mped-auth` = `{ email, stage: otp|role|ready, role }`
-- Verification code accepted: **2239**; resend countdown 60s; guards in `RequireAuth.jsx` (`RequireAuth` outlet + `RequireStage`)
-- `AuthShell.jsx`: bg `#f5f6fa`, `/dots.png` top-left + rotated bottom-right, card `rounded-2xl` bg `#E9EDF1`, `width` **440** (login/verify) / **980** (roles), logo + «منصة تبادل البيانات» navy-deep + `Data Exchange` muted LTR
-- Inputs 52px white border `#D8D8D8` icon on the right; primary buttons 52px `bg-navy-deep`; OTP four 58×58 boxes `dir="ltr"`
-- 6 roles from `roles` in `mock.js`; chosen role name shows in the topbar; sidebar تسجيل الخروج calls `signOut()` → `/login`
+- Flow `/login` → `/verify` → `/loading` (3s) → protected app; state in `src/context/AuthContext.jsx`, `localStorage` key `mped-auth` = `{ email, name, role, allowed, code, stage: otp|loading|ready }`
+- Login email field opens a `demoUsers` picker (mock.js) that auto-fills email + password; **only مشرف الإدارة العامة (`enabled: true`) reaches the dashboard** — the rest show «قيد التطوير» after verification
+- Verification code is random per sign-in and types itself digit by digit every 450ms into read-only boxes; confirm/resend disabled while typing; resend countdown 60s; guards in `RequireAuth.jsx` (`STAGE_ROUTE = { otp: "/verify", loading: "/loading" }`)
+- `AuthShell.jsx`: frame `min-w-[1100px]`/`max-w-[1920px]` on `#1b1d22`, page bg `#F6F7F8`, `/dots.png` top-right + rotated bottom-left at 34.72% of frame width, opacity 0.6; card **660.8×561.6** radius `26.67px` bg `#E9ECEF` shadow `0 5.33px 5.33px #00000040`, `gap-[35px]`, content column 478.94; logo `/auth-logo.png`
+- Inputs 52px white border `#D8D8D8`, icon on the **left**, placeholder `#ADB5BD`; primary buttons height `65.61px` radius `11.72px` bg `#0747A5`; OTP four 58×58 boxes `dir="ltr"`
+- `roles` in `mock.js` keeps the 6 role definitions for future flows; signed-in name + role show in the topbar; sidebar تسجيل الخروج calls `signOut()` → `/login`
 
 ## Rules of engagement
 - Prefer extending existing patterns over new visual systems

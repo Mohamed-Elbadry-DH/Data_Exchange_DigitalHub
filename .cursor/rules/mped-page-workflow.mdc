@@ -20,7 +20,7 @@ alwaysApply: true
 | Dashboard period | Static button | Dropdown; keep button chrome |
 | Required detail ids 6–10 | Titles ≠ `requestDetailById` | Add matching detail entries / tables |
 | Create request / edit matrix | Display-only | New flows; keep `#DDEBF4` matrix look |
-| Auth | Mock login/OTP/role flow shipped | Abstract to real API later; don't break mock UX |
+| Auth | Simulated login/OTP/loading shipped for مشرف الإدارة العامة only | Build the other 5 role flows next; abstract to real API later |
 | API | Mock only | Abstract later; don't break mock UX |
 
 ## Pattern checklist for every new page

@@ -4,6 +4,58 @@ export const user = {
   notifications: 6,
 };
 
+/** Demo accounts listed in the login email picker — only the supervisor flow is built */
+export const demoUsers = [
+  {
+    id: "decision-maker",
+    role: "صانع القرار",
+    name: "د. خالد عبد الرحمن",
+    email: "decision.maker@capmas.gov.eg",
+    password: "Mped@2026",
+    enabled: false,
+  },
+  {
+    id: "it-specialist",
+    role: "أخصائي تقنية النظم والمعلومات",
+    name: "م. مصطفى سيد",
+    email: "it.specialist@capmas.gov.eg",
+    password: "Mped@2026",
+    enabled: false,
+  },
+  {
+    id: "general-admin-supervisor",
+    role: "مشرف الإدارة العامة",
+    name: "أحمد محمد",
+    email: "supervisor@capmas.gov.eg",
+    password: "Mped@2026",
+    enabled: true,
+  },
+  {
+    id: "general-admin",
+    role: "الإدارة العامة",
+    name: "أ. سارة علي",
+    email: "general.admin@capmas.gov.eg",
+    password: "Mped@2026",
+    enabled: false,
+  },
+  {
+    id: "external-entity-supervisor",
+    role: "مشرف الجهة الخارجية",
+    name: "أ. هدى فؤاد",
+    email: "entity.supervisor@capmas.gov.eg",
+    password: "Mped@2026",
+    enabled: false,
+  },
+  {
+    id: "external-entity",
+    role: "الجهة الخارجية",
+    name: "أ. عمر حسن",
+    email: "entity.user@capmas.gov.eg",
+    password: "Mped@2026",
+    enabled: false,
+  },
+];
+
 /** Roles offered on the post-verification role selection screen */
 export const roles = [
   {

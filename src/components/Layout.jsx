@@ -39,7 +39,7 @@ function SidebarItem({ to, label, icon: Icon, collapsed }) {
 
 export default function Layout({ children, title, breadcrumb }) {
   const navigate = useNavigate();
-  const { role, signOut } = useAuth();
+  const { role, name, signOut } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
 
   const signOutAndLeave = () => {
@@ -131,7 +131,7 @@ export default function Layout({ children, title, breadcrumb }) {
               </button>
               <div className="flex items-center gap-3">
                 <div className="text-right leading-tight hidden sm:block">
-                  <div className="font-semibold text-[15px] text-[rgba(0,0,0,0.9)]">{user.name}</div>
+                  <div className="font-semibold text-[15px] text-[rgba(0,0,0,0.9)]">{name || user.name}</div>
                   <div className="text-[13px] text-primary">{role || user.role}</div>
                 </div>
                 <img

@@ -6,7 +6,7 @@ import UsersList from "./pages/UsersList";
 import RequestDetail from "./pages/RequestDetail";
 import Login from "./pages/Login";
 import VerifyCode from "./pages/VerifyCode";
-import SelectRole from "./pages/SelectRole";
+import LoadingPage from "./pages/Loading";
 import RequireAuth, { RequireStage } from "./components/RequireAuth";
 import { AuthProvider } from "./context/AuthContext";
 
@@ -17,7 +17,7 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<RequireStage stage={null}><Login /></RequireStage>} />
           <Route path="/verify" element={<RequireStage stage="otp"><VerifyCode /></RequireStage>} />
-          <Route path="/select-role" element={<RequireStage stage="role"><SelectRole /></RequireStage>} />
+          <Route path="/loading" element={<RequireStage stage="loading"><LoadingPage /></RequireStage>} />
 
           <Route element={<RequireAuth />}>
             <Route path="/" element={<Dashboard />} />

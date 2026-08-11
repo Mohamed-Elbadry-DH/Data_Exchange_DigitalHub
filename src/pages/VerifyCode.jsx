@@ -5,19 +5,38 @@ import { useAuth } from "../context/AuthContext";
 
 const LENGTH = 4;
 const RESEND_SECONDS = 60;
+const TYPE_DELAY = 450;
 
 export default function VerifyCode() {
-  const { verifyCode, resendCode } = useAuth();
+  const { code, issueCode, verifyCode, role } = useAuth();
   const navigate = useNavigate();
   const [digits, setDigits] = useState(Array(LENGTH).fill(""));
+  const [typing, setTyping] = useState(true);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(RESEND_SECONDS);
-  const inputs = useRef([]);
+  const [pending, setPending] = useState(code);
+  const timers = useRef([]);
+
+  useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
   useEffect(() => {
-    inputs.current[0]?.focus();
-  }, []);
+    if (!pending) return;
+    setDigits(Array(LENGTH).fill(""));
+    setTyping(true);
+    timers.current.forEach(clearTimeout);
+    timers.current = pending.split("").map((digit, i) =>
+      setTimeout(() => {
+        setDigits((prev) => {
+          const next = [...prev];
+          next[i] = digit;
+          return next;
+        });
+        if (i === LENGTH - 1) setTyping(false);
+      }, TYPE_DELAY * (i + 1))
+    );
+  }, [pending]);
 
   useEffect(() => {
     if (countdown <= 0) return;
@@ -25,69 +44,37 @@ export default function VerifyCode() {
     return () => clearTimeout(t);
   }, [countdown]);
 
-  const setDigitAt = (index, value) => {
-    setDigits((prev) => {
-      const next = [...prev];
-      next[index] = value;
-      return next;
-    });
-  };
-
-  const handleChange = (index, raw) => {
-    const value = raw.replace(/\D/g, "");
-    if (!value) {
-      setDigitAt(index, "");
-      return;
-    }
-    if (value.length > 1) {
-      const chars = value.slice(0, LENGTH - index).split("");
-      setDigits((prev) => {
-        const next = [...prev];
-        chars.forEach((c, i) => (next[index + i] = c));
-        return next;
-      });
-      inputs.current[Math.min(index + chars.length, LENGTH - 1)]?.focus();
-      return;
-    }
-    setDigitAt(index, value);
-    if (index < LENGTH - 1) inputs.current[index + 1]?.focus();
-  };
-
-  const handleKeyDown = (index, e) => {
-    if (e.key === "Backspace" && !digits[index] && index > 0) {
-      e.preventDefault();
-      setDigitAt(index - 1, "");
-      inputs.current[index - 1]?.focus();
-    }
-    if (e.key === "ArrowLeft" && index < LENGTH - 1) inputs.current[index + 1]?.focus();
-    if (e.key === "ArrowRight" && index > 0) inputs.current[index - 1]?.focus();
-  };
-
   const submit = (e) => {
     e.preventDefault();
-    const code = digits.join("");
-    if (code.length < LENGTH) {
+    const entered = digits.join("");
+    if (entered.length < LENGTH) {
       setError("من فضلك أدخل رمز التحقق كاملاً");
       return;
     }
     setError("");
+    setNotice("");
     setLoading(true);
     setTimeout(() => {
-      if (verifyCode(code)) {
-        navigate("/select-role");
-      } else {
+      const result = verifyCode(entered);
+      if (result === "invalid") {
         setLoading(false);
         setError("رمز التحقق غير صحيح، من فضلك حاول مرة أخرى");
+        return;
       }
+      if (result === "blocked") {
+        setLoading(false);
+        setNotice(`صلاحيات «${role}» قيد التطوير حالياً، وستكون متاحة قريباً. هذه النسخة متاحة لمشرف الإدارة العامة فقط.`);
+        return;
+      }
+      navigate("/loading", { replace: true });
     }, 600);
   };
 
   const resend = () => {
-    resendCode();
-    setDigits(Array(LENGTH).fill(""));
     setError("");
+    setNotice("");
     setCountdown(RESEND_SECONDS);
-    inputs.current[0]?.focus();
+    setPending(issueCode());
   };
 
   return (
@@ -97,26 +84,28 @@ export default function VerifyCode() {
 
         <div dir="ltr" className="flex items-center justify-center gap-4">
           {digits.map((digit, i) => (
-            <input
+            <div
               key={i}
-              ref={(el) => (inputs.current[i] = el)}
-              value={digit}
-              onChange={(e) => handleChange(i, e.target.value)}
-              onKeyDown={(e) => handleKeyDown(i, e)}
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              maxLength={LENGTH}
               aria-label={`رمز التحقق - الخانة ${i + 1}`}
-              className="h-[58px] w-[58px] rounded-lg border border-[#D8D8D8] bg-white text-center text-[22px] font-semibold text-navy-deep focus:border-primary focus:outline-none"
-            />
+              className={`flex h-[58px] w-[58px] items-center justify-center rounded-lg border bg-white text-[22px] font-semibold text-navy-deep transition-colors ${
+                digit ? "border-primary" : "border-[#D8D8D8]"
+              }`}
+            >
+              {digit}
+            </div>
           ))}
         </div>
 
         {error && <div className="text-[13px] text-danger text-center">{error}</div>}
+        {notice && (
+          <div className="rounded-lg bg-[#FFF4E5] px-4 py-3 text-[13px] font-semibold text-warning text-center">
+            {notice}
+          </div>
+        )}
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || typing}
           style={{ height: "65.61px", borderRadius: "11.72px", background: "#0747A5" }}
           className="flex w-full items-center justify-center gap-3 text-[16px] font-semibold text-white transition-opacity hover:opacity-95 disabled:opacity-70"
         >
@@ -127,7 +116,7 @@ export default function VerifyCode() {
         <button
           type="button"
           onClick={resend}
-          disabled={countdown > 0}
+          disabled={countdown > 0 || typing}
           className="text-[14px] font-semibold text-primary hover:underline disabled:text-muted disabled:no-underline"
         >
           {countdown > 0 ? `إعادة إرسال الرمز بعد ${countdown} ثانية` : "إعادة إرسال الرمز"}

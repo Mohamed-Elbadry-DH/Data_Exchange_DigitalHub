@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-const STAGE_ROUTE = { otp: "/verify", role: "/select-role" };
+const STAGE_ROUTE = { otp: "/verify", loading: "/loading" };
 
 export default function RequireAuth() {
   const { stage } = useAuth();

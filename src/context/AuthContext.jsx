@@ -1,11 +1,13 @@
 import { createContext, useContext, useMemo, useState } from "react";
 
 const STORAGE_KEY = "mped-auth";
-
-/** Mock verification code from the design spec */
-export const DEMO_CODE = "2239";
+const CODE_LENGTH = 4;
 
 const AuthContext = createContext(null);
+
+function randomCode() {
+  return Array.from({ length: CODE_LENGTH }, () => Math.floor(Math.random() * 10)).join("");
+}
 
 function readSession() {
   try {
@@ -42,19 +44,26 @@ export function AuthProvider({ children }) {
       stage: session?.stage ?? null,
       email: session?.email ?? "",
       role: session?.role ?? "",
-      signIn(email) {
-        update({ email, stage: "otp", role: "" });
+      name: session?.name ?? "",
+      allowed: session?.allowed ?? false,
+      code: session?.code ?? "",
+      signIn({ email, name, role, allowed }) {
+        update({ email, name, role, allowed, stage: "otp", code: randomCode() });
       },
+      issueCode() {
+        const code = randomCode();
+        update({ ...session, code });
+        return code;
+      },
+      /** "invalid" | "blocked" (role flow not built yet) | "ok" */
       verifyCode(code) {
-        if (code !== DEMO_CODE) return false;
-        update({ ...session, stage: "role" });
-        return true;
+        if (!session?.code || code !== session.code) return "invalid";
+        if (!session.allowed) return "blocked";
+        update({ ...session, stage: "loading" });
+        return "ok";
       },
-      resendCode() {
-        return DEMO_CODE;
-      },
-      chooseRole(role) {
-        update({ ...session, role, stage: "ready" });
+      finishLoading() {
+        update({ ...session, stage: "ready" });
       },
       signOut() {
         update(null);
