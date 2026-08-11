@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutGrid, Table2, FileText, Users, Settings, LogOut, Bell, BookOpen,
+  PanelRightClose, PanelRightOpen,
 } from "lucide-react";
 import { user } from "../data/mock";
 
@@ -11,21 +13,25 @@ const NAV = [
   { to: "/users", label: "المستخدمين", icon: Users },
 ];
 
-function SidebarItem({ to, label, icon: Icon }) {
+function SidebarItem({ to, label, icon: Icon, collapsed }) {
   return (
     <NavLink
       to={to}
+      title={collapsed ? label : undefined}
+      aria-label={collapsed ? label : undefined}
       className={({ isActive }) =>
-        `flex items-center justify-between gap-3 mx-3 my-1 rounded-lg px-4 py-3 text-[15px] transition-colors ${
+        `flex items-center justify-center gap-3 mx-3 my-1 rounded-lg px-4 py-3 text-[15px] transition-colors ${
           isActive
             ? "bg-primary text-white font-semibold"
             : "text-white/80 hover:bg-white/10"
-        }`
+        } ${collapsed ? "px-0" : ""}`
       }
     >
-      <span className="flex items-center gap-3">
+      <span className={`flex items-center gap-3 ${collapsed ? "justify-center" : ""}`}>
         <Icon size={19} strokeWidth={2} />
-        {label}
+        <span className={`transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
+          {label}
+        </span>
       </span>
     </NavLink>
   );
@@ -33,36 +39,55 @@ function SidebarItem({ to, label, icon: Icon }) {
 
 export default function Layout({ children, title, breadcrumb }) {
   const navigate = useNavigate();
+  const [collapsed, setCollapsed] = useState(false);
+
   return (
     <div className="min-h-screen bg-page flex justify-center py-6 px-2" dir="rtl">
       <div className="w-full max-w-[1920px] bg-page rounded-sm shadow-2xl flex overflow-hidden" style={{ minHeight: 860 }}>
         {/* sidebar (right, RTL) — declared first so it lands on the right in the RTL flex row */}
-        <div className="w-[330px] bg-navy shrink-0 flex flex-col justify-between">
+        <aside
+          className={`sticky top-0 h-screen max-h-[860px] bg-navy shrink-0 flex flex-col justify-between transition-[width] duration-300 ease-in-out ${
+            collapsed ? "w-[76px]" : "w-[264px]"
+          }`}
+        >
           <div>
-            <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
-              <div className="text-right">
-                <div className="text-white font-bold text-[16px]">منصة تبادل البيانات</div>
+            <div className={`flex items-center border-b border-white/10 py-5 transition-all duration-300 ${collapsed ? "justify-center px-2" : "justify-between px-5"}`}>
+              <div className={`text-right transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
+                <div className="text-white font-bold text-[16px] whitespace-nowrap">منصة تبادل البيانات</div>
                 <div className="text-white/50 text-[12px]">Data Exchange</div>
               </div>
-              <div className="w-9 h-9 rounded bg-warning-2 flex items-center justify-center">
+              <div className="w-9 h-9 rounded bg-warning-2 flex items-center justify-center shrink-0">
                 <BookOpen size={18} className="text-white" />
               </div>
             </div>
-            <nav className="mt-4">
+            <nav className="mt-4" aria-label="التنقل الرئيسي">
               {NAV.map((n) => (
-                <SidebarItem key={n.to} {...n} />
+                <SidebarItem key={n.to} {...n} collapsed={collapsed} />
               ))}
             </nav>
           </div>
           <div className="pb-4">
-            <button className="w-full flex items-center gap-3 px-9 py-3 text-white/70 hover:text-white text-[14px]">
-              <Settings size={18} /> الإعدادات
+            <button
+              onClick={() => setCollapsed((value) => !value)}
+              className={`w-full flex items-center gap-3 py-3 text-white/70 hover:text-white text-[14px] transition-all duration-300 ${collapsed ? "justify-center px-0" : "px-9"}`}
+              aria-label={collapsed ? "توسيع القائمة الجانبية" : "طي القائمة الجانبية"}
+              title={collapsed ? "توسيع القائمة الجانبية" : "طي القائمة الجانبية"}
+            >
+              {collapsed ? <PanelRightOpen size={18} /> : <PanelRightClose size={18} />}
+              <span className={`transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
+                {collapsed ? "توسيع القائمة" : "طي القائمة"}
+              </span>
             </button>
-            <button className="w-full flex items-center gap-3 px-9 py-3 text-white/70 hover:text-white text-[14px]">
-              <LogOut size={18} /> تسجيل الخروج
+            <button className={`w-full flex items-center gap-3 py-3 text-white/70 hover:text-white text-[14px] transition-all duration-300 ${collapsed ? "justify-center px-0" : "px-9"}`} title={collapsed ? "الإعدادات" : undefined} aria-label="الإعدادات">
+              <Settings size={18} />
+              <span className={`transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>الإعدادات</span>
+            </button>
+            <button className={`w-full flex items-center gap-3 py-3 text-white/70 hover:text-white text-[14px] transition-all duration-300 ${collapsed ? "justify-center px-0" : "px-9"}`} title={collapsed ? "تسجيل الخروج" : undefined} aria-label="تسجيل الخروج">
+              <LogOut size={18} />
+              <span className={`transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>تسجيل الخروج</span>
             </button>
           </div>
-        </div>
+        </aside>
 
         {/* main content */}
         <div className="flex-1 flex flex-col min-w-0">
