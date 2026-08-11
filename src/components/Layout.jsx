@@ -28,7 +28,7 @@ function SidebarItem({ to, label, icon: Icon, collapsed }) {
         }`
       }
     >
-      <Icon size={collapsed ? 25 : 19} strokeWidth={2} />
+      <Icon size={25} strokeWidth={2} />
       <span className={`transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
         {label}
       </span>
