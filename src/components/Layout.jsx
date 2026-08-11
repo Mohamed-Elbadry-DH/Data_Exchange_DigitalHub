@@ -23,14 +23,10 @@ function SidebarItem({ to, label, icon: Icon }) {
         }`
       }
     >
-      {({ isActive }) => (
-        <>
-          <span className="flex items-center gap-3">
-            <Icon size={19} strokeWidth={2} />
-            {label}
-          </span>
-        </>
-      )}
+      <span className="flex items-center gap-3">
+        <Icon size={19} strokeWidth={2} />
+        {label}
+      </span>
     </NavLink>
   );
 }
@@ -72,27 +68,6 @@ export default function Layout({ children, title, breadcrumb }) {
         <div className="flex-1 flex flex-col min-w-0">
           {/* topbar */}
           <div className="h-[74px] bg-white flex items-center justify-between px-7 shrink-0">
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-3">
-                <img
-                  src="https://api.dicebear.com/7.x/initials/svg?seed=AM&backgroundColor=e5e7eb"
-                  className="w-11 h-11 rounded-full"
-                  alt="avatar"
-                />
-                <div className="text-right leading-tight">
-                  <div className="font-semibold text-[15px] text-[rgba(0,0,0,0.9)]">{user.name}</div>
-                  <div className="text-[13px] text-primary">{user.role}</div>
-                </div>
-              </div>
-              <button className="relative w-8 h-8 flex items-center justify-center text-[#404040]">
-                <Bell size={22} />
-                {user.notifications > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
-                    {user.notifications}
-                  </span>
-                )}
-              </button>
-            </div>
             <div className="text-right">
               {breadcrumb ? (
                 <div className="flex items-center gap-2 text-[15px] text-muted">
@@ -103,6 +78,27 @@ export default function Layout({ children, title, breadcrumb }) {
               ) : (
                 <h1 className="text-[26px] font-bold text-[rgba(0,0,0,0.9)]">{title}</h1>
               )}
+            </div>
+            <div className="flex items-center gap-6">
+              <button className="relative w-8 h-8 flex items-center justify-center text-[#404040]">
+                <Bell size={22} />
+                {user.notifications > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                    {user.notifications}
+                  </span>
+                )}
+              </button>
+              <div className="flex items-center gap-3">
+                <div className="text-right leading-tight">
+                  <div className="font-semibold text-[15px] text-[rgba(0,0,0,0.9)]">{user.name}</div>
+                  <div className="text-[13px] text-primary">{user.role}</div>
+                </div>
+                <img
+                  src="https://api.dicebear.com/7.x/initials/svg?seed=AM&backgroundColor=e5e7eb"
+                  className="w-11 h-11 rounded-full"
+                  alt="avatar"
+                />
+              </div>
             </div>
           </div>
 

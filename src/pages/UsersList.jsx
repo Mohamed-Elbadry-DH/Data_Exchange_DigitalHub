@@ -89,22 +89,8 @@ export default function UsersList() {
     <Layout title="المستخدمين">
       <div className="p-8">
         <div className="flex items-center justify-between mb-6">
+          <h2 className="text-[18px] font-bold text-[rgba(0,0,0,0.9)]">المستخدمين ({filteredUsers.length})</h2>
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => setFilterOpen(true)}
-              className="w-10 h-10 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-[#404040] hover:border-primary hover:text-primary"
-            >
-              <SlidersHorizontal size={18} />
-            </button>
-            <button
-              onClick={openAdd}
-              className="bg-navy text-white rounded-lg px-4 py-2.5 text-[14px] flex items-center gap-2"
-            >
-              <Plus size={16} /> إضافة مستخدم
-            </button>
-          </div>
-          <div className="flex items-center gap-3">
-            <h2 className="text-[18px] font-bold text-[rgba(0,0,0,0.9)]">المستخدمين ({filteredUsers.length})</h2>
             <div className="relative">
               <Search size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted" />
               <input
@@ -114,25 +100,46 @@ export default function UsersList() {
                 className="border border-gray-200 rounded-full pr-9 pl-4 py-2 text-[13px] w-64 text-right placeholder:text-gray-400"
               />
             </div>
+            <button
+              onClick={openAdd}
+              className="bg-navy text-white rounded-lg px-4 py-2.5 text-[14px] flex items-center gap-2"
+            >
+              <Plus size={16} /> إضافة مستخدم
+            </button>
+            <button
+              onClick={() => setFilterOpen(true)}
+              className="w-10 h-10 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-[#404040] hover:border-primary hover:text-primary"
+            >
+              <SlidersHorizontal size={18} />
+            </button>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
-          <table className="w-full text-right">
+        <div className="bg-white rounded-2xl overflow-x-auto shadow-sm">
+          <table className="w-full min-w-[900px] text-right">
             <thead>
               <tr className="bg-navy text-white text-[14px]">
-                <th className="py-3.5 px-6 font-semibold">إجراءات</th>
-                <th className="py-3.5 px-6 font-semibold">الحالة</th>
-                <th className="py-3.5 px-6 font-semibold">تاريخ الإيقاف</th>
-                <th className="py-3.5 px-6 font-semibold">تاريخ الانضمام</th>
-                <th className="py-3.5 px-6 font-semibold">الدور الوظيفي</th>
-                <th className="py-3.5 px-6 font-semibold">رقم الهاتف</th>
                 <th className="py-3.5 px-6 font-semibold">المستخدم</th>
+                <th className="py-3.5 px-6 font-semibold">رقم الهاتف</th>
+                <th className="py-3.5 px-6 font-semibold">الدور الوظيفي</th>
+                <th className="py-3.5 px-6 font-semibold">تاريخ الانضمام</th>
+                <th className="py-3.5 px-6 font-semibold">تاريخ الإيقاف</th>
+                <th className="py-3.5 px-6 font-semibold">الحالة</th>
+                <th className="py-3.5 px-6 font-semibold">إجراءات</th>
               </tr>
             </thead>
             <tbody>
               {filteredUsers.map((u, i) => (
                 <tr key={u.id} className={`text-[14px] text-[#404040] ${i !== filteredUsers.length - 1 ? "border-b border-gray-100" : ""}`}>
+                  <td className="py-4 px-6">
+                    <div className="font-semibold">{u.name}</div>
+                    <div className="text-muted text-[12px]">{u.email}</div>
+                  </td>
+                  <td className="py-4 px-6">{u.phone}</td>
+                  <td className="py-4 px-6">{u.role}</td>
+                  <td className="py-4 px-6">{u.joined}</td>
+                  <td className="py-4 px-6">{u.stopped}</td>
+                  <td className="py-4 px-6"><StatusPill status={u.status} /></td>
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-3 text-muted">
                       <button onClick={() => setDeletingId(u.id)} className="hover:text-danger"><Trash2 size={16} /></button>
@@ -141,15 +148,6 @@ export default function UsersList() {
                         {u.status === "نشط" ? <Pause size={16} /> : <Play size={16} />}
                       </button>
                     </div>
-                  </td>
-                  <td className="py-4 px-6"><StatusPill status={u.status} /></td>
-                  <td className="py-4 px-6">{u.stopped}</td>
-                  <td className="py-4 px-6">{u.joined}</td>
-                  <td className="py-4 px-6">{u.role}</td>
-                  <td className="py-4 px-6">{u.phone}</td>
-                  <td className="py-4 px-6">
-                    <div className="font-semibold">{u.name}</div>
-                    <div className="text-muted text-[12px]">{u.email}</div>
                   </td>
                 </tr>
               ))}

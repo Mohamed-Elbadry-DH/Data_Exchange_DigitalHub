@@ -37,7 +37,7 @@ function KpiCard({ k }) {
 function StatusCard({ c }) {
   const Icon = ICONS[c.icon];
   return (
-    <div className="bg-white rounded-2xl p-5 flex-1 min-w-[180px] shadow-sm">
+    <div className="bg-white rounded-2xl p-5 flex-1 min-w-[150px] shadow-sm">
       <div className="w-11 h-11 rounded-lg flex items-center justify-center mb-3" style={{ background: `${c.color}1A` }}>
         <Icon size={20} style={{ color: c.color }} />
       </div>
@@ -87,20 +87,20 @@ export default function Dashboard() {
 
         <div className="flex gap-8 flex-wrap">
           <div className="flex-1 min-w-[420px]">
-            <h2 className="text-[18px] font-bold text-[rgba(0,0,0,0.9)] mb-4 text-right">مؤشرات اعتماد البيانات</h2>
-            <div className="flex gap-4 flex-wrap">
-              {approvalStatusCards.map((c, i) => <StatusCard key={i} c={c} />)}
-            </div>
-          </div>
-          <div className="flex-1 min-w-[420px]">
             <h2 className="text-[18px] font-bold text-[rgba(0,0,0,0.9)] mb-4 text-right">مؤشرات تبادل نماذج البيان</h2>
             <div className="flex gap-4 flex-wrap">
               {exchangeStatusCards.map((c, i) => <StatusCard key={i} c={c} />)}
             </div>
           </div>
+          <div className="flex-1 min-w-[420px]">
+            <h2 className="text-[18px] font-bold text-[rgba(0,0,0,0.9)] mb-4 text-right">مؤشرات اعتماد البيانات</h2>
+            <div className="flex gap-4 flex-wrap">
+              {approvalStatusCards.map((c, i) => <StatusCard key={i} c={c} />)}
+            </div>
+          </div>
         </div>
 
-        <div className="flex gap-6 flex-wrap">
+        <div className="flex flex-row-reverse gap-6 flex-wrap">
           <ChartCard title="توزيع نماذج البيان حسب حالة الاعتماد" icons={[PieIcon, LineIcon, BarChart3, List]}>
             <div className="flex items-center gap-4">
               <div style={{ width: 220, height: 220, flexShrink: 0 }}>
@@ -138,7 +138,7 @@ export default function Dashboard() {
           </ChartCard>
         </div>
 
-        <div className="flex gap-6 flex-wrap">
+        <div className="flex flex-row-reverse gap-6 flex-wrap">
           <ChartCard title="توزيع البيانات حسب الحالة" icons={[PieIcon, BarChart3, List]}>
             <div className="flex items-center gap-4">
               <div style={{ width: 220, height: 220, position: "relative", flexShrink: 0 }}>
@@ -177,7 +177,7 @@ export default function Dashboard() {
                   <YAxis
                     type="category"
                     dataKey="name"
-                    width={170}
+                    width={290}
                     tickLine={false}
                     axisLine={false}
                     orientation="right"
@@ -185,11 +185,11 @@ export default function Dashboard() {
                       const o = topOrgs.find((t) => t.name === payload.value);
                       return (
                         <g transform={`translate(${x},${y})`}>
-                          <text x={0} y={4} textAnchor="start" fontSize={13} fill="#404040">
+                          <text x={0} y={4} textAnchor="end" fontSize={13} fill="#404040">
                             {payload.value}
                           </text>
-                          <circle cx={14} cy={-14} r={9} fill="#1B75FF" />
-                          <text x={14} y={-10} textAnchor="middle" fontSize={10} fill="#fff" fontWeight="bold">
+                          <circle cx={265} cy={0} r={9} fill="#1B75FF" />
+                          <text x={265} y={4} textAnchor="middle" fontSize={10} fill="#fff" fontWeight="bold">
                             {o?.rank}
                           </text>
                         </g>

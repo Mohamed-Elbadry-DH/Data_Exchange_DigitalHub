@@ -31,8 +31,8 @@ function KVTable({ data }) {
       <tbody>
         {entries.map(([k, v], i) => (
           <tr key={k} className={i !== entries.length - 1 ? "border-b border-gray-100" : ""}>
-            <td className="py-3.5 px-5 w-1/2 text-[#404040] leading-relaxed">{v}</td>
             <td className="py-3.5 px-5 w-1/2 font-semibold text-[rgba(0,0,0,0.9)] bg-page/60">{k}</td>
+            <td className="py-3.5 px-5 w-1/2 text-[#404040] leading-relaxed">{v}</td>
           </tr>
         ))}
       </tbody>
@@ -156,26 +156,26 @@ function AttachmentsTab({ d }) {
     <table className="w-full text-right text-[14px]">
       <thead>
         <tr className="bg-navy text-white">
-          <th className="py-3 px-5 font-semibold">إجراءات</th>
-          <th className="py-3 px-5 font-semibold">رفع بواسطة</th>
-          <th className="py-3 px-5 font-semibold">الحجم</th>
-          <th className="py-3 px-5 font-semibold">تاريخ الرفع</th>
-          <th className="py-3 px-5 font-semibold">نوع الملف</th>
           <th className="py-3 px-5 font-semibold">اسم الملف</th>
+          <th className="py-3 px-5 font-semibold">نوع الملف</th>
+          <th className="py-3 px-5 font-semibold">تاريخ الرفع</th>
+          <th className="py-3 px-5 font-semibold">الحجم</th>
+          <th className="py-3 px-5 font-semibold">رفع بواسطة</th>
+          <th className="py-3 px-5 font-semibold">إجراءات</th>
         </tr>
       </thead>
       <tbody>
         {d.attachments.map((a, i) => (
           <tr key={i} className="border-b border-gray-100 text-[#404040]">
-            <td className="py-3.5 px-5"><button className="text-primary"><Download size={17} /></button></td>
-            <td className="py-3.5 px-5">{a.by}</td>
-            <td className="py-3.5 px-5">{a.size}</td>
-            <td className="py-3.5 px-5">{a.date}</td>
+            <td className="py-3.5 px-5 font-medium">{a.name}</td>
             <td className="py-3.5 px-5 flex items-center gap-2">
               {a.type === "Excel" ? <FileSpreadsheet size={16} className="text-success" /> : <FileIcon size={16} className="text-danger" />}
               {a.type}
             </td>
-            <td className="py-3.5 px-5 font-medium">{a.name}</td>
+            <td className="py-3.5 px-5">{a.date}</td>
+            <td className="py-3.5 px-5">{a.size}</td>
+            <td className="py-3.5 px-5">{a.by}</td>
+            <td className="py-3.5 px-5"><button className="text-primary"><Download size={17} /></button></td>
           </tr>
         ))}
       </tbody>
@@ -227,10 +227,10 @@ export default function RequestDetail({ mode = "forms" }) {
     <Layout title={d.title} breadcrumb={backLabel}>
       <div className="p-8 space-y-6">
         <div className="flex gap-5 flex-wrap">
-          <InfoTile icon={Clock} label="موعد الانتهاء" value={d.due} />
-          <InfoTile icon={User} label="الموظف المختص" value={d.officer} sub={d.officerRole} />
-          <InfoTile icon={Monitor} label="الجهة الخارجية" value={d.org} />
           <InfoTile icon={RefreshCw} label="الحالة" value={<StatusBadge status={d.status} />} />
+          <InfoTile icon={Monitor} label="الجهة الخارجية" value={d.org} />
+          <InfoTile icon={User} label="الموظف المختص" value={d.officer} sub={d.officerRole} />
+          <InfoTile icon={Clock} label="موعد الانتهاء" value={d.due} />
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
@@ -250,8 +250,8 @@ export default function RequestDetail({ mode = "forms" }) {
           <div className="p-6">
             {tab === "info" && (
               <div className="grid grid-cols-2 gap-6">
-                <KVTable data={d.yearInfo} />
                 <KVTable data={d.info} />
+                <KVTable data={d.yearInfo} />
               </div>
             )}
             {tab === "form" && <FormDataTab d={d} />}
@@ -261,18 +261,18 @@ export default function RequestDetail({ mode = "forms" }) {
           </div>
         </div>
 
-        <div className="flex gap-4">
-          <button
-            onClick={() => setSuccess(true)}
-            className="bg-success text-white rounded-lg px-8 py-3 text-[15px] font-semibold"
-          >
-            {isRequired ? "اعتماد نهائي و إرساله" : "اعتماد و إرسال"}
-          </button>
+        <div className="flex gap-4 justify-end">
           <button
             onClick={() => setEditOpen(true)}
             className="bg-primary text-white rounded-lg px-8 py-3 text-[15px] font-semibold"
           >
             طلب تعديل
+          </button>
+          <button
+            onClick={() => setSuccess(true)}
+            className="bg-success text-white rounded-lg px-8 py-3 text-[15px] font-semibold"
+          >
+            {isRequired ? "اعتماد نهائي و إرساله" : "اعتماد و إرسال"}
           </button>
         </div>
       </div>
