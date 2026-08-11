@@ -412,15 +412,26 @@ function VerticalBarChart({ data, nameKey = "name", valueKey = "value", colored 
   );
 }
 
-function HorizontalBarChart({ data, nameKey = "name", valueKey = "value", domainMax = 100, showLabels = true }) {
+function HorizontalBarChart({
+  data,
+  nameKey = "name",
+  valueKey = "value",
+  domainMax = 100,
+  showLabels = true,
+  yAxisWidth,
+}) {
+  const longest = data.reduce((max, row) => Math.max(max, String(row[nameKey] ?? "").length), 0);
+  const axisWidth = yAxisWidth ?? Math.min(210, Math.max(52, Math.round(longest * 8.5)));
+  const categoryGap = data.length >= 10 ? "10%" : data.length >= 6 ? "16%" : "22%";
+
   return (
     <div className="w-full h-full min-h-0 min-w-0" dir="ltr">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" debounce={50}>
         <BarChart
           data={data}
           layout="vertical"
-          margin={{ top: 8, right: 36, left: 4, bottom: 8 }}
-          barCategoryGap="22%"
+          margin={{ top: 4, right: 44, left: 0, bottom: 4 }}
+          barCategoryGap={categoryGap}
         >
           <CartesianGrid horizontal vertical stroke="#E5E7EB" strokeDasharray="3 3" />
           <XAxis
@@ -433,7 +444,7 @@ function HorizontalBarChart({ data, nameKey = "name", valueKey = "value", domain
           <YAxis
             type="category"
             dataKey={nameKey}
-            width={200}
+            width={axisWidth}
             tickLine={false}
             axisLine={{ stroke: "#CBD5E1" }}
             interval={0}
@@ -457,7 +468,7 @@ function HorizontalBarChart({ data, nameKey = "name", valueKey = "value", domain
           <Bar
             dataKey={valueKey}
             fill="#1B75FF"
-            maxBarSize={24}
+            maxBarSize={data.length >= 10 ? 14 : 22}
             radius={[0, 8, 8, 0]}
             background={{ fill: "#E8F1FF", radius: [0, 8, 8, 0] }}
             isAnimationActive
@@ -468,7 +479,7 @@ function HorizontalBarChart({ data, nameKey = "name", valueKey = "value", domain
                 dataKey={valueKey}
                 position="right"
                 formatter={(v) => Number(v).toFixed(2)}
-                style={{ fill: "#7f8999", fontSize: 12, fontWeight: 500 }}
+                style={{ fill: "#7f8999", fontSize: 11, fontWeight: 500 }}
               />
             )}
           </Bar>
@@ -607,6 +618,7 @@ export default function Dashboard() {
                   data={monthlyApproved.map((d) => ({ name: d.month, value: d.value }))}
                   domainMax={100}
                   showLabels
+                  yAxisWidth={58}
                 />
               );
             }}
@@ -661,7 +673,7 @@ export default function Dashboard() {
                   />
                 );
               }
-              return <HorizontalBarChart data={topOrgs} domainMax={120} showLabels />;
+              return <HorizontalBarChart data={topOrgs} domainMax={120} showLabels yAxisWidth={210} />;
             }}
           </ChartCard>
         </div>
