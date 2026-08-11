@@ -41,7 +41,7 @@ export default function Layout({ children, title, breadcrumb }) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <div className="min-h-screen overflow-auto bg-gray-100 p-4" dir="rtl">
+    <div className="min-h-screen overflow-x-hidden overflow-y-auto bg-gray-100 p-4" dir="rtl">
       <div className="mx-auto bg-page rounded-sm shadow-2xl flex shrink-0" style={{ width: "1920px", height: "1215px" }}>
         {/* sidebar (right, RTL) — declared first so it lands on the right in the RTL flex row */}
         <aside
