@@ -52,9 +52,19 @@ export default function Layout({ children, title, breadcrumb }) {
         >
           <div>
             <div className={`flex items-center border-b border-white/10 py-5 transition-all duration-300 ${collapsed ? "justify-center px-2" : "justify-between px-5"}`}>
-              <div className={`text-right transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
-                <div className="text-white font-bold text-[16px] whitespace-nowrap">منصة تبادل البيانات</div>
-                <div className="text-white/50 text-[12px]">Data Exchange</div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCollapsed((value) => !value)}
+                  className="w-9 h-9 rounded flex items-center justify-center text-white/70 hover:text-white transition-colors"
+                  aria-label={collapsed ? "توسيع القائمة الجانبية" : "طي القائمة الجانبية"}
+                  title={collapsed ? "توسيع القائمة الجانبية" : "طي القائمة الجانبية"}
+                >
+                  {collapsed ? <PanelRightOpen size={18} /> : <PanelRightClose size={18} />}
+                </button>
+                <div className={`text-right transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
+                  <div className="text-white font-bold text-[16px] whitespace-nowrap">منصة تبادل البيانات</div>
+                  <div className="text-white/50 text-[12px]">Data Exchange</div>
+                </div>
               </div>
               <div className="w-9 h-9 rounded bg-warning-2 flex items-center justify-center shrink-0">
                 <BookOpen size={18} className="text-white" />
@@ -67,17 +77,6 @@ export default function Layout({ children, title, breadcrumb }) {
             </nav>
           </div>
           <div className="pb-4">
-            <button
-              onClick={() => setCollapsed((value) => !value)}
-              className={`w-full flex items-center gap-3 py-3 text-white/70 hover:text-white text-[14px] transition-all duration-300 ${collapsed ? "justify-center px-0" : "px-9"}`}
-              aria-label={collapsed ? "توسيع القائمة الجانبية" : "طي القائمة الجانبية"}
-              title={collapsed ? "توسيع القائمة الجانبية" : "طي القائمة الجانبية"}
-            >
-              {collapsed ? <PanelRightOpen size={18} /> : <PanelRightClose size={18} />}
-              <span className={`transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
-                {collapsed ? "توسيع القائمة" : "طي القائمة"}
-              </span>
-            </button>
             <button className={`w-full flex items-center gap-3 py-3 text-white/70 hover:text-white text-[14px] transition-all duration-300 ${collapsed ? "justify-center px-0" : "px-9"}`} title={collapsed ? "الإعدادات" : undefined} aria-label="الإعدادات">
               <Settings size={18} />
               <span className={`transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>الإعدادات</span>
