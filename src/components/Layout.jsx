@@ -20,18 +20,18 @@ function SidebarItem({ to, label, icon: Icon, collapsed }) {
       title={collapsed ? label : undefined}
       aria-label={collapsed ? label : undefined}
       className={({ isActive }) =>
-        `flex items-center justify-center gap-3 mx-3 my-1 rounded-lg px-4 py-3 text-[15px] transition-colors ${
+        `flex items-center gap-3 mx-3 my-1 rounded-lg px-4 py-3 text-[15px] transition-colors ${
+          collapsed ? "justify-center px-3" : "justify-start"
+        } ${
           isActive
             ? "bg-primary text-white font-semibold"
             : "text-white/80 hover:bg-white/10"
-        } ${collapsed ? "px-0" : ""}`
+        }`
       }
     >
-      <span className={`flex items-center gap-3 ${collapsed ? "justify-center" : ""}`}>
-        <Icon size={19} strokeWidth={2} />
-        <span className={`transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
-          {label}
-        </span>
+      <Icon size={19} strokeWidth={2} />
+      <span className={`transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
+        {label}
       </span>
     </NavLink>
   );
