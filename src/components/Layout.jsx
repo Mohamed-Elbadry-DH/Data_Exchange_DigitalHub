@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
-  LayoutGrid, Table2, FileText, Users, Settings, LogOut, Bell, BookOpen,
+  LayoutGrid, Table2, FileText, Users, Settings, LogOut, Bell,
   PanelRightClose, PanelRightOpen,
 } from "lucide-react";
 import { user } from "../data/mock";
@@ -52,23 +52,18 @@ export default function Layout({ children, title, breadcrumb }) {
         >
           <div>
             <div className={`flex items-center border-b border-white/10 py-5 transition-all duration-300 ${collapsed ? "justify-center px-2" : "justify-between px-5"}`}>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setCollapsed((value) => !value)}
-                  className="w-9 h-9 rounded flex items-center justify-center text-white/70 hover:text-white transition-colors"
-                  aria-label={collapsed ? "توسيع القائمة الجانبية" : "طي القائمة الجانبية"}
-                  title={collapsed ? "توسيع القائمة الجانبية" : "طي القائمة الجانبية"}
-                >
-                  {collapsed ? <PanelRightOpen size={18} /> : <PanelRightClose size={18} />}
-                </button>
-                <div className={`text-right transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
-                  <div className="text-white font-bold text-[16px] whitespace-nowrap">منصة تبادل البيانات</div>
-                  <div className="text-white/50 text-[12px]">Data Exchange</div>
-                </div>
+              <div className={`text-right transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
+                <div className="text-white font-bold text-[16px] whitespace-nowrap">منصة تبادل البيانات</div>
+                <div className="text-white/50 text-[12px]">Data Exchange</div>
               </div>
-              <div className="w-9 h-9 rounded bg-warning-2 flex items-center justify-center shrink-0">
-                <BookOpen size={18} className="text-white" />
-              </div>
+              <button
+                onClick={() => setCollapsed((value) => !value)}
+                className="w-9 h-9 rounded flex items-center justify-center text-white/70 hover:text-white transition-colors shrink-0"
+                aria-label={collapsed ? "توسيع القائمة الجانبية" : "طي القائمة الجانبية"}
+                title={collapsed ? "توسيع القائمة الجانبية" : "طي القائمة الجانبية"}
+              >
+                {collapsed ? <PanelRightOpen size={18} /> : <PanelRightClose size={18} />}
+              </button>
             </div>
             <nav className="mt-4" aria-label="التنقل الرئيسي">
               {NAV.map((n) => (
