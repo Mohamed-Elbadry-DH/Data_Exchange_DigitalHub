@@ -1,0 +1,39 @@
+---
+description: Accepted visual/UX baseline for MPED Data Exchange — do not regress
+alwaysApply: true
+---
+
+# MPED Accepted Baseline (locked)
+
+Treat the current UI as the **accepted reference**. Do not change shell, tokens, chart selector chrome, or matrix header colors unless the user asks.
+
+## Stack
+React 19 + Vite + Tailwind 4 + Recharts 3 + lucide-react + Cairo (RTL). Mock data in `src/data/mock.js`.
+
+## Tokens (`src/index.css`)
+navy `#1f254b` · navy-deep `#052c65` · primary `#1b75ff` · primary-2 `#0986ed` · page `#f5f6fa` · ink `#404040` · muted `#7f8999` · success/danger/warning/purple as themed. Outer chrome `#1b1d22`. Borders often `#D8D8D8`.
+
+## Shell (`Layout.jsx`)
+- RTL `dir="rtl"`; frame `min-w-[1100px]` `max-w-[1920px]` `bg-page`
+- Sidebar expanded **329px** / collapsed **121px**; active pill `bg-primary`
+- Topbar **74px**; page padding typically `p-8` (detail: `px-8 pt-7`)
+
+## Dashboard charts (`Dashboard.jsx`)
+- Card: **345×** flex, radius **20**, selector frame **217×39**, icons **26** hit / **19** draw
+- Types LTR: pie → donut(LifeBuoy) → line → column(bar) → hbar — **must switch chart type**
+- Active icon: bg `rgba(9,134,237,0.09)` `#0986ED`; inactive `#052C65`
+- Status colors: اعتماد `#1B75FF` · تعديل `#FF8C08` · متأخرة `#DC2626` · معتمدة `#16A34A`
+- Charts use `dir="ltr"`; pie/donut tooltip shows **name : value** (e.g. `قيد الاعتماد : 40 %`)
+- Chart rows: `max-w-[1535.5px]`, gap **63px**, `flex-row-reverse`
+
+## Request detail
+- In-page breadcrumb (Cairo): parent `#ADB5BD` → navigate-next rotated → «تفاصيل الطلب» `#052C65`
+- Info tile icon box **60×60** radius 15 bg `#2563EB4D`
+- Tabs Cairo; active underline `#0986ED` / text `#052C65`
+- Matrix headers, row labels, totals: **`#DDEBF4`**; form tables **match statement type** (not one generic graduate grid)
+- Notes: real add/list/delete + `localStorage` `mped-notes-${id}`
+
+## Rules of engagement
+- Prefer extending existing patterns over new visual systems
+- Keep Arabic copy; RTL layout; LTR only for charts/email/phone where already done
+- No drive-by refactors of accepted screens while building new pages

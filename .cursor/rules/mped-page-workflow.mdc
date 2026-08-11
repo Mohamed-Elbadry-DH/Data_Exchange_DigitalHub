@@ -1,0 +1,36 @@
+---
+description: How to build next pages — reuse patterns, fill gaps, keep baseline
+alwaysApply: true
+---
+
+# Next-page workflow
+
+## Before coding a new screen
+1. Reuse `Layout` (title or in-page breadcrumb like RequestDetail).
+2. Mirror spacing/typography from the closest accepted page (Dashboard / RequestList / RequestDetail / UsersList).
+3. Put data in `src/data/mock.js`; keep Arabic field labels.
+4. Wire route in `src/App.jsx` and nav only if product asks.
+
+## Known gaps (likely next work)
+| Area | Current state | Approach |
+|------|---------------|----------|
+| الإعدادات / تسجيل الخروج | Sidebar buttons, no routes | New page(s) + handlers; same sidebar item styles |
+| Notifications | Bell UI only | Panel/dropdown; reuse topbar chrome |
+| Dashboard period | Static button | Dropdown; keep button chrome |
+| Required detail ids 6–10 | Titles ≠ `requestDetailById` | Add matching detail entries / tables |
+| Create request / edit matrix | Display-only | New flows; keep `#DDEBF4` matrix look |
+| Auth / API | Mock only | Abstract later; don't break mock UX |
+
+## Pattern checklist for every new page
+- [ ] RTL + Cairo; `text-right` for Arabic blocks
+- [ ] White cards `rounded-2xl` / radius 20 where peers use it; border `#D8D8D8` when bordered
+- [ ] Primary actions: `bg-navy` or `bg-primary` consistent with siblings
+- [ ] Status via `StatusBadge` + `statusBadge` map
+- [ ] Lists: reuse `RequestList` / FilterModal patterns when applicable
+- [ ] Modals: match `RequestEditModal` / `SuccessModal` / `ConfirmModal` chrome
+- [ ] Charts (if any): same ChartCard selector + 5-type switching
+- [ ] Do not shrink sidebar, chart card height, or selector frame without explicit ask
+
+## Dual request modes
+- `mode="forms"` vs `mode="required"` — required adds **استيفاء البيانات** tab; messages differ on approve.
+- Always keep statement-specific `formTable` / `fulfillmentTable` schemas.

@@ -2,7 +2,6 @@ import { useState } from "react";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, LabelList,
-  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
 } from "recharts";
 import {
   Users, Building2, FileText, CircleCheckBig, FilePenLine, TriangleAlert,
@@ -19,9 +18,10 @@ import {
 
 const ICONS = { Users, Building2, FileText, CircleCheckBig, FilePenLine, TriangleAlert, FileSearch };
 
-const CHART_TYPES = ["pie", "radar", "line", "bar", "hbar"];
+/** Selector order: pie · donut · line · column · horizontal bar */
+const CHART_TYPES = ["pie", "donut", "line", "bar", "hbar"];
 const CHART_TYPE_ICONS = [ChartPieIcon, LifeBuoyIcon, ChartLineIcon, ChartColumnIcon, ChartBarIcon];
-const CHART_TYPE_LABELS = ["دائري", "رادار", "خطي", "أعمدة", "أفقي"];
+const CHART_TYPE_LABELS = ["دائري", "دونات", "خطي", "أعمدة", "أفقي"];
 
 const STATUS_COLORS = {
   "قيد الاعتماد": "#1B75FF",
@@ -61,19 +61,39 @@ const exchangeStatusMonthly = [
   { month: "ديسمبر", "قيد الاعتماد": 47, تعديل: 33, المتأخرة: 7, معتمدة: 15 },
 ];
 
-const orgMonthly = [
-  { month: "يناير", value: 42 },
-  { month: "فبراير", value: 48 },
-  { month: "مارس", value: 51 },
-  { month: "أبريل", value: 47 },
-  { month: "مايو", value: 55 },
-  { month: "يونيو", value: 62 },
-  { month: "يوليو", value: 58 },
-  { month: "أغسطس", value: 60 },
-  { month: "سبتمبر", value: 52 },
-  { month: "أكتوبر", value: 49 },
-  { month: "نوفمبر", value: 64 },
-  { month: "ديسمبر", value: 66 },
+/** Monthly values — rankings cross so different orgs lead in different months */
+const ORG_LINE_KEYS = [
+  "الجهاز المركزي…",
+  "وزارة التربية…",
+  "وزارة الصحة",
+  "وزارة المالية",
+  "وزارة الداخلية",
+];
+const ORG_LINE_COLORS = {
+  "الجهاز المركزي…": "#1B75FF",
+  "وزارة التربية…": "#0986ED",
+  "وزارة الصحة": "#16A34A",
+  "وزارة المالية": "#FF8C08",
+  "وزارة الداخلية": "#9747FF",
+};
+const topOrgsMonthly = [
+  // التربية تتقدم أولاً
+  { month: "يناير", "الجهاز المركزي…": 38.2, "وزارة التربية…": 52.4, "وزارة الصحة": 41.0, "وزارة المالية": 28.5, "وزارة الداخلية": 33.1 },
+  { month: "فبراير", "الجهاز المركزي…": 42.6, "وزارة التربية…": 49.8, "وزارة الصحة": 44.5, "وزارة المالية": 31.2, "وزارة الداخلية": 36.4 },
+  // الصحة تتصدر
+  { month: "مارس", "الجهاز المركزي…": 45.0, "وزارة التربية…": 40.2, "وزارة الصحة": 55.8, "وزارة المالية": 34.6, "وزارة الداخلية": 30.0 },
+  { month: "أبريل", "الجهاز المركزي…": 48.3, "وزارة التربية…": 36.5, "وزارة الصحة": 51.2, "وزارة المالية": 39.1, "وزارة الداخلية": 42.7 },
+  // المالية تقفز للمقدمة
+  { month: "مايو", "الجهاز المركزي…": 44.8, "وزارة التربية…": 33.2, "وزارة الصحة": 38.6, "وزارة المالية": 58.9, "وزارة الداخلية": 46.5 },
+  { month: "يونيو", "الجهاز المركزي…": 50.4, "وزارة التربية…": 37.0, "وزارة الصحة": 35.2, "وزارة المالية": 54.5, "وزارة الداخلية": 49.1 },
+  // الداخلية ثم الجهاز يعودان
+  { month: "يوليو", "الجهاز المركزي…": 47.1, "وزارة التربية…": 41.6, "وزارة الصحة": 39.9, "وزارة المالية": 42.2, "وزارة الداخلية": 56.8 },
+  { month: "أغسطس", "الجهاز المركزي…": 55.5, "وزارة التربية…": 39.8, "وزارة الصحة": 43.5, "وزارة المالية": 40.8, "وزارة الداخلية": 48.2 },
+  { month: "سبتمبر", "الجهاز المركزي…": 58.0, "وزارة التربية…": 45.1, "وزارة الصحة": 32.0, "وزارة المالية": 36.0, "وزارة الداخلية": 41.6 },
+  { month: "أكتوبر", "الجهاز المركزي…": 51.2, "وزارة التربية…": 48.9, "وزارة الصحة": 40.4, "وزارة المالية": 44.3, "وزارة الداخلية": 37.0 },
+  { month: "نوفمبر", "الجهاز المركزي…": 60.8, "وزارة التربية…": 42.2, "وزارة الصحة": 46.8, "وزارة المالية": 39.5, "وزارة الداخلية": 43.4 },
+  // الترتيب الحالي (ديسمبر) يطابق كارت الـ hbar
+  { month: "ديسمبر", "الجهاز المركزي…": 66.27, "وزارة التربية…": 35.63, "وزارة الصحة": 27.04, "وزارة المالية": 26.86, "وزارة الداخلية": 26.86 },
 ];
 
 const monthlyAsPie = [
@@ -82,23 +102,6 @@ const monthlyAsPie = [
   { name: "Q3", value: 156, color: "#16A34A" },
   { name: "Q4", value: 135, color: "#FF8C08" },
 ];
-
-const monthlyRadar = [
-  { subject: "يناير", value: 13 },
-  { subject: "مارس", value: 30 },
-  { subject: "مايو", value: 60 },
-  { subject: "يوليو", value: 58 },
-  { subject: "سبتمبر", value: 28 },
-  { subject: "نوفمبر", value: 65 },
-];
-
-function toRadarData(items) {
-  return items.map((item) => ({
-    subject: item.name.length > 14 ? `${item.name.slice(0, 12)}…` : item.name,
-    value: item.value,
-    fullMark: Math.max(...items.map((d) => d.value)) * 1.15,
-  }));
-}
 
 function shortOrgName(name) {
   if (name.includes("التعبئة")) return "الجهاز المركزي…";
@@ -182,8 +185,8 @@ function ChartCard({ title, defaultType = "pie", children }) {
   const type = CHART_TYPES[activeChart];
 
   return (
-    <div className="bg-white shadow-sm overflow-hidden min-w-0 flex-1" style={{ height: 345, borderRadius: 20 }}>
-      <div className="flex flex-col h-full p-5">
+    <div className="bg-white shadow-sm overflow-hidden min-w-0 flex-1 h-full min-h-0" style={{ height: 345, borderRadius: 20 }}>
+      <div className="flex flex-col h-full min-h-0 p-5">
         <div className="flex items-center justify-between mb-4 shrink-0">
           <h3 className="text-[17px] font-bold text-[rgba(0,0,0,0.9)]">{title}</h3>
           <div
@@ -218,7 +221,7 @@ function ChartCard({ title, defaultType = "pie", children }) {
             })}
           </div>
         </div>
-        <div className="flex-1 min-h-0 overflow-hidden">{children(type)}</div>
+        <div className="flex-1 min-h-0 min-w-0 w-full overflow-hidden">{children(type)}</div>
       </div>
     </div>
   );
@@ -242,18 +245,21 @@ function StatusLegend({ data, suffix = "%" }) {
 
 function PieOrDonutChart({ data, donut = false, total = null, showLegend = true, valueSuffix = "%" }) {
   return (
-    <div className={`relative flex items-center ${showLegend ? "justify-between gap-6" : "justify-center"} h-full`} dir="ltr">
-      <div className="shrink-0 relative" style={{ width: donut ? "100%" : 243, height: donut ? "100%" : 243, marginLeft: showLegend ? 48 : 0 }}>
+    <div
+      className={`relative flex items-center h-full w-full min-h-0 min-w-0 ${showLegend && !donut ? "justify-between gap-4" : "justify-center"}`}
+      dir="ltr"
+    >
+      <div className={`relative h-full min-h-0 min-w-0 ${showLegend && !donut ? "flex-1" : "w-full"}`}>
         <ResponsiveContainer width="100%" height="100%">
-          <PieChart margin={donut ? { top: 18, right: 24, bottom: 18, left: 24 } : undefined}>
+          <PieChart margin={donut ? { top: 12, right: 16, bottom: 12, left: 16 } : { top: 4, right: 4, bottom: 4, left: 4 }}>
             <Pie
               data={data}
               dataKey="value"
               nameKey="name"
               cx="50%"
-              cy="52%"
-              innerRadius={donut ? 36 : 0}
-              outerRadius={donut ? 92 : 118}
+              cy="50%"
+              innerRadius={donut ? "28%" : 0}
+              outerRadius={donut ? "62%" : "72%"}
               paddingAngle={2}
               isAnimationActive
               animationBegin={0}
@@ -289,77 +295,74 @@ function PieOrDonutChart({ data, donut = false, total = null, showLegend = true,
         </ResponsiveContainer>
         {donut && total != null && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <span className="text-3xl font-bold text-[rgba(0,0,0,0.9)]">{total}</span>
+            <span className="text-2xl sm:text-3xl font-bold text-[rgba(0,0,0,0.9)]">{total}</span>
           </div>
         )}
       </div>
-      {showLegend && !donut && <StatusLegend data={data} suffix={valueSuffix} />}
+      {showLegend && !donut && (
+        <div className="shrink-0 max-w-[42%] pe-1">
+          <StatusLegend data={data} suffix={valueSuffix} />
+        </div>
+      )}
     </div>
   );
 }
 
-function StatusRadarChart({ data, maxValue }) {
-  const radarData = toRadarData(data);
-  const domainMax = maxValue || Math.ceil(Math.max(...data.map((d) => d.value)) * 1.2);
-  return (
-    <div className="w-full h-full" dir="ltr">
-      <ResponsiveContainer width="100%" height="100%">
-        <RadarChart cx="50%" cy="50%" outerRadius="68%" data={radarData}>
-          <PolarGrid stroke="#E5E7EB" />
-          <PolarAngleAxis dataKey="subject" tick={{ fontSize: 11, fill: "#404040" }} />
-          <PolarRadiusAxis angle={30} domain={[0, domainMax]} tick={{ fontSize: 10, fill: "#7f8999" }} />
-          <Radar
-            name="القيمة"
-            dataKey="value"
-            stroke="#1B75FF"
-            fill="#1B75FF"
-            fillOpacity={0.35}
-            isAnimationActive
-            animationDuration={700}
-          />
-          <Tooltip />
-        </RadarChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
-
-function StatusLineChart({ data, seriesKeys }) {
+function StatusLineChart({ data, seriesKeys, colors = STATUS_COLORS, showLegend = false }) {
   const keys = seriesKeys || Object.keys(data[0] || {}).filter((k) => k !== "month");
   return (
-    <div className="w-full h-full" dir="ltr">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 10, right: 12, left: 0, bottom: 0 }}>
-          <CartesianGrid vertical={false} stroke="#eee" />
-          <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#7f8999" }} />
-          <YAxis width={40} tickMargin={8} tick={{ fontSize: 11, fill: "#7f8999", dx: -14 }} />
-          <Tooltip />
+    <div className="w-full h-full min-h-0 min-w-0 flex flex-col" dir="ltr">
+      {showLegend && (
+        <ul className="flex flex-wrap justify-end gap-x-3 gap-y-1 mb-1 shrink-0 px-1" dir="rtl">
           {keys.map((key) => (
-            <Line
-              key={key}
-              type="monotone"
-              dataKey={key}
-              stroke={STATUS_COLORS[key] || "#1B75FF"}
-              strokeWidth={2}
-              dot={{ r: 3, fill: "#fff", stroke: STATUS_COLORS[key] || "#1B75FF", strokeWidth: 2 }}
-              isAnimationActive
-              animationDuration={700}
-            />
+            <li key={key} className="flex items-center gap-1.5 text-[11px] text-[#404040]">
+              <span className="w-2 h-2 rounded-full shrink-0" style={{ background: colors[key] || "#1B75FF" }} />
+              <span>{key}</span>
+            </li>
           ))}
-        </LineChart>
-      </ResponsiveContainer>
+        </ul>
+      )}
+      <div className="flex-1 min-h-0 min-w-0 w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 4 }}>
+            <CartesianGrid vertical={false} stroke="#eee" />
+            <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#7f8999" }} />
+            <YAxis width={40} tickMargin={8} tick={{ fontSize: 11, fill: "#7f8999", dx: -14 }} />
+            <Tooltip
+              formatter={(value, name) => [Number(value).toFixed(2), name]}
+              separator=" : "
+            />
+            {keys.map((key) => {
+              const stroke = colors[key] || "#1B75FF";
+              return (
+                <Line
+                  key={key}
+                  type="monotone"
+                  dataKey={key}
+                  name={key}
+                  stroke={stroke}
+                  strokeWidth={2}
+                  dot={{ r: 3, fill: "#fff", stroke, strokeWidth: 2 }}
+                  isAnimationActive
+                  animationDuration={700}
+                />
+              );
+            })}
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }
 
 function SingleLineChart({ data, dataKey = "value", xKey = "month" }) {
   return (
-    <div className="w-full h-full" dir="ltr">
+    <div className="w-full h-full min-h-0 min-w-0" dir="ltr">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+        <LineChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 4 }}>
           <CartesianGrid vertical={false} stroke="#eee" />
           <XAxis dataKey={xKey} tick={{ fontSize: 11, fill: "#7f8999" }} />
-          <YAxis width={40} tickMargin={8} tick={{ fontSize: 11, fill: "#7f8999", dx: -14 }} />
+          <YAxis width={40} tickMargin={8} tick={{ fontSize: 11, fill: "#7f8999", dx: -10 }} />
           <Tooltip />
           <Line
             type="monotone"
@@ -378,7 +381,7 @@ function SingleLineChart({ data, dataKey = "value", xKey = "month" }) {
 
 function VerticalBarChart({ data, nameKey = "name", valueKey = "value", colored = false }) {
   return (
-    <div className="w-full h-full" dir="ltr">
+    <div className="w-full h-full min-h-0 min-w-0" dir="ltr">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 10, right: 12, left: 0, bottom: 8 }} barCategoryGap="28%">
           <CartesianGrid vertical={false} stroke="#eee" />
@@ -394,7 +397,7 @@ function VerticalBarChart({ data, nameKey = "name", valueKey = "value", colored 
             dataKey={valueKey}
             fill="#1B75FF"
             radius={[6, 6, 0, 0]}
-            barSize={28}
+            maxBarSize={36}
             isAnimationActive
             animationDuration={700}
           >
@@ -411,12 +414,12 @@ function VerticalBarChart({ data, nameKey = "name", valueKey = "value", colored 
 
 function HorizontalBarChart({ data, nameKey = "name", valueKey = "value", domainMax = 100, showLabels = true }) {
   return (
-    <div className="w-full h-full" dir="ltr">
+    <div className="w-full h-full min-h-0 min-w-0" dir="ltr">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={data}
           layout="vertical"
-          margin={{ top: 8, right: 36, left: 8, bottom: 8 }}
+          margin={{ top: 8, right: 36, left: 4, bottom: 8 }}
           barCategoryGap="22%"
         >
           <CartesianGrid horizontal vertical stroke="#E5E7EB" strokeDasharray="3 3" />
@@ -430,7 +433,7 @@ function HorizontalBarChart({ data, nameKey = "name", valueKey = "value", domain
           <YAxis
             type="category"
             dataKey={nameKey}
-            width={230}
+            width={200}
             tickLine={false}
             axisLine={{ stroke: "#CBD5E1" }}
             interval={0}
@@ -454,7 +457,7 @@ function HorizontalBarChart({ data, nameKey = "name", valueKey = "value", domain
           <Bar
             dataKey={valueKey}
             fill="#1B75FF"
-            barSize={20}
+            maxBarSize={24}
             radius={[0, 8, 8, 0]}
             background={{ fill: "#E8F1FF", radius: [0, 8, 8, 0] }}
             isAnimationActive
@@ -480,28 +483,36 @@ function SwitchableChart({
   categorical,
   monthlySeries,
   singleMonthly,
-  pieVariant = "pie",
   pieTotal = null,
   pieSuffix = "%",
+  donutTotal = null,
+  donutSuffix = "",
   hbarDomain = 100,
 }) {
   if (type === "pie") {
     return (
       <PieOrDonutChart
         data={categorical}
-        donut={pieVariant === "donut"}
-        total={pieTotal}
-        showLegend={pieVariant !== "donut"}
+        donut={false}
+        showLegend
         valueSuffix={pieSuffix}
       />
     );
   }
-  if (type === "radar") {
-    return <StatusRadarChart data={categorical} />;
+  if (type === "donut") {
+    return (
+      <PieOrDonutChart
+        data={categorical}
+        donut
+        total={donutTotal ?? pieTotal}
+        showLegend={false}
+        valueSuffix={donutSuffix || pieSuffix}
+      />
+    );
   }
   if (type === "line") {
     if (monthlySeries) return <StatusLineChart data={monthlySeries} />;
-    return <SingleLineChart data={singleMonthly || categorical.map((d, i) => ({ month: d.name, value: d.value }))} />;
+    return <SingleLineChart data={singleMonthly || categorical.map((d) => ({ month: d.name, value: d.value }))} />;
   }
   if (type === "bar") {
     return <VerticalBarChart data={categorical} colored={Boolean(categorical[0]?.color)} />;
@@ -562,8 +573,8 @@ export default function Dashboard() {
                 type={type}
                 categorical={approvalPie}
                 monthlySeries={approvalStatusMonthly}
-                pieVariant="pie"
                 pieSuffix="%"
+                donutSuffix="%"
                 hbarDomain={50}
               />
             )}
@@ -574,8 +585,16 @@ export default function Dashboard() {
               if (type === "pie") {
                 return <PieOrDonutChart data={monthlyAsPie} donut={false} valueSuffix="" />;
               }
-              if (type === "radar") {
-                return <StatusRadarChart data={monthlyRadar.map((d) => ({ name: d.subject, value: d.value }))} />;
+              if (type === "donut") {
+                return (
+                  <PieOrDonutChart
+                    data={monthlyAsPie}
+                    donut
+                    total={monthlyAsPie.reduce((s, d) => s + d.value, 0)}
+                    showLegend={false}
+                    valueSuffix=""
+                  />
+                );
               }
               if (type === "line") {
                 return <SingleLineChart data={monthlyApproved} />;
@@ -595,15 +614,15 @@ export default function Dashboard() {
         </div>
 
         <div className="w-full max-w-[1535.5px] h-[345px] flex flex-row-reverse gap-[63px]">
-          <ChartCard title="توزيع البيانات حسب الحالة" defaultType="pie">
+          <ChartCard title="توزيع البيانات حسب الحالة" defaultType="donut">
             {(type) => (
               <SwitchableChart
                 type={type}
                 categorical={statusDonut}
                 monthlySeries={exchangeStatusMonthly}
-                pieVariant="donut"
-                pieTotal={statusDonutTotal}
                 pieSuffix=""
+                donutTotal={statusDonutTotal}
+                donutSuffix=""
                 hbarDomain={50}
               />
             )}
@@ -614,15 +633,26 @@ export default function Dashboard() {
               if (type === "pie") {
                 return <PieOrDonutChart data={topOrgsPie} donut={false} valueSuffix="" />;
               }
-              if (type === "radar") {
+              if (type === "donut") {
                 return (
-                  <StatusRadarChart
-                    data={topOrgs.map((o) => ({ name: shortOrgName(o.name), value: o.value }))}
+                  <PieOrDonutChart
+                    data={topOrgsPie}
+                    donut
+                    total={Math.round(topOrgs.reduce((s, o) => s + o.value, 0))}
+                    showLegend={false}
+                    valueSuffix=""
                   />
                 );
               }
               if (type === "line") {
-                return <SingleLineChart data={orgMonthly} />;
+                return (
+                  <StatusLineChart
+                    data={topOrgsMonthly}
+                    seriesKeys={ORG_LINE_KEYS}
+                    colors={ORG_LINE_COLORS}
+                    showLegend
+                  />
+                );
               }
               if (type === "bar") {
                 return (
