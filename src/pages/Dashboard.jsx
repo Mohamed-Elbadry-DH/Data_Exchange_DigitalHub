@@ -19,8 +19,8 @@ function KpiCard({ k }) {
   const Icon = ICONS[k.icon];
   return (
     <div className="bg-white rounded-2xl p-4 w-[24%] max-w-[300px] min-w-0 shadow-sm">
-      <div className="flex items-start justify-between gap-3 text-right">
-        <div className="min-w-0 flex-1 text-right">
+      <div className="flex items-start justify-end gap-3 text-right">
+        <div className="min-w-0 text-right">
           <div className="text-3xl font-bold leading-none text-[rgba(0,0,0,0.9)]">{k.value}</div>
           <div className="text-[15px] text-[#404040] mt-3">{k.label}</div>
           <div className={`text-[12px] mt-2 ${k.up ? "text-success" : "text-danger"}`}>{k.delta} عن الربع السابق</div>
