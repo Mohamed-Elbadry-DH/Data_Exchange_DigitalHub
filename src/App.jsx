@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import FormsList from "./pages/FormsList";
 import RequiredList from "./pages/RequiredList";
@@ -7,7 +7,7 @@ import RequestDetail from "./pages/RequestDetail";
 
 export default function App() {
   return (
-    <HashRouter>
+    <BrowserRouter>
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/forms" element={<FormsList />} />
@@ -16,6 +16,6 @@ export default function App() {
         <Route path="/required/:id" element={<RequestDetail mode="required" />} />
         <Route path="/users" element={<UsersList />} />
       </Routes>
-    </HashRouter>
+    </BrowserRouter>
   );
 }
