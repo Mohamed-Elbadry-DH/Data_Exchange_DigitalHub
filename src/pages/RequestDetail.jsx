@@ -7,7 +7,7 @@ import Layout from "../components/Layout";
 import StatusBadge from "../components/StatusBadge";
 import SuccessModal from "../components/SuccessModal";
 import RequestEditModal from "../components/RequestEditModal";
-import { requestDetailById } from "../data/mock";
+import { requestDetailById, notesByRequestId } from "../data/mock";
 
 function InfoTile({ icon: Icon, label, value, sub }) {
   return (
@@ -249,10 +249,11 @@ function AttachmentsTab({ d }) {
 function loadNotes(requestId) {
   try {
     const raw = localStorage.getItem(`mped-notes-${requestId}`);
-    return raw ? JSON.parse(raw) : [];
+    if (raw !== null) return JSON.parse(raw);
   } catch {
-    return [];
+    /* fall through to seed */
   }
+  return notesByRequestId[requestId] || notesByRequestId[String(requestId)] || [];
 }
 
 function saveNotes(requestId, notes) {
@@ -420,6 +421,8 @@ export default function RequestDetail({ mode = "forms" }) {
 
   const backTo = isRequired ? "/required" : "/forms";
   const backLabel = isRequired ? "البيانات المطلوبة" : "نماذج البيان";
+  const showEditRequest = d.status !== "تعديل";
+  const showApprove = d.status !== "تعديل" && d.status !== "معتمدة";
 
   return (
     <Layout title={backLabel}>
@@ -490,20 +493,28 @@ export default function RequestDetail({ mode = "forms" }) {
           </div>
         </div>
 
-        <div className="flex gap-4 justify-end pb-8">
-          <button
-            onClick={() => setEditOpen(true)}
-            className="bg-primary text-white rounded-lg px-8 py-3 text-[15px] font-semibold"
-          >
-            طلب تعديل
-          </button>
-          <button
-            onClick={() => setSuccess(true)}
-            className="bg-success text-white rounded-lg px-8 py-3 text-[15px] font-semibold"
-          >
-            {isRequired ? "اعتماد نهائي و إرساله" : "اعتماد و إرسال"}
-          </button>
-        </div>
+        {(showEditRequest || showApprove) && (
+          <div className="flex gap-4 justify-end pb-8">
+            {showEditRequest && (
+              <button
+                type="button"
+                onClick={() => setEditOpen(true)}
+                className="bg-primary text-white rounded-lg px-8 py-3 text-[15px] font-semibold"
+              >
+                طلب تعديل
+              </button>
+            )}
+            {showApprove && (
+              <button
+                type="button"
+                onClick={() => setSuccess(true)}
+                className="bg-success text-white rounded-lg px-8 py-3 text-[15px] font-semibold"
+              >
+                {isRequired ? "اعتماد نهائي و إرساله" : "اعتماد و إرسال"}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       <RequestEditModal

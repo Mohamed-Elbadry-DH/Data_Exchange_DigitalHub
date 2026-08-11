@@ -31,7 +31,8 @@ navy `#1f254b` · navy-deep `#052c65` · primary `#1b75ff` · primary-2 `#0986ed
 - Info tile icon box **60×60** radius 15 bg `#2563EB4D`
 - Tabs Cairo; active underline `#0986ED` / text `#052C65`
 - Matrix headers, row labels, totals: **`#DDEBF4`**; form tables **match statement type**; **نموذج البيان = empty (`-`)**, **استيفاء البيانات = filled numbers**
-- Notes: real add/list/delete + `localStorage` `mped-notes-${id}`
+- Notes: seed + add/list/delete + `localStorage` `mped-notes-${id}`; تعديل requests include modification-request note
+- Actions: hide both buttons if `تعديل`; hide approve only if `معتمدة`; otherwise show both
 
 ## Rules of engagement
 - Prefer extending existing patterns over new visual systems

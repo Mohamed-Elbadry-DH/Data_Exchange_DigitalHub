@@ -109,7 +109,11 @@ Org Y-labels: **single line**; Y-axis width ~230; hbar domain may exceed 100 to 
 - KV tables: `#D8D8D8` borders + full-height center divider; min-height ~385
 - **نموذج البيان:** `DataMatrixTable` headers/row labels `#DDEBF4` — **empty cells (`-`)**, structure only (no numbers)
 - **استيفاء البيانات** (required mode only): same schema **with filled mock data** + totals row
-- Notes: add / save / cancel / list / delete; persist `localStorage` key `mped-notes-${requestId}`
+- Notes: add / save / cancel / list / delete; seed from `notesByRequestId` when `localStorage` empty; persist `mped-notes-${requestId}`
+- Action buttons by status:
+  - `تعديل` → hide both «طلب تعديل» and «اعتماد و إرسال»
+  - `معتمدة` → hide approve only; keep «طلب تعديل»
+  - other statuses → show both
 - Approve / request-edit → existing success/edit modals
 
 ---
