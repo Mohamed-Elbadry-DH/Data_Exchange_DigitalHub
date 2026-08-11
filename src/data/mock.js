@@ -25,10 +25,10 @@ export const exchangeStatusCards = [
 ];
 
 export const approvalPie = [
-  { name: "قيد الاعتماد", value: 38.51, color: "#1B75FF" },
-  { name: "تعديل", value: 64.77, color: "#FF8C08" },
-  { name: "المتأخرة", value: 28.47, color: "#DC2626" },
-  { name: "معتمدة", value: 30.85, color: "#16A34A" },
+  { name: "قيد الاعتماد", value: 40, color: "#1B75FF" },
+  { name: "تعديل", value: 25, color: "#FF8C08" },
+  { name: "المتأخرة", value: 20, color: "#DC2626" },
+  { name: "معتمدة", value: 15, color: "#16A34A" },
 ];
 
 export const monthlyApproved = [
@@ -55,11 +55,11 @@ export const statusDonut = [
 export const statusDonutTotal = 216;
 
 export const topOrgs = [
-  { rank: 1, name: "وزارة التربية والتعليم والتعليم الفني", value: 9200 },
-  { rank: 2, name: "وزارة الصحة والسكان", value: 6800 },
-  { rank: 3, name: "وزارة المالية", value: 4600 },
-  { rank: 4, name: "الجهاز المركزي للتعبئة العامة والإحصاء", value: 2100 },
-  { rank: 5, name: "وزارة الداخلية", value: 900 },
+  { name: "الجهاز المركزي للتعبئة العامة والإحصاء", value: 66.27 },
+  { name: "وزارة التربية والتعليم والتعليم الفني", value: 35.63 },
+  { name: "وزارة الصحة والسكان", value: 27.04 },
+  { name: "وزارة المالية", value: 26.86 },
+  { name: "وزارة الداخلية", value: 26.86 },
 ];
 
 export const statusBadge = {
