@@ -19,7 +19,7 @@ function KpiCard({ k }) {
   const Icon = ICONS[k.icon];
   return (
     <div className="bg-white rounded-2xl p-4 w-[24%] max-w-[300px] min-w-0 shadow-sm">
-      <div className="flex items-center justify-end gap-3 text-right">
+      <div className="flex items-start justify-end gap-3 text-right">
         <div
           className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
           style={{ background: k.dark ? "#F8F9FA" : k.color }}
