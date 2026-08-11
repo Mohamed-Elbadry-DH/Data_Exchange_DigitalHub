@@ -18,18 +18,18 @@ const ICONS = { Users, Building2, FileText, CircleCheckBig, FilePenLine, Triangl
 function KpiCard({ k }) {
   const Icon = ICONS[k.icon];
   return (
-    <div className="bg-white rounded-2xl p-5 w-[30%] min-w-0 flex items-center justify-between shadow-sm">
-      <div className="text-right">
-        <div className="text-3xl font-bold text-[rgba(0,0,0,0.9)]">{k.value}</div>
-        <div className="text-[15px] text-[#404040] mt-1">{k.label}</div>
-        <div className={`text-[12px] mt-2 ${k.up ? "text-success" : "text-danger"}`}>{k.delta} عن الربع السابق</div>
+    <div className="bg-white rounded-2xl p-5 w-[25%] max-w-[320px] min-w-0 flex flex-col shadow-sm">
+      <div className="flex items-center justify-end gap-3 text-right">
+        <div className="text-[15px] text-[#404040]">{k.label}</div>
+        <div
+          className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+          style={{ background: k.dark ? "#F8F9FA" : k.color }}
+        >
+          <Icon size={22} className={k.dark ? "text-[#c89637]" : "text-white"} />
+        </div>
       </div>
-      <div
-        className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-        style={{ background: k.dark ? "#F8F9FA" : k.color }}
-      >
-        <Icon size={22} className={k.dark ? "text-[#c89637]" : "text-white"} />
-      </div>
+      <div className="text-3xl font-bold text-[rgba(0,0,0,0.9)] mt-3 text-right">{k.value}</div>
+      <div className={`text-[12px] mt-2 text-right ${k.up ? "text-success" : "text-danger"}`}>{k.delta} عن الربع السابق</div>
     </div>
   );
 }
