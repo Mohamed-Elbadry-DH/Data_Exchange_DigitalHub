@@ -1,12 +1,13 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Clock, User, Monitor, RefreshCw, Download, FileSpreadsheet, FileIcon, Plus,
 } from "lucide-react";
 import Layout from "../components/Layout";
 import StatusBadge from "../components/StatusBadge";
 import SuccessModal from "../components/SuccessModal";
-import { requestDetail as d } from "../data/mock";
+import RequestEditModal from "../components/RequestEditModal";
+import { requestDetailById } from "../data/mock";
 
 function InfoTile({ icon: Icon, label, value, sub }) {
   return (
@@ -39,7 +40,7 @@ function KVTable({ data }) {
   );
 }
 
-function FormDataTab() {
+function FormDataTab({ d }) {
   return (
     <div className="overflow-auto">
       <table className="w-full text-center text-[13px] border-collapse">
@@ -81,12 +82,17 @@ function FormDataTab() {
   );
 }
 
-function FulfillmentTab() {
+function FulfillmentTab({ d }) {
   const rows = d.fulfillmentTable.rows;
-  const cols = [
-    ["دبلوم", "m"], ["دبلوم", "f"], ["ماجستير", "m"], ["ماجستير", "f"],
-    ["دكتوراه", "m"], ["دكتوراه", "f"],
-  ];
+  const totals = rows.reduce(
+    (acc, r) => ({
+      dipM: acc.dipM + r.dipM, dipF: acc.dipF + r.dipF,
+      msM: acc.msM + r.msM, msF: acc.msF + r.msF,
+      phdM: acc.phdM + r.phdM, phdF: acc.phdF + r.phdF,
+      m: acc.m + r.m, f: acc.f + r.f, total: acc.total + r.total,
+    }),
+    { dipM: 0, dipF: 0, msM: 0, msF: 0, phdM: 0, phdF: 0, m: 0, f: 0, total: 0 }
+  );
   return (
     <div className="overflow-auto">
       <table className="w-full text-center text-[13px] border-collapse">
@@ -126,12 +132,26 @@ function FulfillmentTab() {
             </tr>
           ))}
         </tbody>
+        <tfoot>
+          <tr className="text-[rgba(0,0,0,0.9)] font-bold">
+            <td className="border border-gray-100 px-4 py-3 bg-page">الإجمالي</td>
+            <td className="border border-gray-100 px-4 py-3 bg-page">{totals.dipM}</td>
+            <td className="border border-gray-100 px-4 py-3 bg-page">{totals.dipF}</td>
+            <td className="border border-gray-100 px-4 py-3 bg-page">{totals.msM}</td>
+            <td className="border border-gray-100 px-4 py-3 bg-page">{totals.msF}</td>
+            <td className="border border-gray-100 px-4 py-3 bg-page">{totals.phdM}</td>
+            <td className="border border-gray-100 px-4 py-3 bg-page">{totals.phdF}</td>
+            <td className="border border-gray-100 px-4 py-3 bg-page">{totals.m}</td>
+            <td className="border border-gray-100 px-4 py-3 bg-page">{totals.f}</td>
+            <td className="border border-gray-100 px-4 py-3 bg-page">{totals.total}</td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   );
 }
 
-function AttachmentsTab() {
+function AttachmentsTab({ d }) {
   return (
     <table className="w-full text-right text-[14px]">
       <thead>
@@ -191,8 +211,13 @@ export default function RequestDetail({ mode = "forms" }) {
         { key: "notes", label: "الملاحظات" },
       ];
 
+  const { id } = useParams();
+  const d = requestDetailById[id] || requestDetailById[1];
+
   const [tab, setTab] = useState("info");
   const [success, setSuccess] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editSent, setEditSent] = useState(false);
   const navigate = useNavigate();
 
   const backTo = isRequired ? "/required" : "/forms";
@@ -229,9 +254,9 @@ export default function RequestDetail({ mode = "forms" }) {
                 <KVTable data={d.info} />
               </div>
             )}
-            {tab === "form" && <FormDataTab />}
-            {tab === "fulfillment" && <FulfillmentTab />}
-            {tab === "attachments" && <AttachmentsTab />}
+            {tab === "form" && <FormDataTab d={d} />}
+            {tab === "fulfillment" && <FulfillmentTab d={d} />}
+            {tab === "attachments" && <AttachmentsTab d={d} />}
             {tab === "notes" && <NotesTab />}
           </div>
         </div>
@@ -243,16 +268,31 @@ export default function RequestDetail({ mode = "forms" }) {
           >
             {isRequired ? "اعتماد نهائي و إرساله" : "اعتماد و إرسال"}
           </button>
-          <button className="bg-primary text-white rounded-lg px-8 py-3 text-[15px] font-semibold">
+          <button
+            onClick={() => setEditOpen(true)}
+            className="bg-primary text-white rounded-lg px-8 py-3 text-[15px] font-semibold"
+          >
             طلب تعديل
           </button>
         </div>
       </div>
 
+      <RequestEditModal
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        onSubmit={() => { setEditOpen(false); setEditSent(true); }}
+      />
+
       <SuccessModal
         open={success}
         message={isRequired ? "تم اعتماد البيانات المطلوبة و إرسالها" : "تم اعتماد نموذج البيان و إرساله"}
         onClose={() => { setSuccess(false); navigate(backTo); }}
+      />
+
+      <SuccessModal
+        open={editSent}
+        message="تم إرسال طلب التعديل"
+        onClose={() => setEditSent(false)}
       />
     </Layout>
   );

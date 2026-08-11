@@ -7,7 +7,7 @@ export default function FormsList() {
       title="نماذج البيان"
       listTitle="قائمة نماذج البيان"
       rows={formsRows}
-      detailPath="/forms/1"
+      detailPath="/forms"
     />
   );
 }

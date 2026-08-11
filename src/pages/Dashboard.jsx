@@ -1,6 +1,6 @@
 import {
   PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line,
-  XAxis, YAxis, CartesianGrid, Tooltip,
+  XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, LabelList,
 } from "recharts";
 import {
   Users, Building2, FileText, CircleCheckBig, FilePenLine, TriangleAlert,
@@ -165,21 +165,43 @@ export default function Dashboard() {
           </ChartCard>
 
           <ChartCard title="أعلى 5 جهات معتمد لها نماذج بيان" icons={[BarChart3, List]}>
-            <div className="space-y-4 pt-2">
-              {topOrgs.map((o) => (
-                <div key={o.rank}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[13px] text-muted">{o.value.toLocaleString()}</span>
-                    <span className="text-[14px] text-[#404040] flex items-center gap-2">
-                      {o.name}
-                      <span className="w-5 h-5 rounded bg-primary text-white text-[11px] flex items-center justify-center">{o.rank}</span>
-                    </span>
-                  </div>
-                  <div className="h-1.5 bg-page rounded-full overflow-hidden">
-                    <div className="h-full bg-primary rounded-full" style={{ width: `${(o.value / topOrgs[0].value) * 100}%` }} />
-                  </div>
-                </div>
-              ))}
+            <div style={{ width: "100%", height: 260 }}>
+              <ResponsiveContainer>
+                <BarChart
+                  data={topOrgs}
+                  layout="vertical"
+                  margin={{ top: 5, right: 20, left: 5, bottom: 5 }}
+                  barCategoryGap={14}
+                >
+                  <XAxis type="number" hide />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    width={170}
+                    tickLine={false}
+                    axisLine={false}
+                    orientation="right"
+                    tick={({ x, y, payload }) => {
+                      const o = topOrgs.find((t) => t.name === payload.value);
+                      return (
+                        <g transform={`translate(${x},${y})`}>
+                          <text x={0} y={4} textAnchor="start" fontSize={13} fill="#404040">
+                            {payload.value}
+                          </text>
+                          <circle cx={14} cy={-14} r={9} fill="#1B75FF" />
+                          <text x={14} y={-10} textAnchor="middle" fontSize={10} fill="#fff" fontWeight="bold">
+                            {o?.rank}
+                          </text>
+                        </g>
+                      );
+                    }}
+                  />
+                  <Tooltip formatter={(v) => v.toLocaleString()} />
+                  <Bar dataKey="value" fill="#1B75FF" radius={[6, 6, 6, 6]} barSize={7}>
+                    <LabelList dataKey="value" position="left" formatter={(v) => v.toLocaleString()} fontSize={12} fill="#7f8999" />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </ChartCard>
         </div>

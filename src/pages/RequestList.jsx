@@ -1,13 +1,40 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { SlidersHorizontal, Search } from "lucide-react";
 import Layout from "../components/Layout";
 import StatusBadge from "../components/StatusBadge";
 import FilterModal from "../components/FilterModal";
 
+function ddmmyyyyToIso(s) {
+  const [d, m, y] = (s || "").split("/");
+  return d && m && y ? `${y}-${m}-${d}` : "";
+}
+
 export default function RequestList({ title, listTitle, rows, detailPath }) {
   const [filterOpen, setFilterOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
+  const [org, setOrg] = useState("");
+  const [createdDate, setCreatedDate] = useState("");
   const navigate = useNavigate();
+
+  const statusOptions = useMemo(() => [...new Set(rows.map((r) => r.status))], [rows]);
+  const orgOptions = useMemo(() => [...new Set(rows.map((r) => r.org))], [rows]);
+
+  const filteredRows = rows.filter((r) => {
+    if (search.trim() && !r.title.includes(search.trim())) return false;
+    if (status && r.status !== status) return false;
+    if (org && r.org !== org) return false;
+    if (createdDate && ddmmyyyyToIso(r.created) !== createdDate) return false;
+    return true;
+  });
+
+  const clearFilters = () => {
+    setStatus("");
+    setOrg("");
+    setCreatedDate("");
+    setFilterOpen(false);
+  };
 
   return (
     <Layout title={title}>
@@ -23,7 +50,12 @@ export default function RequestList({ title, listTitle, rows, detailPath }) {
             <h2 className="text-[18px] font-bold text-[rgba(0,0,0,0.9)]">{listTitle}</h2>
             <div className="relative">
               <Search size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted" />
-              <input placeholder="بحث عن نموذج بيان" className="border border-gray-200 rounded-full pr-9 pl-4 py-2 text-[13px] w-64 text-right placeholder:text-gray-400" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="بحث عن نموذج بيان"
+                className="border border-gray-200 rounded-full pr-9 pl-4 py-2 text-[13px] w-64 text-right placeholder:text-gray-400"
+              />
             </div>
           </div>
         </div>
@@ -41,11 +73,11 @@ export default function RequestList({ title, listTitle, rows, detailPath }) {
               </tr>
             </thead>
             <tbody>
-              {rows.map((r, i) => (
+              {filteredRows.map((r, i) => (
                 <tr
                   key={r.id}
-                  onClick={() => navigate(detailPath)}
-                  className={`cursor-pointer hover:bg-page transition-colors text-[14px] text-[#404040] ${i !== rows.length - 1 ? "border-b border-gray-100" : ""}`}
+                  onClick={() => navigate(`${detailPath}/${r.id}`)}
+                  className={`cursor-pointer hover:bg-page transition-colors text-[14px] text-[#404040] ${i !== filteredRows.length - 1 ? "border-b border-gray-100" : ""}`}
                 >
                   <td className="py-4 px-6">{r.due}</td>
                   <td className="py-4 px-6">{r.created}</td>
@@ -55,12 +87,28 @@ export default function RequestList({ title, listTitle, rows, detailPath }) {
                   <td className="py-4 px-6 font-medium">{r.title}</td>
                 </tr>
               ))}
+              {filteredRows.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="py-8 text-center text-muted text-[14px]">لا توجد نتائج مطابقة</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
-      <FilterModal open={filterOpen} onClose={() => setFilterOpen(false)} onClear={() => setFilterOpen(false)} />
+      <FilterModal
+        open={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        onClear={clearFilters}
+        statusOptions={statusOptions}
+        statusValue={status}
+        onStatusChange={setStatus}
+        secondField={{ label: "الجهة الخارجية", value: org, onChange: setOrg, options: orgOptions }}
+        dateLabel="تاريخ الإنشاء"
+        dateValue={createdDate}
+        onDateChange={setCreatedDate}
+      />
     </Layout>
   );
 }

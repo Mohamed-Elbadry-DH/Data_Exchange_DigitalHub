@@ -7,7 +7,7 @@ export default function RequiredList() {
       title="البيانات المطلوبة"
       listTitle="قائمة البيانات المطلوبة"
       rows={requiredRows}
-      detailPath="/required/1"
+      detailPath="/required"
     />
   );
 }
