@@ -40,6 +40,34 @@ export default function Layout({ children, title, breadcrumb }) {
   return (
     <div className="min-h-screen bg-page flex justify-center py-6 px-2" dir="rtl">
       <div className="w-full max-w-[1920px] bg-page rounded-sm shadow-2xl flex overflow-hidden" style={{ minHeight: 860 }}>
+        {/* sidebar (right, RTL) — declared first so it lands on the right in the RTL flex row */}
+        <div className="w-[330px] bg-navy shrink-0 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
+              <div className="text-right">
+                <div className="text-white font-bold text-[16px]">منصة تبادل البيانات</div>
+                <div className="text-white/50 text-[12px]">Data Exchange</div>
+              </div>
+              <div className="w-9 h-9 rounded bg-warning-2 flex items-center justify-center">
+                <BookOpen size={18} className="text-white" />
+              </div>
+            </div>
+            <nav className="mt-4">
+              {NAV.map((n) => (
+                <SidebarItem key={n.to} {...n} />
+              ))}
+            </nav>
+          </div>
+          <div className="pb-4">
+            <button className="w-full flex items-center gap-3 px-9 py-3 text-white/70 hover:text-white text-[14px]">
+              <Settings size={18} /> الإعدادات
+            </button>
+            <button className="w-full flex items-center gap-3 px-9 py-3 text-white/70 hover:text-white text-[14px]">
+              <LogOut size={18} /> تسجيل الخروج
+            </button>
+          </div>
+        </div>
+
         {/* main content */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* topbar */}
@@ -79,34 +107,6 @@ export default function Layout({ children, title, breadcrumb }) {
           </div>
 
           <div className="flex-1 overflow-auto">{children}</div>
-        </div>
-
-        {/* sidebar (right, RTL) */}
-        <div className="w-[330px] bg-navy shrink-0 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
-              <div className="text-right">
-                <div className="text-white font-bold text-[16px]">منصة تبادل البيانات</div>
-                <div className="text-white/50 text-[12px]">Data Exchange</div>
-              </div>
-              <div className="w-9 h-9 rounded bg-warning-2 flex items-center justify-center">
-                <BookOpen size={18} className="text-white" />
-              </div>
-            </div>
-            <nav className="mt-4">
-              {NAV.map((n) => (
-                <SidebarItem key={n.to} {...n} />
-              ))}
-            </nav>
-          </div>
-          <div className="pb-4">
-            <button className="w-full flex items-center gap-3 px-9 py-3 text-white/70 hover:text-white text-[14px]">
-              <Settings size={18} /> الإعدادات
-            </button>
-            <button className="w-full flex items-center gap-3 px-9 py-3 text-white/70 hover:text-white text-[14px]">
-              <LogOut size={18} /> تسجيل الخروج
-            </button>
-          </div>
         </div>
       </div>
     </div>
