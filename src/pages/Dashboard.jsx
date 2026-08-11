@@ -136,12 +136,12 @@ function KpiCard({ k }) {
 function StatusCard({ c }) {
   const Icon = ICONS[c.icon];
   return (
-    <div className="bg-white w-full h-[165px] rounded-[15.38px] p-4 shadow-sm flex flex-col min-w-0">
+    <div className="bg-white w-full rounded-[15.38px] p-4 shadow-sm flex flex-col min-w-0">
       <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-3" style={{ background: c.color }}>
         <Icon size={20} style={{ color: "#FFFFFF" }} />
       </div>
-      <div className="text-2xl font-bold text-[rgba(0,0,0,0.9)]">{c.value}</div>
-      <div className="text-[14px] text-[#404040] mt-1 truncate">{c.label}</div>
+      <div className="text-2xl font-bold leading-none text-[rgba(0,0,0,0.9)]">{c.value}</div>
+      <div className="text-[14px] text-[#404040] mt-1.5 truncate">{c.label}</div>
       <div className={`text-[12px] mt-1 ${c.up ? "text-success" : "text-danger"}`}>{c.delta} عن الربع السابق</div>
     </div>
   );
@@ -546,7 +546,7 @@ export default function Dashboard() {
 
   return (
     <Layout title="لوحة التحكم">
-      <div className="p-8 space-y-8">
+      <div className="p-8 space-y-[50px]">
         <div className="flex justify-end">
           <button className="flex items-center gap-2 bg-white rounded-lg px-4 py-2 text-[14px] text-[#404040] shadow-sm ms-0">
             <Calendar size={16} className="text-primary" />
@@ -562,22 +562,22 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="w-full max-w-[1535.5px] min-h-[285px] grid grid-cols-2 gap-10 overflow-hidden">
+        <div className="w-full max-w-[1535.5px] grid grid-cols-2 gap-[50px] overflow-hidden">
           <div className="min-w-0">
             <h2 className="text-[18px] font-bold text-[rgba(0,0,0,0.9)] mb-4 text-right">مؤشرات تبادل نماذج البيان</h2>
-            <div className="grid grid-cols-4 gap-3 h-[165px]">
+            <div className="grid grid-cols-4 gap-3">
               {exchangeStatusCards.map((c, i) => <StatusCard key={i} c={c} />)}
             </div>
           </div>
           <div className="min-w-0">
             <h2 className="text-[18px] font-bold text-[rgba(0,0,0,0.9)] mb-4 text-right">مؤشرات اعتماد البيانات</h2>
-            <div className="grid grid-cols-4 gap-3 h-[165px]">
+            <div className="grid grid-cols-4 gap-3">
               {approvalStatusCards.map((c, i) => <StatusCard key={i} c={c} />)}
             </div>
           </div>
         </div>
 
-        <div className="w-full max-w-[1535.5px] h-[345px] flex flex-row-reverse gap-[63px]">
+        <div className="w-full max-w-[1535.5px] h-[345px] flex flex-row-reverse gap-[50px]">
           <ChartCard title="توزيع نماذج البيان حسب حالة الاعتماد" defaultType="pie">
             {(type) => (
               <SwitchableChart
@@ -625,7 +625,7 @@ export default function Dashboard() {
           </ChartCard>
         </div>
 
-        <div className="w-full max-w-[1535.5px] h-[345px] flex flex-row-reverse gap-[63px]">
+        <div className="w-full max-w-[1535.5px] h-[345px] flex flex-row-reverse gap-[50px]">
           <ChartCard title="توزيع البيانات حسب الحالة" defaultType="donut">
             {(type) => (
               <SwitchableChart
