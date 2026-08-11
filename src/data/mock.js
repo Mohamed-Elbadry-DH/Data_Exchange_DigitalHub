@@ -1,0 +1,133 @@
+export const user = {
+  name: "أحمد محمد",
+  role: "مشرف الإدارة العامة",
+  notifications: 6,
+};
+
+export const kpis = [
+  { label: "المستخدمين", value: 60, delta: "+3%", up: true, icon: "Users", color: "#4E74A6" },
+  { label: "الجهات الخارجية", value: 40, delta: "-3%", up: false, icon: "Building2", color: "#F8F9FA", dark: true },
+  { label: "نماذج البيان", value: 316, delta: "+3%", up: true, icon: "FileText", color: "#0986ED" },
+];
+
+export const approvalStatusCards = [
+  { label: "معتمدة", value: 102, delta: "+3%", up: true, icon: "CircleCheckBig", color: "#16A34A" },
+  { label: "تعديل", value: 74, delta: "+3%", up: true, icon: "FilePenLine", color: "#FF8C08" },
+  { label: "المتأخرة", value: 37, delta: "-3%", up: false, icon: "TriangleAlert", color: "#DC2626" },
+  { label: "قيد الاعتماد", value: 61, delta: "+3%", up: true, icon: "FileSearch", color: "#9747FF" },
+];
+
+export const exchangeStatusCards = [
+  { label: "معتمدة", value: 102, delta: "+3%", up: true, icon: "CircleCheckBig", color: "#16A34A" },
+  { label: "تعديل", value: 74, delta: "+3%", up: true, icon: "FilePenLine", color: "#FF8C08" },
+  { label: "المتأخرة", value: 37, delta: "-3%", up: false, icon: "TriangleAlert", color: "#DC2626" },
+  { label: "قيد الاعتماد", value: 61, delta: "+3%", up: true, icon: "FileSearch", color: "#9747FF" },
+];
+
+export const approvalPie = [
+  { name: "قيد الاعتماد", value: 38.51, color: "#1B75FF" },
+  { name: "تعديل", value: 64.77, color: "#FF8C08" },
+  { name: "المتأخرة", value: 28.47, color: "#DC2626" },
+  { name: "معتمدة", value: 30.85, color: "#16A34A" },
+];
+
+export const monthlyApproved = [
+  { month: "يناير", value: 13 },
+  { month: "فبراير", value: 35 },
+  { month: "مارس", value: 30 },
+  { month: "أبريل", value: 22 },
+  { month: "مايو", value: 60 },
+  { month: "يونيو", value: 85 },
+  { month: "يوليو", value: 58 },
+  { month: "أغسطس", value: 70 },
+  { month: "سبتمبر", value: 28 },
+  { month: "أكتوبر", value: 22 },
+  { month: "نوفمبر", value: 65 },
+  { month: "ديسمبر", value: 48 },
+];
+
+export const statusDonut = [
+  { name: "قيد الاعتماد", value: 46.59, color: "#1B75FF" },
+  { name: "تعديل", value: 33.67, color: "#FF8C08" },
+  { name: "المتأخرة", value: 8.48, color: "#DC2626" },
+  { name: "معتمدة", value: 11.26, color: "#16A34A" },
+];
+export const statusDonutTotal = 216;
+
+export const topOrgs = [
+  { rank: 1, name: "وزارة التربية والتعليم والتعليم الفني", value: 9200 },
+  { rank: 2, name: "وزارة الصحة والسكان", value: 6800 },
+  { rank: 3, name: "وزارة المالية", value: 4600 },
+  { rank: 4, name: "الجهاز المركزي للتعبئة العامة والإحصاء", value: 2100 },
+  { rank: 5, name: "وزارة الداخلية", value: 900 },
+];
+
+export const statusBadge = {
+  "معتمدة": { bg: "#DDF2E5", fg: "#16A34A" },
+  "تعديل": { bg: "#FFF1DE", fg: "#FF8C08" },
+  "المتأخرة": { bg: "#FCE4E4", fg: "#DC2626" },
+  "قيد الاعتماد": { bg: "#E3EEFF", fg: "#1B75FF" },
+  "قيد الاعتماد النهائي": { bg: "#E3EEFF", fg: "#1B75FF" },
+};
+
+export const formsRows = [
+  { id: 1, title: "بيانات السكان", org: "مصلحة الجمارك المصرية", officer: "أحمد محمد", created: "01/06/2026", due: "15/06/2026", status: "قيد الاعتماد" },
+  { id: 2, title: "بيانات الصناعة", org: "مصلحة الجمارك المصرية", officer: "محمد علي", created: "01/06/2026", due: "15/06/2026", status: "تعديل" },
+  { id: 3, title: "بيانات الصناعة", org: "مصلحة الجمارك المصرية", officer: "محمد علي", created: "01/06/2026", due: "15/06/2026", status: "المتأخرة" },
+  { id: 4, title: "بيانات الإسكان", org: "مصلحة الجمارك المصرية", officer: "محمد علي", created: "01/06/2026", due: "15/06/2026", status: "معتمدة" },
+];
+
+export const requiredRows = [
+  { id: 1, title: "بيانات السكان", org: "مصلحة الجمارك المصرية", officer: "أحمد محمد", created: "01/06/2026", due: "15/06/2026", status: "قيد الاعتماد النهائي" },
+  { id: 2, title: "بيانات الصناعة", org: "مصلحة الجمارك المصرية", officer: "محمد علي", created: "01/06/2026", due: "15/06/2026", status: "تعديل" },
+  { id: 3, title: "بيانات الصناعة", org: "مصلحة الجمارك المصرية", officer: "محمد علي", created: "01/06/2026", due: "15/06/2026", status: "المتأخرة" },
+  { id: 4, title: "بيانات الإسكان", org: "مصلحة الجمارك المصرية", officer: "محمد علي", created: "01/06/2026", due: "15/06/2026", status: "معتمدة" },
+];
+
+export const usersRows = [
+  { id: 1, name: "م. أحمد محمود", email: "admin@capmas.gov.eg", phone: "01123432435", role: "مشرف إدارة", joined: "2026-04-30", stopped: "-", status: "نشط" },
+  { id: 2, name: "أ. سارة علي", email: "s.ali@capmas.gov.eg", phone: "01123432435", role: "موظف إدارة", joined: "2026-04-30", stopped: "2026-04-30", status: "غير نشط" },
+  { id: 3, name: "م. أحمد محمود", email: "admin@capmas.gov.eg", phone: "01123432435", role: "موظف إدارة", joined: "2026-04-30", stopped: "-", status: "نشط" },
+];
+
+export const requestDetail = {
+  title: "بيانات التعليم العام",
+  due: "15/06/2026",
+  officer: "أحمد محمد",
+  officerRole: "أخصائي تقنية النظم والمعلومات",
+  org: "تقنية النظم والمعلومات",
+  status: "قيد الاعتماد",
+  info: {
+    "عنوان نموذج البيان": "بيانات الحاصلين على الدرجات العلمية",
+    "الإدارة المسؤولة": "الإدارة العامة للتعليم",
+    "النشرة": "نشرة التعليم العالي",
+    "الجهة المسؤولة": "وزارة التعليم العالي والبحث العلمي",
+    "النطاق الجغرافي": "جمهورية مصر العربية",
+    "وصف البيان": "جمع بيانات أعداد الحاصلين على الدبلوم والماجستير والدكتوراه من الجامعات الحكومية والخاصة داخل جمهورية مصر العربية.",
+    "المنهجية": "اسكد 6: يتضمن خريجي التعليم العالي (بكالوريوس-ليسانس/الحاصلين على درجة الدبلوم) الحاصلين على الدبلوم",
+  },
+  yearInfo: {
+    "نوع السنة": "ميلادية",
+    "السنة": "2026",
+    "الدورية": "ربع سنوي",
+    "تفصيل الدورية": "الربع الثاني",
+    "فترة تجميع البيان (من - إلى)": "01/04/2026 - 30/06/2026",
+    "تاريخ الاستحقاق": "15/07/2026",
+    "فترة السماح (أيام)": "7 أيام",
+  },
+  attachments: [
+    { name: "بيانات_الحاصلين_على_الدرجات_الربع_الثاني", type: "Excel", size: "245 KB", date: "30/06/2026", by: "محمد علي" },
+    { name: "دليل تعبئة البيان", type: "PDF", size: "1.2 MB", date: "30/06/2026", by: "محمد علي" },
+  ],
+  formTable: {
+    specialties: ["القاهرة", "الجيزة", "الإسكندرية", "أسيوط"],
+  },
+  fulfillmentTable: {
+    rows: [
+      { specialty: "الهندسة", total: 430, m: 180, f: 250, phdM: 30, phdF: 40, msM: 70, msF: 90, dipM: 80, dipF: 120 },
+      { specialty: "الطب والعلوم الصحية", total: 590, m: 260, f: 330, phdM: 50, phdF: 60, msM: 100, msF: 120, dipM: 110, dipF: 150 },
+      { specialty: "العلوم الطبيعية", total: 320, m: 180, f: 140, phdM: 20, phdF: 30, msM: 50, msF: 60, dipM: 70, dipF: 90 },
+      { specialty: "العلوم الاجتماعية", total: 420, m: 190, f: 230, phdM: 30, phdF: 40, msM: 70, msF: 80, dipM: 90, dipF: 110 },
+    ],
+  },
+};
