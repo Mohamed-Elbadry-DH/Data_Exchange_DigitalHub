@@ -311,6 +311,9 @@ function NotesTab({ requestId, author = "أحمد محمد" }) {
       <div className="border border-[#D8D8D8] rounded-xl p-5">
         {!adding ? (
           <div className="flex items-center justify-between gap-4">
+            <span className="text-muted text-[14px] text-right">
+              اضف أي ملاحظات او معلومات إضافية تتعلق بهذا النموذج ....
+            </span>
             <button
               type="button"
               onClick={() => setAdding(true)}
@@ -318,9 +321,6 @@ function NotesTab({ requestId, author = "أحمد محمد" }) {
             >
               <Plus size={16} /> إضافة ملاحظة
             </button>
-            <span className="text-muted text-[14px] text-right">
-              اضف أي ملاحظات او معلومات إضافية تتعلق بهذا النموذج ....
-            </span>
           </div>
         ) : (
           <div className="space-y-3">
@@ -369,6 +369,12 @@ function NotesTab({ requestId, author = "أحمد محمد" }) {
               className="border border-[#D8D8D8] rounded-xl p-4 bg-white text-right"
             >
               <div className="flex items-start justify-between gap-3 mb-2">
+                <div>
+                  <div className="font-semibold text-[14px] text-[#052C65]">{note.author}</div>
+                  <div className="text-[12px] text-muted mt-0.5">
+                    {note.date} — {note.time}
+                  </div>
+                </div>
                 <button
                   type="button"
                   onClick={() => removeNote(note.id)}
@@ -376,12 +382,6 @@ function NotesTab({ requestId, author = "أحمد محمد" }) {
                 >
                   حذف
                 </button>
-                <div>
-                  <div className="font-semibold text-[14px] text-[#052C65]">{note.author}</div>
-                  <div className="text-[12px] text-muted mt-0.5">
-                    {note.date} — {note.time}
-                  </div>
-                </div>
               </div>
               <p className="text-[14px] text-[#404040] leading-7 whitespace-pre-wrap">{note.text}</p>
             </li>
