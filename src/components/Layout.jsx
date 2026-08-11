@@ -4,6 +4,7 @@ import {
   LayoutGrid, Table2, FileText, Users, Settings, LogOut, Bell,
 } from "lucide-react";
 import { user } from "../data/mock";
+import { useAuth } from "../context/AuthContext";
 
 const NAV = [
   { to: "/", label: "لوحة التحكم", icon: LayoutGrid },
@@ -38,7 +39,13 @@ function SidebarItem({ to, label, icon: Icon, collapsed }) {
 
 export default function Layout({ children, title, breadcrumb }) {
   const navigate = useNavigate();
+  const { role, signOut } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
+
+  const signOutAndLeave = () => {
+    signOut();
+    navigate("/login", { replace: true });
+  };
 
   return (
     <div className="h-dvh w-full overflow-auto bg-[#1b1d22]" dir="rtl">
@@ -91,7 +98,7 @@ export default function Layout({ children, title, breadcrumb }) {
               <Settings size={25} className="shrink-0" />
               {!collapsed && <span className="whitespace-nowrap">الإعدادات</span>}
             </button>
-            <button className={`flex items-center h-[50px] text-white/70 hover:text-white text-[14px] transition-all duration-300 ${collapsed ? "justify-center w-[97px] gap-0" : "w-full justify-start gap-3 px-9"}`} title={collapsed ? "تسجيل الخروج" : undefined} aria-label="تسجيل الخروج">
+            <button onClick={signOutAndLeave} className={`flex items-center h-[50px] text-white/70 hover:text-white text-[14px] transition-all duration-300 ${collapsed ? "justify-center w-[97px] gap-0" : "w-full justify-start gap-3 px-9"}`} title={collapsed ? "تسجيل الخروج" : undefined} aria-label="تسجيل الخروج">
               <LogOut size={25} className="shrink-0" />
               {!collapsed && <span className="whitespace-nowrap">تسجيل الخروج</span>}
             </button>
@@ -125,7 +132,7 @@ export default function Layout({ children, title, breadcrumb }) {
               <div className="flex items-center gap-3">
                 <div className="text-right leading-tight hidden sm:block">
                   <div className="font-semibold text-[15px] text-[rgba(0,0,0,0.9)]">{user.name}</div>
-                  <div className="text-[13px] text-primary">{user.role}</div>
+                  <div className="text-[13px] text-primary">{role || user.role}</div>
                 </div>
                 <img
                   src="https://api.dicebear.com/7.x/initials/svg?seed=AM&backgroundColor=e5e7eb"

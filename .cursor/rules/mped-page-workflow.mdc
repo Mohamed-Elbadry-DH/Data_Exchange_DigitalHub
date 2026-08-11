@@ -14,12 +14,14 @@ alwaysApply: true
 ## Known gaps (likely next work)
 | Area | Current state | Approach |
 |------|---------------|----------|
-| الإعدادات / تسجيل الخروج | Sidebar buttons, no routes | New page(s) + handlers; same sidebar item styles |
+| الإعدادات | Sidebar button, no route | New page + handler; same sidebar item styles |
+| تسجيل الخروج | Done — calls `signOut()` then `/login` | Keep as is |
 | Notifications | Bell UI only | Panel/dropdown; reuse topbar chrome |
 | Dashboard period | Static button | Dropdown; keep button chrome |
 | Required detail ids 6–10 | Titles ≠ `requestDetailById` | Add matching detail entries / tables |
 | Create request / edit matrix | Display-only | New flows; keep `#DDEBF4` matrix look |
-| Auth / API | Mock only | Abstract later; don't break mock UX |
+| Auth | Mock login/OTP/role flow shipped | Abstract to real API later; don't break mock UX |
+| API | Mock only | Abstract later; don't break mock UX |
 
 ## Pattern checklist for every new page
 - [ ] RTL + Cairo; `text-right` for Arabic blocks

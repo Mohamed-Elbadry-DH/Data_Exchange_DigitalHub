@@ -32,8 +32,13 @@ Arabic RTL admin for **منصة تبادل البيانات (Data Exchange)**.
 | `/required` | Required list | Shared `RequestList` |
 | `/required/:id` | Request detail | `mode="required"` — 5 tabs |
 | `/users` | Users | Add / edit / pause / delete modals |
+| `/login` | Login | Email + password → `/verify` |
+| `/verify` | Verification code | 4 digits + resend → `/select-role` |
+| `/select-role` | Role selection | 6 role cards → `/` |
 
-Sidebar also shows **الإعدادات** and **تسجيل الخروج** (not routed yet).
+All app routes above are wrapped in `RequireAuth`; the three auth routes are wrapped in `RequireStage`.
+
+Sidebar **الإعدادات** is still unrouted; **تسجيل الخروج** now signs out and returns to `/login`.
 
 ---
 
@@ -118,6 +123,20 @@ Org Y-labels: **single line**; Y-axis width ~230; hbar domain may exceed 100 to 
 
 ---
 
+## 6b. Authentication (mock)
+
+Flow: `/login` → `/verify` → `/select-role` → protected app.
+
+- State in `src/context/AuthContext.jsx` (`AuthProvider` / `useAuth`), persisted in `localStorage` key **`mped-auth`** as `{ email, stage, role }` with `stage: "otp" | "role" | "ready"`.
+- `signIn(email)` accepts any valid email + password ≥ 6 chars. `verifyCode` only accepts **`2239`** (from the design). `resendCode` restarts a 60s countdown. `chooseRole(name)` sets `stage:"ready"`.
+- Guards in `src/components/RequireAuth.jsx`: `RequireAuth` (outlet for app routes) redirects by stage; `RequireStage` keeps a ready user out of the auth screens.
+- Shared chrome `src/components/AuthShell.jsx`: page bg `#f5f6fa`, `/dots.png` halftone top-left + rotated bottom-right, centered card `rounded-2xl` bg `#E9EDF1` (`width` prop — **440** for login/verify, **980** for roles), logo `/logo-mark.png` + «منصة تبادل البيانات» navy-deep bold 20 + `Data Exchange` muted 13 LTR. `Spinner` uses `/spinner.png`.
+- Fields: 52px high, white, border `#D8D8D8`, leading icon on the right (RTL), value `dir="ltr"`. Primary buttons 52px `bg-navy-deep`.
+- OTP: four 58×58 boxes in `dir="ltr"` with auto-advance, Backspace step-back, and paste support.
+- Roles come from `roles` in `src/data/mock.js` (6 roles, 4 responsibilities each, lucide icon name); the chosen role name feeds the topbar role line in `Layout`.
+
+---
+
 ## 7. Shared components to reuse
 
 `Layout` · `StatusBadge` · `FilterModal` · `UserFormModal` · `RequestEditModal` · `ConfirmModal` · `SuccessModal` · `ChartTypeIcons` · `RequestList` (forms + required)
@@ -131,7 +150,7 @@ Page-local patterns to copy (not extract unless needed): Dashboard `ChartCard` /
 1. **Freeze baseline** — don’t restyle Dashboard / shell / detail chrome while adding new work.
 2. **Clone nearest peer** — same card radius, borders, button styles, typography scale.
 3. **Data first in mock.js** — realistic Arabic labels; statement-specific tables when showing forms.
-4. **Route + nav only when asked** — Settings/Logout are the obvious next nav targets.
+4. **Route + nav only when asked** — Settings is the obvious next nav target.
 5. **Charts** — if a new page needs charts, reuse the 5-type selector contract.
 6. **RTL** — Arabic `text-right`; LTR only for charts and email/phone fields.
 7. **Fix known data gaps when touching required flow** — align `requiredRows` ids 6–10 with `requestDetailById`.
@@ -139,8 +158,7 @@ Page-local patterns to copy (not extract unless needed): Dashboard `ChartCard` /
 ### Likely next surfaces
 
 1. Settings page (+ wire sidebar)
-2. Logout behavior
-3. Notifications panel
+2. Notifications panel
 4. Dashboard period filter (interactive)
 5. Completing required-detail mock coverage / new statement types
 6. Create / edit request or editable matrix cells (product-driven)

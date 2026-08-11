@@ -4,6 +4,76 @@ export const user = {
   notifications: 6,
 };
 
+/** Roles offered on the post-verification role selection screen */
+export const roles = [
+  {
+    id: "general-admin",
+    name: "الإدارة العامة",
+    icon: "Building2",
+    responsibilities: [
+      "إنشاء طلبات البيانات",
+      "استقبال البيانات",
+      "تحليل البيانات المستلمة",
+      "استخدام البيانات في المخرجات",
+    ],
+  },
+  {
+    id: "general-admin-supervisor",
+    name: "مشرف الإدارة العامة",
+    icon: "ClipboardCheck",
+    responsibilities: [
+      "مراجعة الطلبات",
+      "الموافقة على البيانات",
+      "إدارة فريق الاستقبال",
+      "مراقبة جودة البيانات",
+    ],
+  },
+  {
+    id: "external-entity",
+    name: "الجهة الخارجية",
+    icon: "Send",
+    responsibilities: [
+      "تجهيز البيانات المطلوبة",
+      "إرسال البيانات في المواعيد المحددة",
+      "متابعة حالة الطلبات",
+      "الرد على استفسارات الاستلام",
+    ],
+  },
+  {
+    id: "external-entity-supervisor",
+    name: "مشرف الجهة الخارجية",
+    icon: "UserCheck",
+    responsibilities: [
+      "مراجعة البيانات المرسلة",
+      "الموافقة على البيانات",
+      "إدارة فريق توفير البيانات",
+      "تقديم التقارير والإحصائيات",
+    ],
+  },
+  {
+    id: "decision-maker",
+    name: "صانع القرار",
+    icon: "Target",
+    responsibilities: [
+      "مراقبة سير العمليات",
+      "اتخاذ القرارات الاستراتيجية",
+      "مراجعة التقارير",
+      "تحسين الأداء التشغيلي",
+    ],
+  },
+  {
+    id: "it-specialist",
+    name: "أخصائي تقنية النظم والمعلومات",
+    icon: "Settings",
+    responsibilities: [
+      "إدارة المستخدمين والصلاحيات",
+      "تشغيل وصيانة النظام",
+      "إدارة النسخ الاحتياطية",
+      "معالجة المشاكل التقنية",
+    ],
+  },
+];
+
 export const kpis = [
   { label: "نماذج البيان", value: 316, delta: "+3%", up: true, icon: "FileText", color: "#0986ED" },
   { label: "الجهات الخارجية", value: 40, delta: "-3%", up: false, icon: "Building2", color: "#C89637" },

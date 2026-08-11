@@ -4,18 +4,31 @@ import FormsList from "./pages/FormsList";
 import RequiredList from "./pages/RequiredList";
 import UsersList from "./pages/UsersList";
 import RequestDetail from "./pages/RequestDetail";
+import Login from "./pages/Login";
+import VerifyCode from "./pages/VerifyCode";
+import SelectRole from "./pages/SelectRole";
+import RequireAuth, { RequireStage } from "./components/RequireAuth";
+import { AuthProvider } from "./context/AuthContext";
 
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/forms" element={<FormsList />} />
-        <Route path="/forms/:id" element={<RequestDetail mode="forms" />} />
-        <Route path="/required" element={<RequiredList />} />
-        <Route path="/required/:id" element={<RequestDetail mode="required" />} />
-        <Route path="/users" element={<UsersList />} />
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<RequireStage stage={null}><Login /></RequireStage>} />
+          <Route path="/verify" element={<RequireStage stage="otp"><VerifyCode /></RequireStage>} />
+          <Route path="/select-role" element={<RequireStage stage="role"><SelectRole /></RequireStage>} />
+
+          <Route element={<RequireAuth />}>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/forms" element={<FormsList />} />
+            <Route path="/forms/:id" element={<RequestDetail mode="forms" />} />
+            <Route path="/required" element={<RequiredList />} />
+            <Route path="/required/:id" element={<RequestDetail mode="required" />} />
+            <Route path="/users" element={<UsersList />} />
+          </Route>
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }
