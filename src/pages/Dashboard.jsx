@@ -40,8 +40,8 @@ function StatusCard({ c }) {
   const Icon = ICONS[c.icon];
   return (
     <div className="bg-white rounded-2xl p-4 min-w-0 min-h-[158px] shadow-sm">
-      <div className="w-11 h-11 rounded-lg flex items-center justify-center mb-3" style={{ background: `${c.color}1A` }}>
-        <Icon size={20} style={{ color: c.color }} />
+      <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-3" style={{ background: "#C89637" }}>
+        <Icon size={20} style={{ color: "#FFFFFF" }} />
       </div>
       <div className="text-2xl font-bold text-[rgba(0,0,0,0.9)]">{c.value}</div>
       <div className="text-[14px] text-[#404040] mt-1">{c.label}</div>
