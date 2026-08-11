@@ -20,11 +20,11 @@ function SidebarItem({ to, label, icon: Icon, collapsed }) {
       aria-label={collapsed ? label : undefined}
       className={({ isActive }) =>
         `flex items-center gap-3 my-1 rounded-lg py-3 text-[15px] transition-colors ${
-          collapsed ? "justify-center mx-0 px-0" : "justify-start mx-3 px-4"
+          collapsed ? "justify-center mx-auto px-0" : "justify-start mx-3 px-4"
         } ${
           isActive
-            ? "bg-primary text-white font-semibold"
-            : "text-white/80 hover:bg-white/10"
+            ? `bg-primary text-white font-semibold ${collapsed ? "w-[60%]" : "w-full"}`
+            : "text-white/80 hover:bg-white/10 w-full"
         }`
       }
     >
