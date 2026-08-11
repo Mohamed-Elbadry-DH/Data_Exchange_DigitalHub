@@ -50,21 +50,35 @@ export default function Layout({ children, title, breadcrumb }) {
           }`}
         >
           <div>
-            <div className={`flex items-center border-b border-white/10 py-5 transition-all duration-300 ${collapsed ? "justify-center px-0" : "justify-between px-5"}`}>
-              {!collapsed && (
-                <div className="text-right">
-                  <div className="text-white font-bold text-[16px] whitespace-nowrap">منصة تبادل البيانات</div>
-                  <div className="text-white/50 text-[12px]">Data Exchange</div>
-                </div>
+            <div className={`flex items-center border-b border-white/10 py-5 transition-all duration-300 ${collapsed ? "justify-center px-0" : "justify-between px-5 gap-3"}`}>
+              {!collapsed ? (
+                <>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <img src="/logo-mark.png" alt="" width={35} height={35} className="shrink-0" aria-hidden="true" />
+                    <div className="text-right min-w-0">
+                      <div className="text-white font-bold text-[16px] whitespace-nowrap">منصة تبادل البيانات</div>
+                      <div className="text-white/50 text-[12px]">Data Exchange</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setCollapsed(true)}
+                    className="w-9 h-9 rounded flex items-center justify-center text-white/70 hover:text-white transition-colors shrink-0"
+                    aria-label="طي القائمة الجانبية"
+                    title="طي القائمة الجانبية"
+                  >
+                    <img src="/panel-left.svg" alt="" width="25" height="25" aria-hidden="true" />
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => setCollapsed(false)}
+                  className="w-9 h-9 rounded flex items-center justify-center"
+                  aria-label="توسيع القائمة الجانبية"
+                  title="توسيع القائمة الجانبية"
+                >
+                  <img src="/logo-mark.png" alt="" width={35} height={35} aria-hidden="true" />
+                </button>
               )}
-              <button
-                onClick={() => setCollapsed((value) => !value)}
-                className="w-9 h-9 rounded flex items-center justify-center text-white/70 hover:text-white transition-colors shrink-0"
-                aria-label={collapsed ? "توسيع القائمة الجانبية" : "طي القائمة الجانبية"}
-                title={collapsed ? "توسيع القائمة الجانبية" : "طي القائمة الجانبية"}
-              >
-                <img src="/panel-left.svg" alt="" width="25" height="25" aria-hidden="true" />
-              </button>
             </div>
             <nav className={`mt-4 flex flex-col ${collapsed ? "items-center" : ""}`} aria-label="التنقل الرئيسي">
               {NAV.map((n) => (
