@@ -28,7 +28,7 @@ function SidebarItem({ to, label, icon: Icon, collapsed }) {
         }`
       }
     >
-      <Icon size={19} strokeWidth={2} />
+      <Icon size={collapsed ? 25 : 19} strokeWidth={2} />
       <span className={`transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>
         {label}
       </span>
@@ -72,11 +72,11 @@ export default function Layout({ children, title, breadcrumb }) {
           </div>
           <div className="pb-4">
             <button className={`w-full flex items-center gap-3 py-3 text-white/70 hover:text-white text-[14px] transition-all duration-300 ${collapsed ? "justify-center px-0" : "px-9"}`} title={collapsed ? "الإعدادات" : undefined} aria-label="الإعدادات">
-              <Settings size={18} />
+              <Settings size={collapsed ? 25 : 18} />
               <span className={`transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>الإعدادات</span>
             </button>
             <button className={`w-full flex items-center gap-3 py-3 text-white/70 hover:text-white text-[14px] transition-all duration-300 ${collapsed ? "justify-center px-0" : "px-9"}`} title={collapsed ? "تسجيل الخروج" : undefined} aria-label="تسجيل الخروج">
-              <LogOut size={18} />
+              <LogOut size={collapsed ? 25 : 18} />
               <span className={`transition-all duration-300 ${collapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"}`}>تسجيل الخروج</span>
             </button>
           </div>
