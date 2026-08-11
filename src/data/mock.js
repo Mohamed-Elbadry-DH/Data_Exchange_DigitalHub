@@ -6,8 +6,8 @@ export const user = {
 
 export const kpis = [
   { label: "نماذج البيان", value: 316, delta: "+3%", up: true, icon: "FileText", color: "#0986ED" },
-  { label: "الجهات الخارجية", value: 40, delta: "-3%", up: false, icon: "Building2", color: "#F8F9FA", dark: true },
-  { label: "المستخدمين", value: 60, delta: "+3%", up: true, icon: "Users", color: "#4E74A6" },
+  { label: "الجهات الخارجية", value: 40, delta: "-3%", up: false, icon: "Building2", color: "#C89637" },
+  { label: "المستخدمين", value: 60, delta: "+3%", up: true, icon: "Users", color: "#34609A" },
 ];
 
 export const approvalStatusCards = [
