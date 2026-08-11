@@ -41,8 +41,8 @@ export default function Layout({ children, title, breadcrumb }) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <div className="min-h-screen bg-page flex justify-center py-6 px-2" dir="rtl">
-      <div className="w-full max-w-[1920px] min-h-[1215px] bg-page rounded-sm shadow-2xl flex" style={{ width: "min(1920px, 100%)" }}>
+    <div className="flex justify-center items-center min-h-screen bg-gray-100" dir="rtl">
+      <div className="bg-page rounded-sm shadow-2xl flex overflow-hidden" style={{ width: "1920px", height: "1215px" }}>
         {/* sidebar (right, RTL) — declared first so it lands on the right in the RTL flex row */}
         <aside
           className={`sticky top-0 self-stretch min-h-full bg-navy shrink-0 flex flex-col justify-between transition-[width] duration-300 ease-in-out overflow-hidden ${
