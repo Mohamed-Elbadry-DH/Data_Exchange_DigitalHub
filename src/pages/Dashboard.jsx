@@ -277,7 +277,14 @@ function PieOrDonutChart({ data, donut = false, total = null, showLegend = true,
                 <Cell key={i} fill={e.color || "#1B75FF"} stroke="#fff" strokeWidth={1} />
               ))}
             </Pie>
-            <Tooltip formatter={(v) => [`${v}${valueSuffix === "%" ? "%" : ""}`, ""]} />
+            <Tooltip
+              formatter={(value, _name, item) => {
+                const label = item?.payload?.name || _name;
+                const suffix = valueSuffix === "%" ? " %" : valueSuffix ? ` ${valueSuffix}` : "";
+                return [`${value}${suffix}`, label];
+              }}
+              separator=" : "
+            />
           </PieChart>
         </ResponsiveContainer>
         {donut && total != null && (
