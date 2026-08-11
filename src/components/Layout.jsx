@@ -19,8 +19,8 @@ function SidebarItem({ to, label, icon: Icon, collapsed }) {
       title={collapsed ? label : undefined}
       aria-label={collapsed ? label : undefined}
       className={({ isActive }) =>
-        `flex items-center gap-3 mx-3 my-1 rounded-lg px-4 py-3 text-[15px] transition-colors ${
-          collapsed ? "justify-center px-3" : "justify-start"
+        `flex items-center gap-3 my-1 rounded-lg py-3 text-[15px] transition-colors ${
+          collapsed ? "justify-center mx-0 px-0" : "justify-start mx-3 px-4"
         } ${
           isActive
             ? "bg-primary text-white font-semibold"
