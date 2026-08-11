@@ -42,7 +42,7 @@ export default function Layout({ children, title, breadcrumb }) {
 
   return (
     <div className="min-h-screen bg-page flex justify-center py-6 px-2" dir="rtl">
-      <div className="w-full max-w-[1920px] bg-page rounded-sm shadow-2xl flex overflow-hidden" style={{ minHeight: 860 }}>
+      <div className="w-full max-w-[1920px] min-h-[1215px] bg-page rounded-sm shadow-2xl flex" style={{ width: "min(1920px, 100%)" }}>
         {/* sidebar (right, RTL) — declared first so it lands on the right in the RTL flex row */}
         <aside
           className={`sticky top-0 self-stretch min-h-full bg-navy shrink-0 flex flex-col justify-between transition-[width] duration-300 ease-in-out overflow-hidden ${
@@ -122,7 +122,7 @@ export default function Layout({ children, title, breadcrumb }) {
             </div>
           </div>
 
-          <div className="flex-1 overflow-auto">{children}</div>
+          <div className="flex-1">{children}</div>
         </div>
       </div>
     </div>
