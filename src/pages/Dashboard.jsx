@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, LabelList,
@@ -51,16 +52,30 @@ function StatusCard({ c }) {
 }
 
 function ChartCard({ title, icons, children }) {
+  const [activeChart, setActiveChart] = useState(0);
+
   return (
     <div className="bg-white rounded-2xl p-5 flex-1 min-w-[420px] shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-[17px] font-bold text-[rgba(0,0,0,0.9)]">{title}</h3>
-        <div className="flex gap-1 text-muted">
-          {icons.map((I, i) => (
-            <button key={i} className="w-7 h-7 rounded hover:bg-page flex items-center justify-center">
-              <I size={15} />
-            </button>
-          ))}
+        <div className="flex gap-1">
+          {icons.map((I, i) => {
+            const isActive = activeChart === i;
+            return (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setActiveChart(i)}
+                aria-label={`نوع الرسم ${i + 1}`}
+                aria-pressed={isActive}
+                className={`w-[26px] h-[26px] rounded flex items-center justify-center transition-colors ${
+                  isActive ? "bg-[#0986ED]/[0.06] text-[#0986ED]" : "bg-[#F0F0F0]/[0.53] text-[#64748B]"
+                }`}
+              >
+                <I size={19} strokeWidth={2} />
+              </button>
+            );
+          })}
         </div>
       </div>
       {children}
