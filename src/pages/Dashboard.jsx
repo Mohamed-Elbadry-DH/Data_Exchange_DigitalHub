@@ -18,7 +18,7 @@ const ICONS = { Users, Building2, FileText, CircleCheckBig, FilePenLine, Triangl
 function KpiCard({ k }) {
   const Icon = ICONS[k.icon];
   return (
-    <div className="bg-white rounded-2xl p-6 flex-1 min-w-[220px] flex items-center justify-between shadow-sm">
+    <div className="bg-white rounded-2xl p-5 w-[30%] min-w-0 flex items-center justify-between shadow-sm">
       <div className="text-right">
         <div className="text-3xl font-bold text-[rgba(0,0,0,0.9)]">{k.value}</div>
         <div className="text-[15px] text-[#404040] mt-1">{k.label}</div>
@@ -37,7 +37,7 @@ function KpiCard({ k }) {
 function StatusCard({ c }) {
   const Icon = ICONS[c.icon];
   return (
-    <div className="bg-white rounded-2xl p-5 flex-1 min-w-[150px] shadow-sm">
+    <div className="bg-white rounded-2xl p-4 min-w-0 min-h-[158px] shadow-sm">
       <div className="w-11 h-11 rounded-lg flex items-center justify-center mb-3" style={{ background: `${c.color}1A` }}>
         <Icon size={20} style={{ color: c.color }} />
       </div>
@@ -70,7 +70,7 @@ export default function Dashboard() {
   return (
     <Layout title="لوحة التحكم">
       <div className="p-8 space-y-8">
-        <div className="flex">
+        <div className="flex justify-end">
           <button className="flex items-center gap-2 bg-white rounded-lg px-4 py-2 text-[14px] text-[#404040] shadow-sm ms-0">
             <Calendar size={16} className="text-primary" />
             النصف الأول من عام 2026
@@ -80,7 +80,7 @@ export default function Dashboard() {
 
         <div>
           <h2 className="text-[20px] font-bold text-[rgba(0,0,0,0.9)] mb-4 text-right">مؤشرات عامة</h2>
-          <div className="flex gap-5 flex-wrap">
+          <div className="flex justify-center gap-5 flex-nowrap">
             {kpis.map((k) => <KpiCard key={k.label + k.value} k={k} />)}
           </div>
         </div>
@@ -88,13 +88,13 @@ export default function Dashboard() {
         <div className="flex gap-8 flex-wrap">
           <div className="flex-1 min-w-[420px]">
             <h2 className="text-[18px] font-bold text-[rgba(0,0,0,0.9)] mb-4 text-right">مؤشرات تبادل نماذج البيان</h2>
-            <div className="flex gap-4 flex-wrap">
+            <div className="grid grid-cols-4 gap-4">
               {exchangeStatusCards.map((c, i) => <StatusCard key={i} c={c} />)}
             </div>
           </div>
           <div className="flex-1 min-w-[420px]">
             <h2 className="text-[18px] font-bold text-[rgba(0,0,0,0.9)] mb-4 text-right">مؤشرات اعتماد البيانات</h2>
-            <div className="flex gap-4 flex-wrap">
+            <div className="grid grid-cols-4 gap-4">
               {approvalStatusCards.map((c, i) => <StatusCard key={i} c={c} />)}
             </div>
           </div>
