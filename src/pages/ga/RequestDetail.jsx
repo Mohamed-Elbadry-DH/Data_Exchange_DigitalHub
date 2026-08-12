@@ -644,8 +644,8 @@ export default function RequestDetail({ mode = "forms" }) {
     if (stageId === "create") {
       return {
         showEdit: false,
-        primaryLabel: "إرسال للمراجعة",
-        primaryMessage: "تم إرسال نموذج البيان للمراجعة",
+        primaryLabel: "تم انشاء نموذج البيان",
+        primaryMessage: "تم انشاء نموذج البيان",
         kind: "advance",
       };
     }
