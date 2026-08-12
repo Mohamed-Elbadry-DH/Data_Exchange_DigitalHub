@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AuthShell, { Spinner } from "../components/AuthShell";
+import AuthShell, { Spinner, AUTH } from "../components/AuthShell";
 import { useAuth } from "../context/AuthContext";
 
 const LENGTH = 4;
@@ -80,14 +80,15 @@ export default function VerifyCode() {
   return (
     <AuthShell>
       <form onSubmit={submit} className="flex flex-col items-center gap-6">
-        <p className="text-[15px] text-ink text-center">من فضلك أدخل رمز التحقق المرسل إليك</p>
+        <p className="text-[12px] text-ink text-center">من فضلك أدخل رمز التحقق المرسل إليك</p>
 
-        <div dir="ltr" className="flex items-center justify-center gap-4">
+        <div dir="ltr" className="flex items-center justify-center gap-3">
           {digits.map((digit, i) => (
             <div
               key={i}
               aria-label={`رمز التحقق - الخانة ${i + 1}`}
-              className={`flex h-[58px] w-[58px] items-center justify-center rounded-lg border bg-white text-[22px] font-semibold text-navy-deep transition-colors ${
+              style={{ width: AUTH.otpBox, height: AUTH.otpBox }}
+              className={`flex items-center justify-center rounded-lg border bg-white text-[18px] font-semibold text-navy-deep transition-colors ${
                 digit ? "border-primary" : "border-[#D8D8D8]"
               }`}
             >
@@ -106,10 +107,10 @@ export default function VerifyCode() {
         <button
           type="submit"
           disabled={loading || typing}
-          style={{ height: "65.61px", borderRadius: "11.72px", background: "#0747A5" }}
-          className="flex w-full items-center justify-center gap-3 text-[16px] font-semibold text-white transition-opacity hover:opacity-95 disabled:opacity-70"
+          style={{ height: AUTH.buttonH, borderRadius: `${AUTH.buttonRadius}px`, background: "#0747A5" }}
+          className="flex w-full items-center justify-center gap-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-95 disabled:opacity-70"
         >
-          {loading && <Spinner size={18} />}
+          {loading && <Spinner size={14} />}
           تأكيد الرمز
         </button>
 

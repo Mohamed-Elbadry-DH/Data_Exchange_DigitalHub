@@ -1,6 +1,26 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
+/** Auth chrome scaled to 80% of the accepted baseline */
+export const AUTH_SCALE = 0.8;
+
+export const AUTH = {
+  cardWidth: 660.8 * AUTH_SCALE,
+  cardMinHeight: 581.6 * AUTH_SCALE,
+  contentWidth: 478.94 * AUTH_SCALE,
+  radius: 26.67 * AUTH_SCALE,
+  shadow: 5.33 * AUTH_SCALE,
+  gap: 35 * AUTH_SCALE,
+  pad: 40 * AUTH_SCALE,
+  logo: 56 * AUTH_SCALE,
+  titleSize: 20 * AUTH_SCALE,
+  subtitleSize: 13 * AUTH_SCALE,
+  inputH: 52 * AUTH_SCALE,
+  buttonH: 65.61 * AUTH_SCALE,
+  buttonRadius: 11.72 * AUTH_SCALE,
+  otpBox: 58 * AUTH_SCALE,
+};
+
 export function Spinner({ size = 20 }) {
   return (
     <img
@@ -17,7 +37,12 @@ export function Spinner({ size = 20 }) {
 /** Dots pattern is 666.67px wide on the 1920px design canvas */
 const DOTS_RATIO = 666.67 / 1920;
 
-export default function AuthShell({ children, width = 660.8, minHeight = 581.6, contentWidth = 478.94 }) {
+export default function AuthShell({
+  children,
+  width = AUTH.cardWidth,
+  minHeight = AUTH.cardMinHeight,
+  contentWidth = AUTH.contentWidth,
+}) {
   const dotsWidth = `${(DOTS_RATIO * 100).toFixed(4)}%`;
   const navigate = useNavigate();
   const { signOut } = useAuth();
@@ -54,11 +79,13 @@ export default function AuthShell({ children, width = 660.8, minHeight = 581.6, 
           style={{
             maxWidth: width,
             minHeight,
-            borderRadius: "26.67px",
+            borderRadius: `${AUTH.radius}px`,
             background: "#E9ECEF",
-            boxShadow: "0px 5.33px 5.33px 0px #00000040",
+            boxShadow: `0px ${AUTH.shadow}px ${AUTH.shadow}px 0px #00000040`,
+            padding: `${AUTH.pad}px`,
+            gap: `${AUTH.gap}px`,
           }}
-          className="relative z-10 flex w-full flex-col justify-center gap-[35px] px-10 py-10"
+          className="relative z-10 flex w-full flex-col justify-center"
         >
           <button
             type="button"
@@ -69,13 +96,21 @@ export default function AuthShell({ children, width = 660.8, minHeight = 581.6, 
             <img
               src="/auth-logo.png"
               alt="منصة تبادل البيانات"
-              width={56}
-              height={56}
-              className="w-14 h-auto select-none"
+              width={AUTH.logo}
+              height={AUTH.logo}
+              className="h-auto select-none"
+              style={{ width: AUTH.logo, height: AUTH.logo }}
               draggable={false}
             />
-            <span className="mt-3 text-[20px] font-bold text-navy-deep">منصة تبادل البيانات</span>
-            <span className="text-[13px] text-muted" dir="ltr">Data Exchange</span>
+            <span
+              className="mt-2.5 font-bold text-navy-deep"
+              style={{ fontSize: `${AUTH.titleSize}px` }}
+            >
+              منصة تبادل البيانات
+            </span>
+            <span className="text-muted" dir="ltr" style={{ fontSize: `${AUTH.subtitleSize}px` }}>
+              Data Exchange
+            </span>
           </button>
 
           <div style={{ maxWidth: contentWidth }} className="w-full mx-auto">{children}</div>

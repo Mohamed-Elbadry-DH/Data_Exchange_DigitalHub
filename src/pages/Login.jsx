@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Mail } from "lucide-react";
-import AuthShell, { Spinner } from "../components/AuthShell";
+import AuthShell, { Spinner, AUTH } from "../components/AuthShell";
 import { useAuth } from "../context/AuthContext";
 import { demoUsers } from "../data/mock";
 
@@ -73,9 +73,9 @@ export default function Login() {
 
   return (
     <AuthShell>
-      <form onSubmit={submit} className="flex flex-col gap-[35px]">
+      <form onSubmit={submit} className="flex flex-col" style={{ gap: AUTH.gap }}>
         <div className="relative" ref={emailFieldRef}>
-          <Mail size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#ADB5BD]" />
+          <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#ADB5BD]" />
           <input
             type="email"
             value={email}
@@ -89,7 +89,8 @@ export default function Login() {
             autoComplete="off"
             dir="ltr"
             aria-expanded={pickerOpen}
-            className="h-[52px] w-full rounded-lg border border-[#D8D8D8] bg-white pl-12 pr-4 text-[15px] text-ink text-left placeholder:text-[#ADB5BD] focus:border-primary focus:outline-none"
+            style={{ height: AUTH.inputH }}
+            className="w-full rounded-lg border border-[#D8D8D8] bg-white pl-10 pr-3 text-[12px] text-ink text-left placeholder:text-[#ADB5BD] focus:border-primary focus:outline-none"
           />
 
           {pickerOpen && (
@@ -122,10 +123,10 @@ export default function Login() {
           <img
             src="/icon-lock.png"
             alt=""
-            width={20}
-            height={20}
+            width={16}
+            height={16}
             draggable={false}
-            className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 select-none"
+            className="absolute left-3 top-1/2 -translate-y-1/2 select-none"
           />
           <input
             type="password"
@@ -134,19 +135,20 @@ export default function Login() {
             placeholder="Password"
             autoComplete="current-password"
             dir="ltr"
-            className="h-[52px] w-full rounded-lg border border-[#D8D8D8] bg-white pl-12 pr-4 text-[15px] text-ink text-left placeholder:text-[#ADB5BD] focus:border-primary focus:outline-none"
+            style={{ height: AUTH.inputH }}
+            className="w-full rounded-lg border border-[#D8D8D8] bg-white pl-10 pr-3 text-[12px] text-ink text-left placeholder:text-[#ADB5BD] focus:border-primary focus:outline-none"
           />
         </div>
 
-        {error && <div className="-mb-8 text-[13px] text-danger text-right">{error}</div>}
+        {error && <div className="-mb-6 text-[11px] text-danger text-right">{error}</div>}
 
         <button
           type="submit"
           disabled={loading}
-          style={{ height: "65.61px", borderRadius: "11.72px", background: "#0747A5" }}
-          className="flex w-full items-center justify-center gap-3 text-[16px] font-semibold text-white transition-opacity hover:opacity-95 disabled:opacity-70"
+          style={{ height: AUTH.buttonH, borderRadius: `${AUTH.buttonRadius}px`, background: "#0747A5" }}
+          className="flex w-full items-center justify-center gap-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-95 disabled:opacity-70"
         >
-          {loading && <Spinner size={18} />}
+          {loading && <Spinner size={14} />}
           تسجيل دخول
         </button>
       </form>
