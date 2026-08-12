@@ -347,6 +347,9 @@ function FormDataTab({ d, mode = "blank" }) {
 }
 
 function FulfillmentTab({ d, mode = "filled" }) {
+  if (mode === "empty") {
+    return <EmptyTabMessage text="لا يوجد بيانات" />;
+  }
   if (mode === "blank") {
     return <DataMatrixTable table={blankTable(d.fulfillmentTable)} showTotals={false} />;
   }
@@ -600,8 +603,13 @@ export default function RequestDetail({ mode = "forms" }) {
     : hasReachedStage(stageId, "review-form")
       ? "blank"
       : "empty";
-  // مرحلة الاستيفاء: بدون أرقام؛ بعد اكتمالها (مراجعة البيانات+) بالقيم
-  const fulfillmentMode = hasReachedStage(stageId, "review-data") ? "filled" : "blank";
+  // مرحلة الاستيفاء: لا بيانات؛ بعد اكتمالها (مراجعة البيانات+) بالقيم
+  const fulfillmentMode =
+    stageId === "fulfill"
+      ? "empty"
+      : hasReachedStage(stageId, "review-data")
+        ? "filled"
+        : "blank";
 
   const tabs = useMemo(() => {
     const base = [
@@ -644,8 +652,8 @@ export default function RequestDetail({ mode = "forms" }) {
     if (stageId === "create") {
       return {
         showEdit: false,
-        primaryLabel: "تم انشاء نموذج البيان",
-        primaryMessage: "تم انشاء نموذج البيان",
+        primaryLabel: "تم الحصول على النموذج من الـ IT",
+        primaryMessage: "تم الحصول على النموذج من الـ IT",
         kind: "advance",
       };
     }
