@@ -7,6 +7,16 @@ alwaysApply: true
 
 Treat the current UI as the **accepted reference**. Do not change shell, tokens, chart selector chrome, or matrix header colors unless the user asks.
 
+## FROZEN: the supervisor module is off-limits
+The supervisor module is **shipped and stable**. All work from now on happens in the general admin module.
+
+- **Never edit** `src/pages/*.jsx` (the non-`ga` pages), `src/components/Layout.jsx`, or `src/data/mock.js`.
+- **Only edit** `src/pages/ga/**`, `src/components/ga/**`, `src/data/mockGa.js`.
+- Need a shared component (`src/components/*` outside `ga/`) changed? **Copy it into `src/components/ga/`** and change the copy — do not modify the original.
+- Shared business logic in `src/domain/**` may still be extended (both modules depend on it), but only in **additive** ways that leave supervisor behaviour identical. If a domain change would alter what the supervisor sees, ask first.
+- Same for `src/index.css`: add new classes, never redefine the existing tokens or classes the supervisor uses.
+- If a request seems to require touching the supervisor, stop and ask instead of editing it.
+
 ## Stack
 React 19 + Vite + Tailwind 4 + Recharts 3 + lucide-react + Cairo (RTL). Mock data in `src/data/mock.js`.
 

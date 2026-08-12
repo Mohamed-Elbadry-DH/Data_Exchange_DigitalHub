@@ -6,7 +6,7 @@ alwaysApply: true
 # Next-page workflow
 
 ## Before coding a new screen
-0. Identify the module: supervisor (`src/pages/*`, `Layout`, `mock.js`) or general admin (`src/pages/ga/*`, `GaLayout`, `mockGa.js`). Never edit one to serve the other.
+0. **All work happens in the general admin module** (`src/pages/ga/*`, `src/components/ga/*`, `mockGa.js`). The supervisor module is frozen — see the FROZEN section in the baseline rule. Copy a shared component into `src/components/ga/` rather than editing it.
 1. Reuse `Layout` / `GaLayout` (title or in-page breadcrumb like RequestDetail).
 2. Mirror spacing/typography from the closest accepted page (Dashboard / RequestList / RequestDetail / UsersList).
 3. Put **presentation** data in the module's mock file; keep Arabic field labels. Business data both modules act on (requests, notes, users, stages) belongs in `src/domain/` — see the baseline rule's integration section.

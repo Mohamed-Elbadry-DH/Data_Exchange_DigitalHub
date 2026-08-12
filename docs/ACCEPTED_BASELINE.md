@@ -4,6 +4,15 @@
 **Purpose:** Lock the current look, interaction patterns, and structure so future pages stay consistent.  
 **Do not** regress these screens for stylistic experiments unless explicitly requested.
 
+> ## Supervisor module is FROZEN (2026-08-12)
+> The supervisor module is shipped and stable. Every edit from now on lands in the general admin module.
+>
+> - Off-limits: `src/pages/*.jsx` (non-`ga`), `src/components/Layout.jsx`, `src/data/mock.js`.
+> - Editable: `src/pages/ga/**`, `src/components/ga/**`, `src/data/mockGa.js`.
+> - Need a shared component changed? Copy it into `src/components/ga/` and change the copy.
+> - `src/domain/**` and `src/index.css` may only grow (additive), never in a way that changes what the supervisor renders.
+> - If a task appears to require a supervisor edit, ask first.
+
 ---
 
 ## 1. Product & stack

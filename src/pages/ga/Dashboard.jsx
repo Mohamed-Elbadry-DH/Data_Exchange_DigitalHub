@@ -5,18 +5,20 @@ import {
 } from "recharts";
 import {
   Users, Building2, FileText, CircleCheckBig, FilePenLine, TriangleAlert,
-  FileSearch, ChevronDown, Calendar,
+  FileSearch, RefreshCw, ChevronDown, Calendar, Plus,
 } from "lucide-react";
 import Layout from "../../components/ga/GaLayout";
 import {
   ChartPieIcon, ChartLineIcon, ChartColumnIcon, ChartBarIcon, LifeBuoyIcon,
 } from "../../components/ChartTypeIcons";
 import {
-  kpis, approvalStatusCards, exchangeStatusCards, approvalPie, monthlyApproved,
-  statusDonut, statusDonutTotal, topOrgs,
+  kpis, exchangeStatusCards, fulfillmentStatusCards, gaStatusColors, gaStatusPie,
+  gaStatusDonut, gaStatusDonutTotal, gaMonthlyCompleted, gaStatusMonthly, topOrgs,
 } from "../../data/mockGa";
 
-const ICONS = { Users, Building2, FileText, CircleCheckBig, FilePenLine, TriangleAlert, FileSearch };
+const ICONS = {
+  Users, Building2, FileText, CircleCheckBig, FilePenLine, TriangleAlert, FileSearch, RefreshCw,
+};
 
 /** Selector order: pie · donut · line · column · horizontal bar */
 const CHART_TYPES = ["pie", "donut", "line", "bar", "hbar"];
