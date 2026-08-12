@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { user } from "../data/mock";
 import { useAuth } from "../context/AuthContext";
+import { APP_NAME } from "../constants/branding";
 
 const NAV = [
   { to: "/", label: "لوحة التحكم", icon: LayoutGrid },
@@ -63,8 +64,9 @@ export default function Layout({ children, title, breadcrumb }) {
                   <div className="flex items-center gap-3 min-w-0">
                     <img src="/logo-mark.png" alt="" width={35} height={35} className="shrink-0" aria-hidden="true" />
                     <div className="text-right min-w-0">
-                      <div className="text-white font-bold text-[16px] whitespace-nowrap">منصة تبادل البيانات</div>
-                      <div className="text-white/50 text-[12px]">Data Exchange</div>
+                      <div className="text-white font-bold text-[14px] leading-snug" dir="ltr">
+                        {APP_NAME}
+                      </div>
                     </div>
                   </div>
                   <button
