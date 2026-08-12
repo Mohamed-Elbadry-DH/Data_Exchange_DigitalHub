@@ -2,36 +2,44 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { SlidersHorizontal, Search } from "lucide-react";
 import Layout from "../../components/ga/GaLayout";
-import StatusBadge from "../../components/StatusBadge";
+import StatusBadge from "../../components/ga/StatusBadge";
 import FilterModal from "../../components/FilterModal";
+import { stageById } from "../../domain/workflow";
 
 function ddmmyyyyToIso(s) {
   const [d, m, y] = (s || "").split("/");
   return d && m && y ? `${y}-${m}-${d}` : "";
 }
 
+function stageLabelOf(row) {
+  return row.stageLabel || stageById(row.stageId)?.label || "—";
+}
+
 export default function RequestList({ title, listTitle, rows, detailPath }) {
   const [filterOpen, setFilterOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
-  const [org, setOrg] = useState("");
+  const [directedTo, setDirectedTo] = useState("");
   const [createdDate, setCreatedDate] = useState("");
   const navigate = useNavigate();
 
   const statusOptions = useMemo(() => [...new Set(rows.map((r) => r.status))], [rows]);
-  const orgOptions = useMemo(() => [...new Set(rows.map((r) => r.org))], [rows]);
+  const directedOptions = useMemo(
+    () => [...new Set(rows.map((r) => r.currentEntity || r.org).filter(Boolean))],
+    [rows],
+  );
 
   const filteredRows = rows.filter((r) => {
     if (search.trim() && !r.title.includes(search.trim())) return false;
     if (status && r.status !== status) return false;
-    if (org && r.org !== org) return false;
+    if (directedTo && (r.currentEntity || r.org) !== directedTo) return false;
     if (createdDate && ddmmyyyyToIso(r.created) !== createdDate) return false;
     return true;
   });
 
   const clearFilters = () => {
     setStatus("");
-    setOrg("");
+    setDirectedTo("");
     setCreatedDate("");
     setFilterOpen(false);
   };
@@ -47,7 +55,7 @@ export default function RequestList({ title, listTitle, rows, detailPath }) {
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="بحث عن نموذج بيان"
+                placeholder="بحث عن البيان"
                 className="border border-gray-200 rounded-full pr-9 pl-4 py-2 text-[13px] w-64 text-right placeholder:text-gray-400"
               />
             </div>
@@ -60,16 +68,17 @@ export default function RequestList({ title, listTitle, rows, detailPath }) {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl overflow-x-auto shadow-sm">
-          <table className="w-full min-w-[860px] text-right">
+        <div className="bg-white rounded-2xl overflow-x-auto shadow-sm border border-[#D8D8D8]">
+          <table className="w-full min-w-[980px] text-center border-collapse">
             <thead>
               <tr className="bg-navy text-white text-[14px]">
-                <th className="py-3.5 px-6 font-semibold">عنوان نموذج بيان</th>
-                <th className="py-3.5 px-6 font-semibold">الجهة الخارجية</th>
-                <th className="py-3.5 px-6 font-semibold">الموظف المختص</th>
-                <th className="py-3.5 px-6 font-semibold">حالة الطلب</th>
-                <th className="py-3.5 px-6 font-semibold">تاريخ الإنشاء</th>
-                <th className="py-3.5 px-6 font-semibold">موعد الانتهاء</th>
+                <th className="py-3.5 px-4 font-semibold whitespace-nowrap">عنوان نموذج بيان</th>
+                <th className="py-3.5 px-4 font-semibold whitespace-nowrap">المرحلة</th>
+                <th className="py-3.5 px-4 font-semibold whitespace-nowrap">موجه إلى</th>
+                <th className="py-3.5 px-4 font-semibold whitespace-nowrap">المسؤول</th>
+                <th className="py-3.5 px-4 font-semibold whitespace-nowrap">حالة الطلب</th>
+                <th className="py-3.5 px-4 font-semibold whitespace-nowrap">تاريخ الإنشاء</th>
+                <th className="py-3.5 px-4 font-semibold whitespace-nowrap">موعد الانتهاء</th>
               </tr>
             </thead>
             <tbody>
@@ -77,19 +86,28 @@ export default function RequestList({ title, listTitle, rows, detailPath }) {
                 <tr
                   key={r.id}
                   onClick={() => navigate(`${detailPath}/${r.id}`)}
-                  className={`cursor-pointer hover:bg-page transition-colors text-[14px] text-[#404040] ${i !== filteredRows.length - 1 ? "border-b border-gray-100" : ""}`}
+                  className={`cursor-pointer hover:bg-page transition-colors text-[14px] text-[#404040] ${
+                    i !== filteredRows.length - 1 ? "border-b border-[#E9ECEF]" : ""
+                  }`}
                 >
-                  <td className="py-4 px-6 font-medium">{r.title}</td>
-                  <td className="py-4 px-6">{r.org}</td>
-                  <td className="py-4 px-6">{r.officer}</td>
-                  <td className="py-4 px-6"><StatusBadge status={r.status} /></td>
-                  <td className="py-4 px-6">{r.created}</td>
-                  <td className="py-4 px-6">{r.due}</td>
+                  <td className="py-4 px-4 font-semibold text-[#1B75FF] text-center whitespace-nowrap">
+                    {r.title}
+                  </td>
+                  <td className="py-4 px-4 whitespace-nowrap">{stageLabelOf(r)}</td>
+                  <td className="py-4 px-4 whitespace-nowrap">{r.currentEntity || r.org}</td>
+                  <td className="py-4 px-4 whitespace-nowrap">{r.officer}</td>
+                  <td className="py-4 px-4">
+                    <StatusBadge status={r.status} />
+                  </td>
+                  <td className="py-4 px-4 whitespace-nowrap" dir="ltr">{r.created}</td>
+                  <td className="py-4 px-4 whitespace-nowrap" dir="ltr">{r.due}</td>
                 </tr>
               ))}
               {filteredRows.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-muted text-[14px]">لا توجد نتائج مطابقة</td>
+                  <td colSpan={7} className="py-8 text-center text-muted text-[14px]">
+                    لا توجد نتائج مطابقة
+                  </td>
                 </tr>
               )}
             </tbody>
@@ -104,7 +122,12 @@ export default function RequestList({ title, listTitle, rows, detailPath }) {
         statusOptions={statusOptions}
         statusValue={status}
         onStatusChange={setStatus}
-        secondField={{ label: "الجهة الخارجية", value: org, onChange: setOrg, options: orgOptions }}
+        secondField={{
+          label: "موجه إلى",
+          value: directedTo,
+          onChange: setDirectedTo,
+          options: directedOptions,
+        }}
         dateLabel="تاريخ الإنشاء"
         dateValue={createdDate}
         onDateChange={setCreatedDate}

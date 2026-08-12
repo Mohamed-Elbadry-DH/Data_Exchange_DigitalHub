@@ -1,12 +1,15 @@
 import RequestList from "./RequestList";
-import { requiredRows } from "../../data/mockGa";
+import { formsRows, requiredRows } from "../../data/mockGa";
+import { resolveRequiredList } from "../../domain/requestState";
 
 export default function RequiredList() {
+  const rows = resolveRequiredList(formsRows, requiredRows);
+
   return (
     <RequestList
       title="البيانات المطلوبة"
       listTitle="قائمة البيانات المطلوبة"
-      rows={requiredRows}
+      rows={rows}
       detailPath="/ga/required"
     />
   );

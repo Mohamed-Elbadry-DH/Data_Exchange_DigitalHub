@@ -10,6 +10,8 @@
  * stays single-sourced (`./mock` and `src/domain/*`), otherwise the two modules
  * end up disagreeing about the same request.
  */
+import { requestDetailById as sharedRequestDetailById } from "./mock";
+
 export * from "./mock";
 
 /** Palette shared by the general admin indicator cards and charts */
@@ -45,21 +47,21 @@ export const fulfillmentStatusCards = [
 /** توزيع نماذج البيان حسب الحالة — نسب مئوية */
 export const gaStatusPie = [
   { name: "لم تبدأ بعد", value: 30, color: gaStatusColors["لم تبدأ بعد"] },
-  { name: "قيد التنفيذ", value: 40, color: gaStatusColors["قيد التنفيذ"] },
+  { name: "قيد التنفيذ", value: 15, color: gaStatusColors["قيد التنفيذ"] },
   { name: "تعديل", value: 10, color: gaStatusColors["تعديل"] },
-  { name: "قيد المراجعة", value: 5, color: gaStatusColors["قيد المراجعة"] },
+  { name: "قيد المراجعة", value: 30, color: gaStatusColors["قيد المراجعة"] },
   { name: "المتأخرة", value: 5, color: gaStatusColors["المتأخرة"] },
   { name: "معتمدة", value: 10, color: gaStatusColors["معتمدة"] },
 ];
 
 /** توزيع البيانات حسب الحالة — أعداد مجموعها 251 */
 export const gaStatusDonut = [
-  { name: "لم تبدأ بعد", value: 94.98, color: gaStatusColors["لم تبدأ بعد"] },
-  { name: "قيد التنفيذ", value: 66.61, color: gaStatusColors["قيد التنفيذ"] },
-  { name: "تعديل", value: 47.27, color: gaStatusColors["تعديل"] },
-  { name: "قيد المراجعة", value: 4.48, color: gaStatusColors["قيد المراجعة"] },
-  { name: "المتأخرة", value: 11.18, color: gaStatusColors["المتأخرة"] },
-  { name: "معتمدة", value: 26.48, color: gaStatusColors["معتمدة"] },
+  { name: "لم تبدأ بعد", value: 95, color: gaStatusColors["لم تبدأ بعد"] },
+  { name: "قيد التنفيذ", value: 76, color: gaStatusColors["قيد التنفيذ"] },
+  { name: "تعديل", value: 27, color: gaStatusColors["تعديل"] },
+  { name: "قيد المراجعة", value: 4, color: gaStatusColors["قيد المراجعة"] },
+  { name: "المتأخرة", value: 28, color: gaStatusColors["المتأخرة"] },
+  { name: "معتمدة", value: 21, color: gaStatusColors["معتمدة"] },
 ];
 export const gaStatusDonutTotal = 251;
 
@@ -94,3 +96,211 @@ export const gaStatusMonthly = [
   { month: "نوفمبر", "لم تبدأ بعد": 34, "قيد التنفيذ": 47, تعديل: 13, "قيد المراجعة": 6, المتأخرة: 5, معتمدة: 16 },
   { month: "ديسمبر", "لم تبدأ بعد": 31, "قيد التنفيذ": 44, تعديل: 12, "قيد المراجعة": 5, المتأخرة: 4, معتمدة: 15 },
 ];
+
+/** قائمة نماذج البيان — البيانات كما في التصميم حرفياً */
+export const formsRows = [
+  {
+    id: 1,
+    title: "بيانات السكان",
+    org: "تقنية النظم والمعلومات",
+    officer: "أحمد محمد",
+    created: "01/06/2026",
+    due: "15/06/2026",
+    status: "قيد التنفيذ",
+    stageId: "create",
+    currentEntity: "تقنية النظم والمعلومات",
+    officerRole: "أخصائي تقنية النظم والمعلومات",
+  },
+  {
+    id: 2,
+    title: "بيانات الصناعة",
+    org: "الإدارة العامة",
+    officer: "محمد علي",
+    created: "01/06/2026",
+    due: "15/06/2026",
+    status: "بانتظار المراجعة",
+    stageId: "review-form",
+    currentEntity: "الإدارة العامة",
+    officerRole: "الإدارة العامة",
+  },
+  {
+    id: 3,
+    title: "بيانات الصناعة",
+    org: "الإدارة العامة",
+    officer: "محمد علي",
+    created: "01/06/2026",
+    due: "15/06/2026",
+    status: "مطلوب تعديل",
+    stageId: "review-form",
+    currentEntity: "الإدارة العامة",
+    officerRole: "الإدارة العامة",
+  },
+  {
+    id: 4,
+    title: "بيانات النقل",
+    org: "مشرف الإدارة",
+    officer: "سارة حسن",
+    created: "01/06/2026",
+    due: "15/06/2026",
+    status: "قيد المراجعة",
+    stageId: "approve-form",
+    currentEntity: "مشرف الإدارة",
+    officerRole: "مشرف الإدارة",
+  },
+  {
+    id: 5,
+    title: "بيانات النقل",
+    org: "مشرف الإدارة",
+    officer: "سارة حسن",
+    created: "01/06/2026",
+    due: "15/06/2026",
+    status: "مطلوب تعديل",
+    stageId: "approve-form",
+    currentEntity: "مشرف الإدارة",
+    officerRole: "مشرف الإدارة",
+  },
+  {
+    id: 6,
+    title: "بيانات الإسكان",
+    org: "الإدارة العامة",
+    officer: "محمد علي",
+    created: "01/06/2026",
+    due: "15/06/2026",
+    status: "معتمد",
+    stageId: "approve-form",
+    currentEntity: "الإدارة العامة",
+    officerRole: "الإدارة العامة",
+  },
+];
+
+/** قائمة البيانات المطلوبة — دورة الاستيفاء حتى الإغلاق */
+export const requiredRows = [
+  {
+    id: 101,
+    title: "بيانات السكان",
+    org: "وزارة الصحة والسكان",
+    officer: "وزارة الصحة والسكان",
+    created: "01/06/2026",
+    due: "15/06/2026",
+    status: "قيد التنفيذ",
+    stageId: "fulfill",
+    currentEntity: "الجهة الخارجية",
+    officerRole: "الجهة الخارجية",
+  },
+  {
+    id: 102,
+    title: "بيانات الصناعة",
+    org: "وزارة الصناعة",
+    officer: "وزارة الصناعة",
+    created: "01/06/2026",
+    due: "15/06/2026",
+    status: "مطلوب تعديل",
+    stageId: "fulfill",
+    currentEntity: "الجهة الخارجية",
+    officerRole: "الجهة الخارجية",
+  },
+  {
+    id: 103,
+    title: "بيانات الاستثمار",
+    org: "الإدارة العامة",
+    officer: "محمد علي",
+    created: "01/06/2026",
+    due: "15/06/2026",
+    status: "قيد المراجعة",
+    stageId: "review-data",
+    currentEntity: "الإدارة العامة",
+    officerRole: "الإدارة العامة",
+  },
+  {
+    id: 104,
+    title: "بيانات السياحة",
+    org: "مشرف الإدارة",
+    officer: "سارة حسن",
+    created: "01/06/2026",
+    due: "15/06/2026",
+    status: "بانتظار الاعتماد",
+    stageId: "final-approval",
+    currentEntity: "مشرف الإدارة",
+    officerRole: "مشرف الإدارة",
+  },
+  {
+    id: 105,
+    title: "بيانات النقل",
+    org: "مشرف الإدارة",
+    officer: "سارة حسن",
+    created: "01/06/2026",
+    due: "15/06/2026",
+    status: "مطلوب تعديل",
+    stageId: "final-approval",
+    currentEntity: "مشرف الإدارة",
+    officerRole: "مشرف الإدارة",
+  },
+  {
+    id: 106,
+    title: "بيانات الإسكان",
+    org: "الإدارة العامة",
+    officer: "محمد علي",
+    created: "01/06/2026",
+    due: "15/06/2026",
+    status: "معتمد",
+    stageId: "close",
+    currentEntity: "الإدارة العامة",
+    officerRole: "الإدارة العامة",
+  },
+];
+
+/** Badge palette — مطابقة تصميم القائمة */
+export const statusBadge = {
+  "قيد التنفيذ": { bg: "#E3EEFF", fg: "#1B75FF" },
+  "مطلوب تعديل": { bg: "#FCE4E4", fg: "#DC2626" },
+  "بانتظار المراجعة": { bg: "#FFF4E0", fg: "#FF8C08" },
+  "قيد المراجعة": { bg: "#FFF8E1", fg: "#C49200" },
+  "بانتظار الاعتماد": { bg: "#FFE8D9", fg: "#E8590C" },
+  معتمد: { bg: "#DDF2E5", fg: "#16A34A" },
+  معتمدة: { bg: "#DDF2E5", fg: "#16A34A" },
+  "قيد الاعتماد": { bg: "#FFE8D9", fg: "#E8590C" },
+};
+
+const detailListSeed = [...formsRows, ...requiredRows];
+
+/** Enrich shared request details with GA workflow presentation fields */
+export const requestDetailById = Object.fromEntries(
+  Object.entries(sharedRequestDetailById).map(([id, detail]) => {
+    const listRow = detailListSeed.find((r) => String(r.id) === String(id))
+      || formsRows.find((r) => String(r.id) === String(id));
+    return [
+      id,
+      {
+        ...detail,
+        status: listRow?.status ?? detail.status,
+        stageId: listRow?.stageId ?? detail.stageId ?? "create",
+        currentEntity: listRow?.currentEntity ?? detail.currentEntity ?? "تقنية النظم والمعلومات",
+        officer: listRow?.officer ?? detail.officer,
+        officerRole: listRow?.officerRole ?? detail.officerRole ?? "أخصائي تقنية النظم والمعلومات",
+      },
+    ];
+  }),
+);
+
+/**
+ * Seed used by GA detail pages: merges list-row presentation (stage/status/…)
+ * with shared detail content (tables/attachments). Works for ids that exist
+ * only in forms/required lists (e.g. 101+).
+ */
+export function getGaRequestSeed(id) {
+  const key = String(id);
+  const listRow = detailListSeed.find((r) => String(r.id) === key);
+  const enriched = requestDetailById[key] || requestDetailById[id];
+  const template = enriched || requestDetailById["1"] || requestDetailById[1];
+  return {
+    ...template,
+    ...(listRow || {}),
+    id: listRow?.id ?? (Number.isFinite(Number(id)) ? Number(id) : id),
+    title: listRow?.title ?? template?.title,
+    info: template?.info,
+    yearInfo: template?.yearInfo,
+    formTable: template?.formTable,
+    fulfillmentTable: template?.fulfillmentTable,
+    attachments: template?.attachments || [],
+  };
+}

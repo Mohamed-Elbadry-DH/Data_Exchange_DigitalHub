@@ -1,29 +1,160 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  Clock, User, Monitor, FileClock, Download, FileSpreadsheet, FileIcon, Plus,
+  User, Monitor, FileText, LoaderCircle, Download, FileSpreadsheet, FileIcon, Plus, Check,
+  FileSearch, CircleCheckBig,
 } from "lucide-react";
 import Layout from "../../components/ga/GaLayout";
-import StatusBadge from "../../components/StatusBadge";
+import StatusBadge from "../../components/ga/StatusBadge";
 import SuccessModal from "../../components/SuccessModal";
 import RequestEditModal from "../../components/RequestEditModal";
-import { requestDetailById } from "../../data/mockGa";
+import { getGaRequestSeed } from "../../data/mockGa";
 import { loadNotes, saveNotes } from "../../domain/notes";
+import { STAGES, stageById, stageIndex, hasReachedStage, isRequiredStage, isFormsStage } from "../../domain/workflow";
+import {
+  resolveRequest, advanceRequest, markModification, resubmitAfterModification, resetRequestToStart,
+} from "../../domain/requestState";
 import { useAuth } from "../../context/AuthContext";
 
-function InfoTile({ icon: Icon, label, value, sub }) {
+function statusTileVisual(status) {
+  if (status === "معتمد" || status === "معتمدة") {
+    return { icon: CircleCheckBig, iconBg: "#16A34A", iconClass: "text-white" };
+  }
+  if (
+    status === "بانتظار المراجعة"
+    || status === "قيد المراجعة"
+    || status === "بانتظار الاعتماد"
+    || status === "قيد الاعتماد"
+  ) {
+    return { icon: FileSearch, iconBg: "#9747FF", iconClass: "text-white" };
+  }
+  if (status === "مطلوب تعديل" || status === "تعديل") {
+    return { icon: FileText, iconBg: "#FF8C08", iconClass: "text-white" };
+  }
+  // قيد التنفيذ / default
+  return { icon: LoaderCircle, iconBg: "#FFC107", iconClass: "text-white" };
+}
+
+function InfoTile({ icon: Icon, label, value, sub, iconBg = "#2563EB4D", iconClass = "text-[#2563EB]" }) {
   return (
-    <div className="bg-white rounded-2xl p-5 flex-1 flex items-center gap-4 shadow-sm">
+    <div className="bg-white rounded-2xl p-5 flex-1 flex items-center gap-4 shadow-sm min-w-[220px]">
       <div
         className="w-[60px] h-[60px] rounded-[15px] flex items-center justify-center shrink-0"
-        style={{ background: "#2563EB4D" }}
+        style={{ background: iconBg }}
       >
-        <Icon size={36} className="text-[#2563EB]" />
+        <Icon size={36} className={iconClass} strokeWidth={2} />
       </div>
       <div className="text-right min-w-0">
         <div className="text-[13px] text-muted">{label}</div>
         <div className="text-[15px] font-bold text-[rgba(0,0,0,0.9)]">{value}</div>
-        {sub && <div className="text-[12px] text-muted">{sub}</div>}
+        {sub && <div className="text-[12px] text-muted mt-0.5">{sub}</div>}
+      </div>
+    </div>
+  );
+}
+
+function StageNode({ index, done, waiting }) {
+  if (done) {
+    return (
+      <div
+        className="w-[50px] h-[50px] rounded-full bg-[#16A34A] flex items-center justify-center shrink-0"
+        aria-label={`مكتمل: المرحلة ${index + 1}`}
+      >
+        <Check size={24} className="text-white" strokeWidth={3} />
+      </div>
+    );
+  }
+
+  if (waiting) {
+    return (
+      <svg
+        width="50"
+        height="50"
+        viewBox="0 0 50 50"
+        className="shrink-0"
+        aria-label={`قيد الانتظار: المرحلة ${index + 1}`}
+      >
+        <circle cx="25" cy="25" r="24" fill="#F59E0B33" stroke="#F59E0B" strokeWidth="1" strokeDasharray="2 2" />
+        <circle cx="25" cy="25" r="7" fill="#F59E0B" />
+      </svg>
+    );
+  }
+
+  return (
+    <div
+      className="w-[50px] h-[50px] rounded-full bg-[#F1F3F5] border border-[#DEE2E6] flex items-center justify-center text-[#052C65] text-[16px] font-semibold shrink-0"
+      aria-label={`قادم: المرحلة ${index + 1}`}
+    >
+      {index + 1}
+    </div>
+  );
+}
+
+const STEP_LINE_GAP = 8;
+
+function StageStepper({ stageId, status }) {
+  const stages = STAGES;
+  const current = Math.max(0, stageIndex(stageId));
+  const isClosed = stageId === "close";
+  const formApproved =
+    (status === "معتمد" || status === "معتمدة") && isFormsStage(stageId);
+  const colCount = stages.length;
+
+  return (
+    <div className="bg-white rounded-2xl shadow-sm border border-[#D8D8D8] px-4 sm:px-8 py-8">
+      <div className="relative w-full" dir="rtl">
+        {/* خطوط الربط — تمتد بين مراكز الدوائر مع فجوة بسيطة عن كل دائرة */}
+        <div
+          className="pointer-events-none absolute top-[25px] flex items-center"
+          style={{
+            left: `calc(100% / ${colCount * 2} + ${STEP_LINE_GAP}px)`,
+            right: `calc(100% / ${colCount * 2} + ${STEP_LINE_GAP}px)`,
+          }}
+          aria-hidden="true"
+        >
+          {stages.slice(0, -1).map((_, i) => {
+            const lineDone =
+              isClosed
+              || i < current
+              || (formApproved && i < 3);
+            return (
+              <div
+                key={i}
+                className="flex-1"
+                style={{
+                  borderTop: lineDone
+                    ? "2.64px solid #16A34A"
+                    : "2.64px solid #DEE2E6",
+                }}
+              />
+            );
+          })}
+        </div>
+
+        <div
+          className="relative z-10 grid w-full"
+          style={{ gridTemplateColumns: `repeat(${colCount}, minmax(0, 1fr))` }}
+        >
+          {stages.map((s, i) => {
+            const done =
+              isClosed
+              || i < current
+              || (formApproved && i <= 2);
+            const waiting = !isClosed && !formApproved && i === current;
+            return (
+              <div key={s.id} className="flex flex-col items-center gap-3 min-w-0 px-1">
+                <StageNode index={i} done={done} waiting={waiting} />
+                <div
+                  className={`w-full text-[12px] sm:text-[13px] text-center leading-5 ${
+                    done || waiting ? "text-[#052C65] font-bold" : "text-[#ADB5BD] font-medium"
+                  }`}
+                >
+                  {s.label}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -207,16 +338,47 @@ function blankTable(table) {
   };
 }
 
-function FormDataTab({ d }) {
-  // نماذج البيان = هيكل فارغ بدون أرقام؛ البيانات تظهر في استيفاء البيانات المطلوبة فقط
+function FormDataTab({ d, mode = "blank" }) {
+  if (mode === "empty") {
+    return <EmptyTabMessage text="لا توجد جداول للعرض في هذه المرحلة" />;
+  }
+  // نماذج البيان = هيكل فارغ بدون أرقام؛ البيانات تظهر في استيفاء البيانات
   return <DataMatrixTable table={blankTable(d.formTable)} showTotals={false} />;
 }
 
-function FulfillmentTab({ d }) {
+function FulfillmentTab({ d, mode = "filled" }) {
+  if (mode === "blank") {
+    return <DataMatrixTable table={blankTable(d.fulfillmentTable)} showTotals={false} />;
+  }
   return <DataMatrixTable table={d.fulfillmentTable} showTotals />;
 }
 
-function AttachmentsTab({ d }) {
+function InfoTab({ d, variant }) {
+  if (variant === "empty") {
+    return (
+      <div className="rounded-xl border border-dashed border-[#D8D8D8] py-16 text-center text-muted text-[15px]">
+        لا توجد جداول للعرض في هذه المرحلة
+      </div>
+    );
+  }
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <KVTable data={d.info} />
+      <KVTable data={d.yearInfo} />
+    </div>
+  );
+}
+
+function EmptyTabMessage({ text = "لا توجد بيانات للعرض في هذه المرحلة" }) {
+  return (
+    <div className="rounded-xl border border-dashed border-[#D8D8D8] py-16 text-center text-muted text-[15px]">
+      {text}
+    </div>
+  );
+}
+
+function AttachmentsTab({ d, empty = false }) {
+  if (empty) return <EmptyTabMessage text="لا توجد مرفقات في هذه المرحلة" />;
   return (
     <table className="w-full text-right text-[14px]">
       <thead>
@@ -248,7 +410,7 @@ function AttachmentsTab({ d }) {
   );
 }
 
-function NotesTab({ requestId, author = "أحمد محمد" }) {
+function NotesTab({ requestId, author = "أحمد محمد", empty = false }) {
   const [notes, setNotes] = useState(() => loadNotes(requestId));
   const [draft, setDraft] = useState("");
   const [adding, setAdding] = useState(false);
@@ -258,6 +420,8 @@ function NotesTab({ requestId, author = "أحمد محمد" }) {
     setDraft("");
     setAdding(false);
   }, [requestId]);
+
+  if (empty) return <EmptyTabMessage text="لا توجد ملاحظات في هذه المرحلة" />;
 
   const updateNotes = (next) => {
     setNotes(next);
@@ -383,35 +547,183 @@ function NotesTab({ requestId, author = "أحمد محمد" }) {
 
 export default function RequestDetail({ mode = "forms" }) {
   const isRequired = mode === "required";
-  const tabs = isRequired
-    ? [
-        { key: "info", label: "بيانات نموذج البيان", width: 186 },
-        { key: "form", label: "نموذج البيان", width: 125 },
-        { key: "fulfillment", label: "استيفاء البيانات", width: 140 },
-        { key: "attachments", label: "المرفقات", width: 98 },
-        { key: "notes", label: "الملاحظات", width: 109 },
-      ]
-    : [
-        { key: "info", label: "بيانات نموذج البيان", width: 186 },
-        { key: "form", label: "نموذج البيان", width: 125 },
-        { key: "attachments", label: "المرفقات", width: 98 },
-        { key: "notes", label: "الملاحظات", width: 109 },
-      ];
-
   const { id } = useParams();
-  const d = requestDetailById[id] || requestDetailById[1];
+  const seed = useMemo(() => getGaRequestSeed(id), [id]);
 
+  const [live, setLive] = useState(() => resolveRequest(seed, id));
   const [tab, setTab] = useState("info");
   const [success, setSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [pendingAdvance, setPendingAdvance] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editSent, setEditSent] = useState(false);
   const navigate = useNavigate();
   const { name } = useAuth();
 
+  useEffect(() => {
+    const nextSeed = getGaRequestSeed(id);
+    setLive(resolveRequest(nextSeed, id));
+    setTab("info");
+    setPendingAdvance(false);
+  }, [id]);
+
+  const refresh = () => setLive(resolveRequest(getGaRequestSeed(id), id));
+
   const backTo = isRequired ? "/ga/required" : "/ga/forms";
   const backLabel = isRequired ? "البيانات المطلوبة" : "نماذج البيان";
-  const showEditRequest = d.status !== "تعديل";
-  const showApprove = d.status !== "تعديل" && d.status !== "معتمدة";
+  const stageId = live.stageId || "create";
+  const stage = stageById(stageId) || STAGES[0];
+  const stageNumber = Math.max(1, stageIndex(stageId) + 1);
+  const needsModification = live.status === "مطلوب تعديل" || live.status === "تعديل";
+  const showFulfillmentTab = hasReachedStage(stageId, "fulfill");
+  // من نماذج البيان بعد الاستيفاء: عرض فقط — الاستكمال من البيانات المطلوبة
+  const formsHandoff = !isRequired && isRequiredStage(stageId);
+
+  // من البيانات المطلوبة: ارجع لنماذج البيان إذا لم يصل للاستيفاء بعد
+  useEffect(() => {
+    if (isRequired && !isRequiredStage(stageId)) {
+      navigate(`/ga/forms/${id}`, { replace: true });
+    }
+  }, [stageId, isRequired, id, navigate]);
+
+  // فتح من نماذج البيان بعد الاستيفاء → تاب الاستيفاء مباشرة
+  useEffect(() => {
+    if (formsHandoff && showFulfillmentTab) {
+      setTab("fulfillment");
+    }
+  }, [id, formsHandoff, showFulfillmentTab]);
+  // قيد التنفيذ في الإنشاء فقط: بيانات KV ظاهرة؛ باقي التبويبات فارغة
+  const isInProgressCreate = stageId === "create";
+  const infoVariant = "kv";
+  const formMode = isInProgressCreate
+    ? "empty"
+    : hasReachedStage(stageId, "review-form")
+      ? "blank"
+      : "empty";
+  // مرحلة الاستيفاء: بدون أرقام؛ بعد اكتمالها (مراجعة البيانات+) بالقيم
+  const fulfillmentMode = hasReachedStage(stageId, "review-data") ? "filled" : "blank";
+
+  const tabs = useMemo(() => {
+    const base = [
+      { key: "info", label: "بيانات نموذج البيان" },
+      { key: "form", label: "نموذج البيان" },
+    ];
+    if (showFulfillmentTab) {
+      base.push({ key: "fulfillment", label: "استيفاء البيانات" });
+    }
+    base.push(
+      { key: "attachments", label: "المرفقات" },
+      { key: "notes", label: "الملاحظات" },
+    );
+    return base;
+  }, [showFulfillmentTab]);
+
+  useEffect(() => {
+    if (!tabs.some((t) => t.key === tab)) setTab("info");
+  }, [tab, tabs]);
+
+  const isTerminal =
+    stageId === "close"
+    || ((live.status === "معتمد" || live.status === "معتمدة") && isFormsStage(stageId));
+
+  const actions = (() => {
+    if (formsHandoff) {
+      return { showEdit: false, primaryLabel: null, primaryMessage: "", kind: null };
+    }
+    if (isTerminal) {
+      return { showEdit: false, primaryLabel: null, primaryMessage: "", kind: null };
+    }
+    if (needsModification) {
+      return {
+        showEdit: false,
+        primaryLabel: "إعادة الإرسال للمراجعة",
+        primaryMessage: "تم إعادة إرسال الطلب بعد التعديل",
+        kind: "resubmit",
+      };
+    }
+    if (stageId === "create") {
+      return {
+        showEdit: false,
+        primaryLabel: "إرسال للمراجعة",
+        primaryMessage: "تم إرسال نموذج البيان للمراجعة",
+        kind: "advance",
+      };
+    }
+    if (stageId === "review-form") {
+      return {
+        showEdit: true,
+        primaryLabel: "اعتماد وإرساله لمشرف الإدارة",
+        primaryMessage: "تم اعتماد نموذج البيان وإرساله لمشرف الإدارة",
+        kind: "advance",
+      };
+    }
+    if (stageId === "approve-form") {
+      return {
+        showEdit: false,
+        primaryLabel: "إرسال للجهة",
+        primaryMessage: "تم اعتماد نموذج البيان وإرساله للجهة — يمكن استكمال الطلب من البيانات المطلوبة",
+        kind: "advance-to-required",
+      };
+    }
+    if (stageId === "fulfill") {
+      return {
+        showEdit: false,
+        primaryLabel: "اكتمال مرحلة الاستيفاء",
+        primaryMessage: "تم اكتمال مرحلة الاستيفاء والانتقال إلى مراجعة البيانات",
+        kind: "advance",
+      };
+    }
+    if (stageId === "review-data") {
+      return {
+        showEdit: true,
+        primaryLabel: "إرسال للاعتماد",
+        primaryMessage: "تم إنهاء المراجعة وإرسال الطلب للاعتماد",
+        kind: "advance",
+      };
+    }
+    if (stageId === "final-approval") {
+      return {
+        showEdit: false,
+        primaryLabel: "اعتماد وإغلاق الطلب",
+        primaryMessage: "تم اعتماد الطلب وإغلاقه",
+        kind: "advance",
+      };
+    }
+    return { showEdit: false, primaryLabel: null, primaryMessage: "", kind: null };
+  })();
+
+  const handlePrimary = () => {
+    setSuccessMessage(actions.primaryMessage);
+    setPendingAdvance(true);
+    setSuccess(true);
+  };
+
+  const handleEditSubmit = () => {
+    setEditOpen(false);
+    markModification(id, live);
+    refresh();
+    setEditSent(true);
+  };
+
+  const closeSuccess = () => {
+    setSuccess(false);
+    if (!pendingAdvance) return;
+    setPendingAdvance(false);
+    if (actions.kind === "resubmit") {
+      resubmitAfterModification(id, live);
+      refresh();
+      return;
+    }
+    if (actions.kind === "advance" || actions.kind === "advance-to-required") {
+      const updated = advanceRequest(id, live);
+      refresh();
+      if (updated?.stageId === "fulfill") {
+        setTab("fulfillment");
+      } else if (updated?.stageId === "review-data") {
+        setTab("fulfillment");
+      }
+    }
+  };
 
   return (
     <Layout title={backLabel}>
@@ -432,23 +744,62 @@ export default function RequestDetail({ mode = "forms" }) {
               تفاصيل الطلب
             </span>
           </nav>
-          <h2 className="mt-5 font-[Cairo] font-bold text-[27px] leading-none text-[#052C65] text-right">
-            {d.title}
-          </h2>
+          <div className="mt-5 flex items-center justify-start gap-3 flex-wrap">
+            <h2 className="font-[Cairo] font-bold text-[27px] leading-none text-[#052C65] text-right">
+              {live.title || seed.title}
+            </h2>
+            <StatusBadge status={live.status} />
+          </div>
         </div>
 
         <div className="flex gap-5 flex-wrap">
-          <InfoTile icon={FileClock} label="الحالة" value={<StatusBadge status={d.status} />} />
-          <InfoTile icon={Monitor} label="الجهة الخارجية" value={d.org} />
-          <InfoTile icon={User} label="الموظف المختص" value={d.officer} sub={d.officerRole} />
-          <InfoTile icon={Clock} label="موعد الانتهاء" value={d.due} />
+          <InfoTile
+            icon={FileText}
+            label="المرحلة الحالية"
+            value={stage.label}
+            sub={`المرحلة ${stageNumber} من ${STAGES.length}`}
+          />
+          <InfoTile
+            icon={Monitor}
+            label="الجهة الحالية"
+            value={live.currentEntity || live.org}
+          />
+          <InfoTile
+            icon={User}
+            label="المسؤول الحالي"
+            value={live.officer}
+            sub={live.officerRole}
+          />
+          <InfoTile
+            icon={statusTileVisual(live.status).icon}
+            label="الحالة"
+            value={live.status}
+            iconBg={statusTileVisual(live.status).iconBg}
+            iconClass={statusTileVisual(live.status).iconClass}
+          />
         </div>
+
+        <StageStepper stageId={stageId} status={live.status} />
+
+        {formsHandoff && (
+          <div className="rounded-xl border border-[#D8D8D8] bg-[#F8F9FA] px-5 py-4 text-[14px] text-[#404040] text-right">
+            هذا الطلب في مرحلة استيفاء البيانات. لاستكمال الخطوات التالية، افتحه من
+            {" "}
+            <button
+              type="button"
+              onClick={() => navigate(`/ga/required/${id}`)}
+              className="text-primary font-semibold hover:underline"
+            >
+              البيانات المطلوبة
+            </button>
+            .
+          </div>
+        )}
 
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-[#D8D8D8]">
           <div
-            className={`grid border-b border-[#D8D8D8] px-6 pt-[14px] ${
-              isRequired ? "grid-cols-5" : "grid-cols-4"
-            }`}
+            className="grid border-b border-[#D8D8D8] px-6 pt-[14px]"
+            style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
           >
             {tabs.map((t) => {
               const active = tab === t.key;
@@ -457,7 +808,7 @@ export default function RequestDetail({ mode = "forms" }) {
                   key={t.key}
                   type="button"
                   onClick={() => setTab(t.key)}
-                  className={`h-[47px] w-full font-[Cairo] font-medium text-[22px] leading-none whitespace-nowrap flex items-center justify-center border-b-[3px] transition-colors ${
+                  className={`h-[47px] w-full font-[Cairo] font-medium text-[18px] sm:text-[20px] leading-none whitespace-nowrap flex items-center justify-center border-b-[3px] transition-colors ${
                     active
                       ? "text-[#052C65] border-[#0986ED]"
                       : "text-[#7F8999] border-transparent hover:text-[#052C65]"
@@ -469,53 +820,73 @@ export default function RequestDetail({ mode = "forms" }) {
             })}
           </div>
           <div className="p-6">
-            {tab === "info" && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <KVTable data={d.info} />
-                <KVTable data={d.yearInfo} />
-              </div>
+            {tab === "info" && <InfoTab d={seed} variant={infoVariant} />}
+            {tab === "form" && <FormDataTab d={seed} mode={formMode} />}
+            {tab === "fulfillment" && showFulfillmentTab && (
+              <FulfillmentTab d={seed} mode={fulfillmentMode} />
             )}
-            {tab === "form" && <FormDataTab d={d} />}
-            {tab === "fulfillment" && isRequired && <FulfillmentTab d={d} />}
-            {tab === "attachments" && <AttachmentsTab d={d} />}
-            {tab === "notes" && <NotesTab requestId={id} author={name || d.officer} />}
+            {tab === "attachments" && (
+              <AttachmentsTab d={seed} empty={isInProgressCreate} />
+            )}
+            {tab === "notes" && (
+              <NotesTab
+                requestId={id}
+                author={name || live.officer}
+                empty={isInProgressCreate}
+              />
+            )}
           </div>
         </div>
 
-        {(showEditRequest || showApprove) && (
-          <div className="flex gap-4 justify-end pb-8">
-            {showEditRequest && (
+        {(actions.showEdit || actions.primaryLabel) && (
+          <div className="flex gap-4 justify-end pb-4">
+            {actions.showEdit && (
               <button
                 type="button"
                 onClick={() => setEditOpen(true)}
-                className="bg-primary text-white rounded-lg px-8 py-3 text-[15px] font-semibold"
+                className="bg-primary text-white rounded-lg px-8 py-3 text-[15px] font-semibold cursor-pointer"
               >
                 طلب تعديل
               </button>
             )}
-            {showApprove && (
+            {actions.primaryLabel && (
               <button
                 type="button"
-                onClick={() => setSuccess(true)}
-                className="bg-success text-white rounded-lg px-8 py-3 text-[15px] font-semibold"
+                onClick={handlePrimary}
+                className="bg-success text-white rounded-lg px-8 py-3 text-[15px] font-semibold cursor-pointer"
               >
-                {isRequired ? "اعتماد نهائي و إرساله" : "اعتماد و إرسال"}
+                {actions.primaryLabel}
               </button>
             )}
           </div>
         )}
+
+        <div className="flex justify-start pb-8">
+          <button
+            type="button"
+            onClick={() => {
+              resetRequestToStart(id, seed);
+              navigate(`/ga/forms/${id}`);
+              refresh();
+              setTab("info");
+            }}
+            className="border border-[#D8D8D8] bg-white text-[#404040] rounded-lg px-6 py-2.5 text-[14px] font-medium hover:border-primary hover:text-primary cursor-pointer"
+          >
+            إعادة التجربة من البداية
+          </button>
+        </div>
       </div>
 
       <RequestEditModal
         open={editOpen}
         onClose={() => setEditOpen(false)}
-        onSubmit={() => { setEditOpen(false); setEditSent(true); }}
+        onSubmit={handleEditSubmit}
       />
 
       <SuccessModal
         open={success}
-        message={isRequired ? "تم اعتماد البيانات المطلوبة و إرسالها" : "تم اعتماد نموذج البيان و إرساله"}
-        onClose={() => { setSuccess(false); navigate(backTo); }}
+        message={successMessage}
+        onClose={closeSuccess}
       />
 
       <SuccessModal
