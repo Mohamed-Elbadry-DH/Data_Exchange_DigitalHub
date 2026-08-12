@@ -1,22 +1,25 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, LabelList,
 } from "recharts";
 import {
   Users, Building2, FileText, CircleCheckBig, FilePenLine, TriangleAlert,
-  FileSearch, ChevronDown, Calendar,
+  FileSearch, RefreshCw, ChevronDown, Calendar, Plus,
 } from "lucide-react";
-import Layout from "../components/Layout";
+import Layout from "../../components/ga/GaLayout";
+import CreateStatementModal from "../../components/ga/CreateStatementModal";
 import {
   ChartPieIcon, ChartLineIcon, ChartColumnIcon, ChartBarIcon, LifeBuoyIcon,
-} from "../components/ChartTypeIcons";
+} from "../../components/ChartTypeIcons";
 import {
-  kpis, approvalStatusCards, exchangeStatusCards, approvalPie, monthlyApproved,
-  statusDonut, statusDonutTotal, topOrgs,
-} from "../data/mock";
+  kpis, exchangeStatusCards, fulfillmentStatusCards, gaStatusPie,
+  gaStatusDonut, gaStatusDonutTotal, gaMonthlyCompleted, gaStatusMonthly, topOrgs,
+} from "../../data/mockGa";
 
-const ICONS = { Users, Building2, FileText, CircleCheckBig, FilePenLine, TriangleAlert, FileSearch };
+const ICONS = {
+  Users, Building2, FileText, CircleCheckBig, FilePenLine, TriangleAlert, FileSearch, RefreshCw,
+};
 
 /** Selector order: pie · donut · line · column · horizontal bar */
 const CHART_TYPES = ["pie", "donut", "line", "bar", "hbar"];
@@ -24,42 +27,14 @@ const CHART_TYPE_ICONS = [ChartPieIcon, LifeBuoyIcon, ChartLineIcon, ChartColumn
 const CHART_TYPE_LABELS = ["دائري", "دونات", "خطي", "أعمدة", "أفقي"];
 
 const STATUS_COLORS = {
-  "قيد الاعتماد": "#1B75FF",
+  "لم تبدأ بعد": "#1B75FF",
+  "قيد التنفيذ": "#FFC107",
   تعديل: "#FF8C08",
+  "قيد المراجعة": "#9747FF",
   المتأخرة: "#DC2626",
   معتمدة: "#16A34A",
+  "قيد الاعتماد": "#1B75FF",
 };
-
-/** Monthly status mix for line / multi-series views */
-const approvalStatusMonthly = [
-  { month: "يناير", "قيد الاعتماد": 28, تعديل: 18, المتأخرة: 12, معتمدة: 10 },
-  { month: "فبراير", "قيد الاعتماد": 32, تعديل: 20, المتأخرة: 14, معتمدة: 18 },
-  { month: "مارس", "قيد الاعتماد": 35, تعديل: 22, المتأخرة: 15, معتمدة: 22 },
-  { month: "أبريل", "قيد الاعتماد": 30, تعديل: 24, المتأخرة: 18, معتمدة: 20 },
-  { month: "مايو", "قيد الاعتماد": 38, تعديل: 26, المتأخرة: 16, معتمدة: 28 },
-  { month: "يونيو", "قيد الاعتماد": 40, تعديل: 25, المتأخرة: 20, معتمدة: 35 },
-  { month: "يوليو", "قيد الاعتماد": 36, تعديل: 21, المتأخرة: 17, معتمدة: 30 },
-  { month: "أغسطس", "قيد الاعتماد": 34, تعديل: 23, المتأخرة: 15, معتمدة: 32 },
-  { month: "سبتمبر", "قيد الاعتماد": 29, تعديل: 19, المتأخرة: 13, معتمدة: 24 },
-  { month: "أكتوبر", "قيد الاعتماد": 31, تعديل: 22, المتأخرة: 14, معتمدة: 26 },
-  { month: "نوفمبر", "قيد الاعتماد": 37, تعديل: 24, المتأخرة: 16, معتمدة: 33 },
-  { month: "ديسمبر", "قيد الاعتماد": 33, تعديل: 20, المتأخرة: 12, معتمدة: 29 },
-];
-
-const exchangeStatusMonthly = [
-  { month: "يناير", "قيد الاعتماد": 42, تعديل: 30, المتأخرة: 8, معتمدة: 12 },
-  { month: "فبراير", "قيد الاعتماد": 44, تعديل: 31, المتأخرة: 9, معتمدة: 14 },
-  { month: "مارس", "قيد الاعتماد": 45, تعديل: 32, المتأخرة: 7, معتمدة: 13 },
-  { month: "أبريل", "قيد الاعتماد": 43, تعديل: 34, المتأخرة: 10, معتمدة: 11 },
-  { month: "مايو", "قيد الاعتماد": 47, تعديل: 33, المتأخرة: 8, معتمدة: 15 },
-  { month: "يونيو", "قيد الاعتماد": 46, تعديل: 34, المتأخرة: 8, معتمدة: 11 },
-  { month: "يوليو", "قيد الاعتماد": 48, تعديل: 32, المتأخرة: 9, معتمدة: 12 },
-  { month: "أغسطس", "قيد الاعتماد": 45, تعديل: 35, المتأخرة: 7, معتمدة: 14 },
-  { month: "سبتمبر", "قيد الاعتماد": 44, تعديل: 33, المتأخرة: 8, معتمدة: 13 },
-  { month: "أكتوبر", "قيد الاعتماد": 46, تعديل: 34, المتأخرة: 9, معتمدة: 12 },
-  { month: "نوفمبر", "قيد الاعتماد": 49, تعديل: 31, المتأخرة: 8, معتمدة: 16 },
-  { month: "ديسمبر", "قيد الاعتماد": 47, تعديل: 33, المتأخرة: 7, معتمدة: 15 },
-];
 
 /** Monthly values — rankings cross so different orgs lead in different months */
 const ORG_LINE_KEYS = [
@@ -115,18 +90,18 @@ function shortOrgName(name) {
 function KpiCard({ k }) {
   const Icon = ICONS[k.icon];
   return (
-    <div className="card-hover bg-white rounded-2xl p-4 w-[24%] max-w-[300px] min-w-0 shadow-sm">
+    <div className="card-hover bg-white rounded-2xl p-4 w-[335px] shrink-0 min-w-0 shadow-sm">
       <div className="flex items-start justify-end gap-3 text-right">
         <div
-          className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+          className="w-[60px] h-[60px] rounded-[15px] flex items-center justify-center shrink-0"
           style={{ background: k.dark ? "#F8F9FA" : k.color }}
         >
-          <Icon size={22} className={k.dark ? "text-[#c89637]" : "text-white"} />
+          <Icon size={26} className={k.dark ? "text-[#c89637]" : "text-white"} />
         </div>
         <div className="min-w-0 flex-1 text-right">
-          <div className="text-3xl font-bold leading-none text-[rgba(0,0,0,0.9)] text-right">{k.value}</div>
-          <div className="text-[15px] text-[#404040] mt-3 text-right">{k.label}</div>
-          <div className={`text-[12px] mt-2 text-right ${k.up ? "text-success" : "text-danger"}`}>{k.delta} عن الربع السابق</div>
+          <div className="text-[32px] font-bold leading-none text-[rgba(0,0,0,0.9)] text-right">{k.value}</div>
+          <div className="text-[18px] text-[#404040] mt-3 text-right">{k.label}</div>
+          <div className={`text-[14px] mt-2 text-right ${k.up ? "text-success" : "text-danger"}`}>{k.delta} عن الربع السابق</div>
         </div>
       </div>
     </div>
@@ -149,30 +124,92 @@ function StatusCard({ c }) {
 
 const RADIAN = Math.PI / 180;
 
-function DonutCalloutLabel({ cx, cy, midAngle, outerRadius, name, value, fill }) {
+/** Precompute non-overlapping callout Y targets for each slice (left/right sides). */
+function buildDonutLabelLayout(data) {
+  const total = data.reduce((s, d) => s + Number(d.value), 0) || 1;
+  const pad = 2;
+  const usable = Math.max(1, 360 - pad * data.length);
+  let cursor = 0;
+
+  const meta = data.map((d, index) => {
+    const sweep = (Number(d.value) / total) * usable;
+    const midAngle = cursor + pad / 2 + sweep / 2;
+    cursor += sweep + pad;
+    const cos = Math.cos(-midAngle * RADIAN);
+    const sin = Math.sin(-midAngle * RADIAN);
+    return { index, midAngle, isRight: cos >= 0, sin };
+  });
+
+  const layout = {};
+
+  for (const isRight of [true, false]) {
+    const group = meta.filter((m) => m.isRight === isRight).sort((a, b) => a.sin - b.sin);
+    if (!group.length) continue;
+
+    // Ideal Y in normalized units (−1…1), then push apart
+    const positions = group.map((m) => ({ ...m, yNorm: m.sin }));
+    const minNorm = 0.44;
+
+    for (let iter = 0; iter < 10; iter += 1) {
+      for (let i = 1; i < positions.length; i += 1) {
+        const gap = positions[i].yNorm - positions[i - 1].yNorm;
+        if (gap < minNorm) {
+          const push = (minNorm - gap) / 2;
+          positions[i - 1].yNorm -= push;
+          positions[i].yNorm += push;
+        }
+      }
+      // Keep band inside the card
+      const lo = positions[0].yNorm;
+      const hi = positions[positions.length - 1].yNorm;
+      if (lo < -1.15) {
+        const shift = -1.15 - lo;
+        positions.forEach((p) => { p.yNorm += shift; });
+      }
+      if (hi > 1.15) {
+        const shift = hi - 1.15;
+        positions.forEach((p) => { p.yNorm -= shift; });
+      }
+    }
+
+    positions.forEach((p) => {
+      layout[p.index] = { yNorm: p.yNorm, isRight: p.isRight };
+    });
+  }
+
+  return layout;
+}
+
+function DonutCalloutLabel({
+  cx, cy, midAngle, outerRadius, name, value, fill, index, layout,
+}) {
   const sin = Math.sin(-midAngle * RADIAN);
   const cos = Math.cos(-midAngle * RADIAN);
+  const planned = layout?.[index];
   const isRight = cos >= 0;
-  // Pull callouts slightly inward/down so top labels stay inside the card
-  const radial = outerRadius + 14;
+
   const sx = cx + (outerRadius + 2) * cos;
   const sy = cy + (outerRadius + 2) * sin;
-  const mx = cx + radial * cos;
-  const my = cy + radial * sin + 10;
-  const ex = mx + (isRight ? 28 : -28);
-  const ey = my + 6;
+
+  const reach = outerRadius + 22;
+  const ey = planned
+    ? cy + planned.yNorm * reach
+    : cy + reach * sin;
+  // Horizontal elbow keeps leader lines from crossing when Y is fanned out
+  const mx = sx + (isRight ? 14 : -14);
+  const my = ey;
+  const ex = cx + (isRight ? 1 : -1) * (outerRadius + 44);
   const textAnchor = isRight ? "start" : "end";
-  const textX = ex + (isRight ? 10 : -10);
+  const textX = ex + (isRight ? 8 : -8);
+  const displayValue = Number.isInteger(Number(value)) ? value : Number(value).toFixed(2);
 
   return (
     <g>
       <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke={fill} fill="none" strokeWidth={1.5} />
       <circle cx={ex} cy={ey} r={2.5} fill={fill} />
-      <text x={textX} y={ey - 4} textAnchor={textAnchor} fill="#404040" fontSize={13}>
-        {name}
-      </text>
-      <text x={textX} y={ey + 14} textAnchor={textAnchor} fill={fill} fontSize={14} fontWeight={700}>
-        {Number(value).toFixed(2)}
+      <text x={textX} y={ey + 4} textAnchor={textAnchor} fontSize={12}>
+        <tspan fill="#404040">{name}</tspan>
+        <tspan fill={fill} fontWeight={700}>{` ${displayValue}`}</tspan>
       </text>
     </g>
   );
@@ -244,6 +281,8 @@ function StatusLegend({ data, suffix = "%" }) {
 }
 
 function PieOrDonutChart({ data, donut = false, total = null, showLegend = true, valueSuffix = "%" }) {
+  const calloutLayout = donut ? buildDonutLabelLayout(data) : null;
+
   return (
     <div
       className={`relative flex items-center h-full w-full min-h-0 min-w-0 ${showLegend && !donut ? "justify-between gap-4" : "justify-center"}`}
@@ -251,15 +290,15 @@ function PieOrDonutChart({ data, donut = false, total = null, showLegend = true,
     >
       <div className={`relative h-full min-h-0 min-w-0 ${showLegend && !donut ? "flex-1" : "w-full"}`}>
         <ResponsiveContainer width="100%" height="100%">
-          <PieChart margin={donut ? { top: 12, right: 16, bottom: 12, left: 16 } : { top: 4, right: 4, bottom: 4, left: 4 }}>
+          <PieChart margin={donut ? { top: 18, right: 88, bottom: 18, left: 88 } : { top: 4, right: 4, bottom: 4, left: 4 }}>
             <Pie
               data={data}
               dataKey="value"
               nameKey="name"
               cx="50%"
               cy="50%"
-              innerRadius={donut ? "28%" : 0}
-              outerRadius={donut ? "62%" : "72%"}
+              innerRadius={donut ? "24%" : 0}
+              outerRadius={donut ? "48%" : "72%"}
               paddingAngle={2}
               isAnimationActive
               animationBegin={0}
@@ -274,6 +313,8 @@ function PieOrDonutChart({ data, donut = false, total = null, showLegend = true,
                         name={props.name}
                         value={props.value}
                         fill={props.fill || data[props.index]?.color}
+                        index={props.index}
+                        layout={calloutLayout}
                       />
                     )
                   : false
@@ -538,6 +579,9 @@ function SwitchableChart({
 }
 
 export default function Dashboard() {
+  const [createOpen, setCreateOpen] = useState(false);
+  const containerRef = useRef(null);
+  const createBtnRef = useRef(null);
   const topOrgsPie = topOrgs.map((o, i) => ({
     name: shortOrgName(o.name),
     value: o.value,
@@ -546,9 +590,23 @@ export default function Dashboard() {
 
   return (
     <Layout title="لوحة التحكم">
-      <div className="p-8 space-y-[50px]">
-        <div className="flex justify-end">
-          <button className="flex items-center gap-2 bg-white rounded-lg px-4 py-2 text-[14px] text-[#404040] shadow-sm ms-0">
+      <div
+        ref={containerRef}
+        className={`relative ${createOpen ? "h-[calc(100dvh-74px)] overflow-hidden" : "min-h-full"}`}
+      >
+        <div className="p-8 space-y-[50px]">
+        <div className="flex items-center gap-3" dir="ltr">
+          <button
+            ref={createBtnRef}
+            type="button"
+            onClick={() => setCreateOpen(true)}
+            className="flex items-center gap-2 bg-[#052C65] text-white text-[16px] font-bold rounded-[12px] py-[13px] px-[20px] shadow-sm cursor-pointer"
+            aria-label="إنشاء طلب نموذج بيان"
+          >
+            <Plus size={16} strokeWidth={2.5} />
+            إنشاء طلب نموذج بيان
+          </button>
+          <button type="button" className="flex items-center gap-2 bg-white rounded-lg px-4 py-2 text-[14px] text-[#404040] shadow-sm" dir="rtl">
             <Calendar size={16} className="text-primary" />
             النصف الأول من عام 2026
             <ChevronDown size={14} />
@@ -557,7 +615,7 @@ export default function Dashboard() {
 
         <div>
           <h2 className="text-[20px] font-bold text-[rgba(0,0,0,0.9)] mb-4 text-right">مؤشرات عامة</h2>
-          <div className="flex justify-center gap-5 flex-nowrap">
+          <div className="flex flex-row-reverse justify-center gap-[65px] flex-nowrap">
             {kpis.map((k) => <KpiCard key={k.label + k.value} k={k} />)}
           </div>
         </div>
@@ -565,14 +623,14 @@ export default function Dashboard() {
         <div className="w-full max-w-[1535.5px] grid grid-cols-2 gap-[50px] overflow-hidden">
           <div className="min-w-0">
             <h2 className="text-[18px] font-bold text-[rgba(0,0,0,0.9)] mb-4 text-right">مؤشرات تبادل نماذج البيان</h2>
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-3 gap-5">
               {exchangeStatusCards.map((c, i) => <StatusCard key={i} c={c} />)}
             </div>
           </div>
           <div className="min-w-0">
             <h2 className="text-[18px] font-bold text-[rgba(0,0,0,0.9)] mb-4 text-right">مؤشرات اعتماد البيانات</h2>
-            <div className="grid grid-cols-4 gap-3">
-              {approvalStatusCards.map((c, i) => <StatusCard key={i} c={c} />)}
+            <div className="grid grid-cols-3 gap-5">
+              {fulfillmentStatusCards.map((c, i) => <StatusCard key={i} c={c} />)}
             </div>
           </div>
         </div>
@@ -582,8 +640,8 @@ export default function Dashboard() {
             {(type) => (
               <SwitchableChart
                 type={type}
-                categorical={approvalPie}
-                monthlySeries={approvalStatusMonthly}
+                categorical={gaStatusPie}
+                monthlySeries={gaStatusMonthly}
                 pieSuffix="%"
                 donutSuffix="%"
                 hbarDomain={50}
@@ -608,15 +666,15 @@ export default function Dashboard() {
                 );
               }
               if (type === "line") {
-                return <SingleLineChart data={monthlyApproved} />;
+                return <SingleLineChart data={gaMonthlyCompleted} />;
               }
               if (type === "bar") {
-                return <VerticalBarChart data={monthlyApproved.map((d) => ({ name: d.month, value: d.value }))} />;
+                return <VerticalBarChart data={gaMonthlyCompleted.map((d) => ({ name: d.month, value: d.value }))} />;
               }
               return (
                 <HorizontalBarChart
-                  data={monthlyApproved.map((d) => ({ name: d.month, value: d.value }))}
-                  domainMax={100}
+                  data={gaMonthlyCompleted.map((d) => ({ name: d.month, value: d.value }))}
+                  domainMax={140}
                   showLabels
                   yAxisWidth={58}
                 />
@@ -630,12 +688,12 @@ export default function Dashboard() {
             {(type) => (
               <SwitchableChart
                 type={type}
-                categorical={statusDonut}
-                monthlySeries={exchangeStatusMonthly}
+                categorical={gaStatusDonut}
+                monthlySeries={gaStatusMonthly}
                 pieSuffix=""
-                donutTotal={statusDonutTotal}
+                donutTotal={gaStatusDonutTotal}
                 donutSuffix=""
-                hbarDomain={50}
+                hbarDomain={100}
               />
             )}
           </ChartCard>
@@ -677,6 +735,15 @@ export default function Dashboard() {
             }}
           </ChartCard>
         </div>
+        </div>
+
+      <CreateStatementModal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onSubmit={() => setCreateOpen(false)}
+        anchorRef={createBtnRef}
+        containerRef={containerRef}
+      />
       </div>
     </Layout>
   );

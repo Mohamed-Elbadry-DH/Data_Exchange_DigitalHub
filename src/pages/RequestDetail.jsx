@@ -1,21 +1,26 @@
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  Clock, User, Monitor, RefreshCw, Download, FileSpreadsheet, FileIcon, Plus,
+  Clock, User, Monitor, FileClock, Download, FileSpreadsheet, FileIcon, Plus,
 } from "lucide-react";
 import Layout from "../components/Layout";
 import StatusBadge from "../components/StatusBadge";
 import SuccessModal from "../components/SuccessModal";
 import RequestEditModal from "../components/RequestEditModal";
 import { requestDetailById } from "../data/mock";
+import { loadNotes, saveNotes } from "../domain/notes";
+import { useAuth } from "../context/AuthContext";
 
 function InfoTile({ icon: Icon, label, value, sub }) {
   return (
     <div className="bg-white rounded-2xl p-5 flex-1 flex items-center gap-4 shadow-sm">
-      <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-        <Icon size={20} className="text-primary" />
+      <div
+        className="w-[60px] h-[60px] rounded-[15px] flex items-center justify-center shrink-0"
+        style={{ background: "#2563EB4D" }}
+      >
+        <Icon size={36} className="text-[#2563EB]" />
       </div>
-      <div className="text-right">
+      <div className="text-right min-w-0">
         <div className="text-[13px] text-muted">{label}</div>
         <div className="text-[15px] font-bold text-[rgba(0,0,0,0.9)]">{value}</div>
         {sub && <div className="text-[12px] text-muted">{sub}</div>}
@@ -27,128 +32,188 @@ function InfoTile({ icon: Icon, label, value, sub }) {
 function KVTable({ data }) {
   const entries = Object.entries(data);
   return (
-    <table className="w-full text-right text-[14px]">
-      <tbody>
-        {entries.map(([k, v], i) => (
-          <tr key={k} className={i !== entries.length - 1 ? "border-b border-gray-100" : ""}>
-            <td className="py-3.5 px-5 w-1/2 font-semibold text-[rgba(0,0,0,0.9)] bg-page/60">{k}</td>
-            <td className="py-3.5 px-5 w-1/2 text-[#404040] leading-relaxed">{v}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div className="relative rounded-xl overflow-hidden border border-[#D8D8D8] bg-white h-full min-h-[385px]">
+      <div className="pointer-events-none absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2 bg-[#D8D8D8]" aria-hidden="true" />
+      <table className="w-full text-right text-[14px] border-collapse table-fixed">
+        <tbody>
+          {entries.map(([k, v], i) => (
+            <tr key={k} className={i !== entries.length - 1 ? "border-b border-[#D8D8D8]" : ""}>
+              <td className="py-3.5 px-5 w-1/2 font-semibold text-[rgba(0,0,0,0.9)] align-middle">
+                {k}
+              </td>
+              <td className="py-3.5 px-5 w-1/2 text-[#404040] leading-relaxed align-middle">
+                {v}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
-function FormDataTab({ d }) {
+function formatCell(value, format = "number") {
+  if (value === null || value === undefined || value === "-") return "-";
+  if (typeof value !== "number") return value;
+  if (format === "percent1") return `${value.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`;
+  if (format === "decimal1") return value.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  return value.toLocaleString("en-US");
+}
+
+function getLeafCount(table) {
+  if (table.nestedGroups) {
+    return table.nestedGroups.reduce(
+      (sum, ng) => sum + ng.groups.reduce((s, g) => s + g.columns.length, 0),
+      0
+    );
+  }
+  if (table.groups) {
+    return table.groups.reduce((sum, g) => sum + g.columns.length, 0);
+  }
+  return table.columns?.length || 0;
+}
+
+function DataMatrixTable({ table, showTotals = false }) {
+  if (!table?.rows?.length) return null;
+
+  const formats = table.formats || [];
+  const summable = table.summable || [];
+  const leafCount = getLeafCount(table);
+
+  const totals = showTotals
+    ? Array.from({ length: leafCount }, (_, i) => {
+        if (!summable[i]) return null;
+        return table.rows.reduce((sum, row) => sum + (Number(row.values[i]) || 0), 0);
+      })
+    : null;
+
+  const th = "border border-[#D8D8D8] px-3 py-2 font-bold text-[rgba(0,0,0,0.9)] bg-[#DDEBF4]";
+  const thMuted = "border border-[#D8D8D8] px-3 py-2 text-muted font-semibold bg-[#DDEBF4]";
+
   return (
     <div className="overflow-auto">
       <table className="w-full text-center text-[13px] border-collapse">
         <thead>
-          <tr>
-            <th rowSpan={3} className="bg-page border border-gray-100 px-4 py-3 font-bold text-[rgba(0,0,0,0.9)]">التخصص</th>
-            <th colSpan={6} className="bg-page border border-gray-100 px-4 py-2 font-bold">مصري</th>
-            <th colSpan={6} className="bg-page border border-gray-100 px-4 py-2 font-bold">وافد</th>
-          </tr>
-          <tr>
-            <th colSpan={2} className="bg-page border border-gray-100 px-3 py-2">دبلوم</th>
-            <th colSpan={2} className="bg-page border border-gray-100 px-3 py-2">ماجستير</th>
-            <th colSpan={2} className="bg-page border border-gray-100 px-3 py-2">دكتوراه</th>
-            <th colSpan={2} className="bg-page border border-gray-100 px-3 py-2">دبلوم</th>
-            <th colSpan={2} className="bg-page border border-gray-100 px-3 py-2">ماجستير</th>
-            <th colSpan={2} className="bg-page border border-gray-100 px-3 py-2">دكتوراه</th>
-          </tr>
-          <tr className="text-muted">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <React.Fragment key={i}>
-                <th className="border border-gray-100 px-3 py-2">ذكور</th>
-                <th className="border border-gray-100 px-3 py-2">إناث</th>
-              </React.Fragment>
-            ))}
-          </tr>
+          {table.nestedGroups ? (
+            <>
+              <tr>
+                <th rowSpan={3} className={`${th} px-4`}>
+                  {table.rowHeader}
+                </th>
+                {table.nestedGroups.map((ng) => (
+                  <th
+                    key={ng.label}
+                    colSpan={ng.groups.reduce((s, g) => s + g.columns.length, 0)}
+                    className={th}
+                  >
+                    {ng.label}
+                  </th>
+                ))}
+              </tr>
+              <tr>
+                {table.nestedGroups.flatMap((ng) =>
+                  ng.groups.map((g) => (
+                    <th key={`${ng.label}-${g.label}`} colSpan={g.columns.length} className={th}>
+                      {g.label}
+                    </th>
+                  ))
+                )}
+              </tr>
+              <tr>
+                {table.nestedGroups.flatMap((ng) =>
+                  ng.groups.flatMap((g) =>
+                    g.columns.map((col) => (
+                      <th key={`${ng.label}-${g.label}-${col}`} className={thMuted}>
+                        {col}
+                      </th>
+                    ))
+                  )
+                )}
+              </tr>
+            </>
+          ) : table.groups ? (
+            <>
+              <tr>
+                <th rowSpan={2} className={`${th} px-4`}>
+                  {table.rowHeader}
+                </th>
+                {table.groups.map((g) => (
+                  <th key={g.label} colSpan={g.columns.length} className={th}>
+                    {g.label}
+                  </th>
+                ))}
+              </tr>
+              <tr>
+                {table.groups.flatMap((g) =>
+                  g.columns.map((col) => (
+                    <th key={`${g.label}-${col}`} className={thMuted}>
+                      {col}
+                    </th>
+                  ))
+                )}
+              </tr>
+            </>
+          ) : (
+            <tr>
+              <th className={`${th} px-4`}>{table.rowHeader}</th>
+              {table.columns.map((col) => (
+                <th key={col} className={th}>
+                  {col}
+                </th>
+              ))}
+            </tr>
+          )}
         </thead>
         <tbody>
-          {d.formTable.specialties.map((s) => (
-            <tr key={s} className="text-[#404040]">
-              <td className="border border-gray-100 px-4 py-3 font-semibold bg-page/50">{s}</td>
-              {Array.from({ length: 12 }).map((_, i) => (
-                <td key={i} className="border border-gray-100 px-4 py-3">-</td>
+          {table.rows.map((row) => (
+            <tr key={row.label} className="text-[#404040]">
+              <td className="border border-[#D8D8D8] px-4 py-3 font-semibold bg-[#DDEBF4] text-right">
+                {row.label}
+              </td>
+              {row.values.map((v, i) => (
+                <td key={i} className="border border-[#D8D8D8] px-4 py-3">
+                  {formatCell(v, formats[i])}
+                </td>
               ))}
             </tr>
           ))}
         </tbody>
+        {showTotals && totals && (
+          <tfoot>
+            <tr className="text-[rgba(0,0,0,0.9)] font-bold">
+              <td className="border border-[#D8D8D8] px-4 py-3 bg-[#DDEBF4] text-right">الإجمالي</td>
+              {totals.map((v, i) => (
+                <td key={i} className="border border-[#D8D8D8] px-4 py-3 bg-[#DDEBF4]">
+                  {v === null ? "—" : formatCell(v, formats[i])}
+                </td>
+              ))}
+            </tr>
+          </tfoot>
+        )}
       </table>
     </div>
   );
 }
 
+function blankTable(table) {
+  if (!table?.rows?.length) return table;
+  const leafCount = getLeafCount(table);
+  return {
+    ...table,
+    rows: table.rows.map((row) => ({
+      ...row,
+      values: Array.from({ length: leafCount }, () => "-"),
+    })),
+  };
+}
+
+function FormDataTab({ d }) {
+  // نماذج البيان = هيكل فارغ بدون أرقام؛ البيانات تظهر في استيفاء البيانات المطلوبة فقط
+  return <DataMatrixTable table={blankTable(d.formTable)} showTotals={false} />;
+}
+
 function FulfillmentTab({ d }) {
-  const rows = d.fulfillmentTable.rows;
-  const totals = rows.reduce(
-    (acc, r) => ({
-      dipM: acc.dipM + r.dipM, dipF: acc.dipF + r.dipF,
-      msM: acc.msM + r.msM, msF: acc.msF + r.msF,
-      phdM: acc.phdM + r.phdM, phdF: acc.phdF + r.phdF,
-      m: acc.m + r.m, f: acc.f + r.f, total: acc.total + r.total,
-    }),
-    { dipM: 0, dipF: 0, msM: 0, msF: 0, phdM: 0, phdF: 0, m: 0, f: 0, total: 0 }
-  );
-  return (
-    <div className="overflow-auto">
-      <table className="w-full text-center text-[13px] border-collapse">
-        <thead>
-          <tr>
-            <th rowSpan={2} className="bg-page border border-gray-100 px-4 py-3 font-bold">التخصص</th>
-            <th colSpan={2} className="bg-page border border-gray-100 px-3 py-2 font-bold">دبلوم</th>
-            <th colSpan={2} className="bg-page border border-gray-100 px-3 py-2 font-bold">ماجستير</th>
-            <th colSpan={2} className="bg-page border border-gray-100 px-3 py-2 font-bold">دكتوراه</th>
-            <th colSpan={3} className="bg-page border border-gray-100 px-3 py-2 font-bold">الإجمالي</th>
-          </tr>
-          <tr className="text-muted">
-            <th className="border border-gray-100 px-3 py-2">ذكور</th>
-            <th className="border border-gray-100 px-3 py-2">إناث</th>
-            <th className="border border-gray-100 px-3 py-2">ذكور</th>
-            <th className="border border-gray-100 px-3 py-2">إناث</th>
-            <th className="border border-gray-100 px-3 py-2">ذكور</th>
-            <th className="border border-gray-100 px-3 py-2">إناث</th>
-            <th className="border border-gray-100 px-3 py-2">ذكور</th>
-            <th className="border border-gray-100 px-3 py-2">إناث</th>
-            <th className="border border-gray-100 px-3 py-2">الإجمالي الكلي</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => (
-            <tr key={r.specialty} className="text-[#404040]">
-              <td className="border border-gray-100 px-4 py-3 font-semibold bg-page/50">{r.specialty}</td>
-              <td className="border border-gray-100 px-4 py-3">{r.dipM}</td>
-              <td className="border border-gray-100 px-4 py-3">{r.dipF}</td>
-              <td className="border border-gray-100 px-4 py-3">{r.msM}</td>
-              <td className="border border-gray-100 px-4 py-3">{r.msF}</td>
-              <td className="border border-gray-100 px-4 py-3">{r.phdM}</td>
-              <td className="border border-gray-100 px-4 py-3">{r.phdF}</td>
-              <td className="border border-gray-100 px-4 py-3">{r.m}</td>
-              <td className="border border-gray-100 px-4 py-3">{r.f}</td>
-              <td className="border border-gray-100 px-4 py-3 font-bold">{r.total}</td>
-            </tr>
-          ))}
-        </tbody>
-        <tfoot>
-          <tr className="text-[rgba(0,0,0,0.9)] font-bold">
-            <td className="border border-gray-100 px-4 py-3 bg-page">الإجمالي</td>
-            <td className="border border-gray-100 px-4 py-3 bg-page">{totals.dipM}</td>
-            <td className="border border-gray-100 px-4 py-3 bg-page">{totals.dipF}</td>
-            <td className="border border-gray-100 px-4 py-3 bg-page">{totals.msM}</td>
-            <td className="border border-gray-100 px-4 py-3 bg-page">{totals.msF}</td>
-            <td className="border border-gray-100 px-4 py-3 bg-page">{totals.phdM}</td>
-            <td className="border border-gray-100 px-4 py-3 bg-page">{totals.phdF}</td>
-            <td className="border border-gray-100 px-4 py-3 bg-page">{totals.m}</td>
-            <td className="border border-gray-100 px-4 py-3 bg-page">{totals.f}</td>
-            <td className="border border-gray-100 px-4 py-3 bg-page">{totals.total}</td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-  );
+  return <DataMatrixTable table={d.fulfillmentTable} showTotals />;
 }
 
 function AttachmentsTab({ d }) {
@@ -166,7 +231,7 @@ function AttachmentsTab({ d }) {
       </thead>
       <tbody>
         {d.attachments.map((a, i) => (
-          <tr key={i} className="border-b border-gray-100 text-[#404040]">
+          <tr key={i} className="border-b border-[#D8D8D8] text-[#404040]">
             <td className="py-3.5 px-5 font-medium">{a.name}</td>
             <td className="py-3.5 px-5 flex items-center gap-2">
               {a.type === "Excel" ? <FileSpreadsheet size={16} className="text-success" /> : <FileIcon size={16} className="text-danger" />}
@@ -183,13 +248,135 @@ function AttachmentsTab({ d }) {
   );
 }
 
-function NotesTab() {
+function NotesTab({ requestId, author = "أحمد محمد" }) {
+  const [notes, setNotes] = useState(() => loadNotes(requestId));
+  const [draft, setDraft] = useState("");
+  const [adding, setAdding] = useState(false);
+
+  React.useEffect(() => {
+    setNotes(loadNotes(requestId));
+    setDraft("");
+    setAdding(false);
+  }, [requestId]);
+
+  const updateNotes = (next) => {
+    setNotes(next);
+    saveNotes(requestId, next);
+  };
+
+  const addNote = () => {
+    const text = draft.trim();
+    if (!text) return;
+    const now = new Date();
+    const date = now.toLocaleDateString("ar-EG", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+    const time = now.toLocaleTimeString("ar-EG", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    updateNotes([
+      {
+        id: Date.now(),
+        text,
+        author,
+        date,
+        time,
+      },
+      ...notes,
+    ]);
+    setDraft("");
+    setAdding(false);
+  };
+
+  const removeNote = (id) => {
+    updateNotes(notes.filter((n) => n.id !== id));
+  };
+
   return (
-    <div className="border border-gray-100 rounded-xl p-5 flex items-center justify-between">
-      <button className="bg-navy text-white rounded-lg px-4 py-2.5 text-[14px] flex items-center gap-2 shrink-0">
-        <Plus size={16} /> إضافة ملاحظة
-      </button>
-      <span className="text-muted text-[14px]">اضف أي ملاحظات او معلومات إضافية تتعلق بهذا النموذج ....</span>
+    <div className="space-y-4">
+      <div className="border border-[#D8D8D8] rounded-xl p-5">
+        {!adding ? (
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-muted text-[14px] text-right">
+              اضف أي ملاحظات او معلومات إضافية تتعلق بهذا النموذج ....
+            </span>
+            <button
+              type="button"
+              onClick={() => setAdding(true)}
+              className="bg-navy text-white rounded-lg px-4 py-2.5 text-[14px] flex items-center gap-2 shrink-0 hover:opacity-90"
+            >
+              <Plus size={16} /> إضافة ملاحظة
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="text-[14px] font-semibold text-[#052C65] text-right">ملاحظة جديدة</div>
+            <textarea
+              autoFocus
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              rows={4}
+              placeholder="اكتب ملاحظتك هنا..."
+              className="w-full border border-[#D8D8D8] rounded-lg py-2.5 px-3 text-[14px] text-right placeholder:text-gray-400 resize-none focus:outline-none focus:border-primary"
+            />
+            <div className="flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setDraft("");
+                  setAdding(false);
+                }}
+                className="rounded-lg px-4 py-2.5 text-[14px] text-[#404040] border border-[#D8D8D8] hover:bg-page"
+              >
+                إلغاء
+              </button>
+              <button
+                type="button"
+                onClick={addNote}
+                disabled={!draft.trim()}
+                className="bg-navy text-white rounded-lg px-4 py-2.5 text-[14px] disabled:opacity-40"
+              >
+                حفظ الملاحظة
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {notes.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-[#D8D8D8] py-10 text-center text-muted text-[14px]">
+          لا توجد ملاحظات بعد
+        </div>
+      ) : (
+        <ul className="space-y-3">
+          {notes.map((note) => (
+            <li
+              key={note.id}
+              className="border border-[#D8D8D8] rounded-xl p-4 bg-white text-right"
+            >
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div>
+                  <div className="font-semibold text-[14px] text-[#052C65]">{note.author}</div>
+                  <div className="text-[12px] text-muted mt-0.5">
+                    {note.date} — {note.time}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeNote(note.id)}
+                  className="text-danger text-[13px] hover:underline shrink-0"
+                >
+                  حذف
+                </button>
+              </div>
+              <p className="text-[14px] text-[#404040] leading-7 whitespace-pre-wrap">{note.text}</p>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -198,17 +385,17 @@ export default function RequestDetail({ mode = "forms" }) {
   const isRequired = mode === "required";
   const tabs = isRequired
     ? [
-        { key: "info", label: "بيانات نموذج البيان" },
-        { key: "form", label: "نموذج البيان" },
-        { key: "fulfillment", label: "استيفاء البيانات" },
-        { key: "attachments", label: "المرفقات" },
-        { key: "notes", label: "الملاحظات" },
+        { key: "info", label: "بيانات نموذج البيان", width: 186 },
+        { key: "form", label: "نموذج البيان", width: 125 },
+        { key: "fulfillment", label: "استيفاء البيانات", width: 140 },
+        { key: "attachments", label: "المرفقات", width: 98 },
+        { key: "notes", label: "الملاحظات", width: 109 },
       ]
     : [
-        { key: "info", label: "بيانات نموذج البيان" },
-        { key: "form", label: "نموذج البيان" },
-        { key: "attachments", label: "المرفقات" },
-        { key: "notes", label: "الملاحظات" },
+        { key: "info", label: "بيانات نموذج البيان", width: 186 },
+        { key: "form", label: "نموذج البيان", width: 125 },
+        { key: "attachments", label: "المرفقات", width: 98 },
+        { key: "notes", label: "الملاحظات", width: 109 },
       ];
 
   const { id } = useParams();
@@ -219,62 +406,104 @@ export default function RequestDetail({ mode = "forms" }) {
   const [editOpen, setEditOpen] = useState(false);
   const [editSent, setEditSent] = useState(false);
   const navigate = useNavigate();
+  const { name } = useAuth();
 
   const backTo = isRequired ? "/required" : "/forms";
   const backLabel = isRequired ? "البيانات المطلوبة" : "نماذج البيان";
+  const showEditRequest = d.status !== "تعديل";
+  const showApprove = d.status !== "تعديل" && d.status !== "معتمدة";
 
   return (
-    <Layout title={d.title} breadcrumb={backLabel}>
-      <div className="p-8 space-y-6">
+    <Layout title={backLabel}>
+      <div className="px-8 pt-7 space-y-5">
+        <div>
+          <nav className="inline-flex items-center gap-1 h-[41px] text-right" aria-label="مسار التنقل">
+            <button
+              type="button"
+              onClick={() => navigate(backTo)}
+              className="font-[Cairo] font-medium text-[20px] leading-none text-[#ADB5BD] hover:opacity-80"
+            >
+              {backLabel}
+            </button>
+            <span className="inline-flex items-center justify-center w-[30px] h-[30px] shrink-0" aria-hidden="true">
+              <img src="/navigate-next.svg" alt="" width={30} height={30} className="rotate-180" />
+            </span>
+            <span className="font-[Cairo] font-semibold text-[22px] leading-none text-[#052C65]">
+              تفاصيل الطلب
+            </span>
+          </nav>
+          <h2 className="mt-5 font-[Cairo] font-bold text-[27px] leading-none text-[#052C65] text-right">
+            {d.title}
+          </h2>
+        </div>
+
         <div className="flex gap-5 flex-wrap">
-          <InfoTile icon={RefreshCw} label="الحالة" value={<StatusBadge status={d.status} />} />
+          <InfoTile icon={FileClock} label="الحالة" value={<StatusBadge status={d.status} />} />
           <InfoTile icon={Monitor} label="الجهة الخارجية" value={d.org} />
           <InfoTile icon={User} label="الموظف المختص" value={d.officer} sub={d.officerRole} />
           <InfoTile icon={Clock} label="موعد الانتهاء" value={d.due} />
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          <div className="flex border-b border-gray-100">
-            {tabs.map((t) => (
-              <button
-                key={t.key}
-                onClick={() => setTab(t.key)}
-                className={`px-7 py-4 text-[15px] font-semibold border-b-2 transition-colors ${
-                  tab === t.key ? "text-primary border-primary" : "text-muted border-transparent hover:text-[#404040]"
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-[#D8D8D8]">
+          <div
+            className={`grid border-b border-[#D8D8D8] px-6 pt-[14px] ${
+              isRequired ? "grid-cols-5" : "grid-cols-4"
+            }`}
+          >
+            {tabs.map((t) => {
+              const active = tab === t.key;
+              return (
+                <button
+                  key={t.key}
+                  type="button"
+                  onClick={() => setTab(t.key)}
+                  className={`h-[47px] w-full font-[Cairo] font-medium text-[22px] leading-none whitespace-nowrap flex items-center justify-center border-b-[3px] transition-colors ${
+                    active
+                      ? "text-[#052C65] border-[#0986ED]"
+                      : "text-[#7F8999] border-transparent hover:text-[#052C65]"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              );
+            })}
           </div>
           <div className="p-6">
             {tab === "info" && (
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <KVTable data={d.info} />
                 <KVTable data={d.yearInfo} />
               </div>
             )}
             {tab === "form" && <FormDataTab d={d} />}
-            {tab === "fulfillment" && <FulfillmentTab d={d} />}
+            {tab === "fulfillment" && isRequired && <FulfillmentTab d={d} />}
             {tab === "attachments" && <AttachmentsTab d={d} />}
-            {tab === "notes" && <NotesTab />}
+            {tab === "notes" && <NotesTab requestId={id} author={name || d.officer} />}
           </div>
         </div>
 
-        <div className="flex gap-4 justify-end">
-          <button
-            onClick={() => setEditOpen(true)}
-            className="bg-primary text-white rounded-lg px-8 py-3 text-[15px] font-semibold"
-          >
-            طلب تعديل
-          </button>
-          <button
-            onClick={() => setSuccess(true)}
-            className="bg-success text-white rounded-lg px-8 py-3 text-[15px] font-semibold"
-          >
-            {isRequired ? "اعتماد نهائي و إرساله" : "اعتماد و إرسال"}
-          </button>
-        </div>
+        {(showEditRequest || showApprove) && (
+          <div className="flex gap-4 justify-end pb-8">
+            {showEditRequest && (
+              <button
+                type="button"
+                onClick={() => setEditOpen(true)}
+                className="bg-primary text-white rounded-lg px-8 py-3 text-[15px] font-semibold"
+              >
+                طلب تعديل
+              </button>
+            )}
+            {showApprove && (
+              <button
+                type="button"
+                onClick={() => setSuccess(true)}
+                className="bg-success text-white rounded-lg px-8 py-3 text-[15px] font-semibold"
+              >
+                {isRequired ? "اعتماد نهائي و إرساله" : "اعتماد و إرسال"}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       <RequestEditModal
@@ -297,3 +526,4 @@ export default function RequestDetail({ mode = "forms" }) {
     </Layout>
   );
 }
+

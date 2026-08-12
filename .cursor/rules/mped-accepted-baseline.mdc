@@ -1,0 +1,73 @@
+---
+description: Accepted visual/UX baseline for MPED Data Exchange — do not regress
+alwaysApply: true
+---
+
+# MPED Accepted Baseline (locked)
+
+Treat the current UI as the **accepted reference**. Do not change shell, tokens, chart selector chrome, or matrix header colors unless the user asks.
+
+## FROZEN: the supervisor module is off-limits
+The supervisor module is **shipped and stable**. All work from now on happens in the general admin module.
+
+- **Never edit** `src/pages/*.jsx` (the non-`ga` pages), `src/components/Layout.jsx`, or `src/data/mock.js`.
+- **Only edit** `src/pages/ga/**`, `src/components/ga/**`, `src/data/mockGa.js`.
+- Need a shared component (`src/components/*` outside `ga/`) changed? **Copy it into `src/components/ga/`** and change the copy — do not modify the original.
+- Shared business logic in `src/domain/**` may still be extended (both modules depend on it), but only in **additive** ways that leave supervisor behaviour identical. If a domain change would alter what the supervisor sees, ask first.
+- Same for `src/index.css`: add new classes, never redefine the existing tokens or classes the supervisor uses.
+- If a request seems to require touching the supervisor, stop and ask instead of editing it.
+
+## Stack
+React 19 + Vite + Tailwind 4 + Recharts 3 + lucide-react + Cairo (RTL). Mock data in `src/data/mock.js`.
+
+## Tokens (`src/index.css`)
+navy `#1f254b` · navy-deep `#052c65` · primary `#1b75ff` · primary-2 `#0986ed` · page `#f5f6fa` · ink `#404040` · muted `#7f8999` · success/danger/warning/purple as themed. Outer chrome `#1b1d22`. Borders often `#D8D8D8`.
+
+## Shell (`Layout.jsx`)
+- RTL `dir="rtl"`; frame `min-w-[1100px]` `max-w-[1920px]` `bg-page`
+- Sidebar expanded **329px** / collapsed **121px**; active pill `bg-primary`
+- Topbar **74px**; page padding typically `p-8` (detail: `px-8 pt-7`)
+
+## Dashboard charts (`Dashboard.jsx`)
+- Card: **345×** flex, radius **20**, selector frame **217×39**, icons **26** hit / **19** draw
+- Types LTR: pie → donut(LifeBuoy) → line → column(bar) → hbar — **must switch chart type**
+- Active icon: bg `rgba(9,134,237,0.09)` `#0986ED`; inactive `#052C65`
+- Status colors: اعتماد `#1B75FF` · تعديل `#FF8C08` · متأخرة `#DC2626` · معتمدة `#16A34A`
+- Charts use `dir="ltr"`; pie/donut tooltip shows **name : value** (e.g. `قيد الاعتماد : 40 %`)
+- Chart rows: `max-w-[1535.5px]`, gap **63px**, `flex-row-reverse`
+
+## Request detail
+- In-page breadcrumb (Cairo): parent `#ADB5BD` → navigate-next rotated → «تفاصيل الطلب» `#052C65`
+- Info tile icon box **60×60** radius 15 bg `#2563EB4D`
+- Tabs Cairo; active underline `#0986ED` / text `#052C65`
+- Matrix headers, row labels, totals: **`#DDEBF4`**; form tables **match statement type**; **نموذج البيان = empty (`-`)**, **استيفاء البيانات = filled numbers**
+- Notes: seed + add/list/delete + `localStorage` `mped-notes-${id}`; تعديل requests include modification-request note
+- Actions: hide both buttons if `تعديل`; hide approve only if `معتمدة`; otherwise show both
+
+## Auth (mock)
+- Flow `/login` → `/verify` → `/loading` (3s) → protected app; state in `src/context/AuthContext.jsx`, `localStorage` key `mped-auth` = `{ email, name, role, allowed, code, stage: otp|loading|ready }`
+- Login email field opens a `demoUsers` picker (mock.js) that auto-fills email + password; **only مشرف الإدارة العامة (`enabled: true`) reaches the dashboard** — the rest show «قيد التطوير» after verification
+- Verification code is random per sign-in and types itself digit by digit every 450ms into read-only boxes; confirm/resend disabled while typing; resend countdown 60s; guards in `RequireAuth.jsx` (`STAGE_ROUTE = { otp: "/verify", loading: "/loading" }`)
+- `AuthShell.jsx`: frame `min-w-[1100px]`/`max-w-[1920px]` on `#1b1d22`, page bg `#F6F7F8`, `/dots.png` top-right + rotated bottom-left at 34.72% of frame width, opacity 0.6; card **660.8×561.6** radius `26.67px` bg `#E9ECEF` shadow `0 5.33px 5.33px #00000040`, `gap-[35px]`, content column 478.94; logo `/auth-logo.png`
+- Inputs 52px white border `#D8D8D8`, icon on the **left**, placeholder `#ADB5BD`; primary buttons height `65.61px` radius `11.72px` bg `#0747A5`; OTP four 58×58 boxes `dir="ltr"`
+- `roles` in `mock.js` keeps the 6 role definitions for future flows; signed-in name + role show in the topbar; sidebar تسجيل الخروج calls `signOut()` → `/login`
+
+## General admin module (`/ga`) — isolated clone
+- Files: `src/components/ga/GaLayout.jsx` (NAV prefixed `/ga`), `src/pages/ga/*` (copies of the supervisor pages), `src/data/mockGa.js` (`export * from "./mock"` — declare an export locally to diverge), `src/auth/roleHome.js` (`homePathForRole` from `demoUsers[].home`)
+- Only touch `src/pages/ga/**`, `src/components/ga/**`, `src/data/mockGa.js` when building general admin; **never** edit the supervisor pages to serve it
+- `detailPath` / `backTo` are `/ga/forms` and `/ga/required`
+
+## Cross-module integration — `src/domain/` (isolation is UI-only)
+- One product: a request moves between roles, so shared business logic lives in `src/domain/` and is **never** forked per module
+- `src/domain/roles.js` `ROLES` (6 labels matching `demoUsers[].role`) · `src/domain/workflow.js` `STAGES` (7 stages, each with its owner role) + `stageIndex` / `stageById` / `ownsStage` / `nextStage` · `src/domain/notes.js` `loadNotes` / `saveNotes` on the single key `mped-notes-${id}`
+- Notes are shared between both modules; author = `useAuth().name` (fallback `d.officer`)
+- Stage-driven buttons must derive from `STAGES` / `ownsStage(role, stageId)`, not per-page role literals
+- `mockGa.js` overrides **presentation only** (KPI labels, chart series, columns); requests / notes / users stay single-sourced
+- New writes (create request, advance stage) go into `src/domain/`, called from both modules — no module-scoped storage keys
+- Route groups: `RequireAuth allow={["مشرف الإدارة العامة"]}` for `/`, `allow={["الإدارة العامة"]}` for `/ga`; a role outside its module is redirected to its own home
+- Still to build from `الإدارة العامة.pdf`: 3 indicator groups + إنشاء طلب بيان, create-statement-form page, 7-stage stepper detail with stage-driven actions, attachments table, الدرجات العلمية matrix, PDF list columns/filters
+
+## Rules of engagement
+- Prefer extending existing patterns over new visual systems
+- Keep Arabic copy; RTL layout; LTR only for charts/email/phone where already done
+- No drive-by refactors of accepted screens while building new pages

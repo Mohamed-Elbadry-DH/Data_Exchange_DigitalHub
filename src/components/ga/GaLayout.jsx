@@ -3,20 +3,21 @@ import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutGrid, Table2, FileText, Users, Settings, LogOut, Bell,
 } from "lucide-react";
-import { user } from "../data/mock";
-import { useAuth } from "../context/AuthContext";
+import { user } from "../../data/mockGa";
+import { useAuth } from "../../context/AuthContext";
 
 const NAV = [
-  { to: "/", label: "لوحة التحكم", icon: LayoutGrid },
-  { to: "/forms", label: "نماذج البيان", icon: Table2 },
-  { to: "/required", label: "البيانات المطلوبة", icon: FileText },
-  { to: "/users", label: "المستخدمين", icon: Users },
+  { to: "/ga", label: "لوحة التحكم", icon: LayoutGrid, end: true },
+  { to: "/ga/forms", label: "نماذج البيان", icon: Table2 },
+  { to: "/ga/required", label: "البيانات المطلوبة", icon: FileText },
+  { to: "/ga/users", label: "المستخدمين", icon: Users },
 ];
 
-function SidebarItem({ to, label, icon: Icon, collapsed }) {
+function SidebarItem({ to, label, icon: Icon, collapsed, end }) {
   return (
     <NavLink
       to={to}
+      end={end}
       title={collapsed ? label : undefined}
       aria-label={collapsed ? label : undefined}
       className={({ isActive }) =>
@@ -37,7 +38,7 @@ function SidebarItem({ to, label, icon: Icon, collapsed }) {
   );
 }
 
-export default function Layout({ children, title, breadcrumb }) {
+export default function GaLayout({ children, title, breadcrumb }) {
   const navigate = useNavigate();
   const { role, name, signOut } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
