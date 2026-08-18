@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import ItListPage from "../../components/it/ItListPage";
 import BulletinCreateModal from "../../components/it/BulletinCreateModal";
 import { bulletins } from "../../data/mockIt";
-import { ddmmyyyyToIso, sortRows, SORT_OPTIONS } from "./listUtils";
+import { ddmmyyyyToIso, sortRows, SORT_OPTIONS, useCreateModal } from "./listUtils";
 
 const COLUMNS = [
   { key: "name", label: "اسم نشرة" },
@@ -14,7 +14,7 @@ const COLUMNS = [
 ];
 
 export default function BulletinsList() {
-  const [createOpen, setCreateOpen] = useState(false);
+  const [createOpen, openCreate, closeCreate] = useCreateModal();
   const [search, setSearch] = useState("");
   const [admin, setAdmin] = useState("");
   const [periodicity, setPeriodicity] = useState("");
@@ -46,10 +46,7 @@ export default function BulletinsList() {
       rows={rows}
       search={search}
       onSearchChange={setSearch}
-      actions={[
-        { label: "إنشاء نشرة", primary: true, onClick: () => setCreateOpen(true) },
-        { label: "تصدير Excel" },
-      ]}
+      actions={[{ label: "إنشاء نشرة", primary: true, onClick: openCreate }]}
       filterFields={[
         { label: "الإدارة", value: admin, onChange: setAdmin, options: adminOptions },
         { label: "الدورية", value: periodicity, onChange: setPeriodicity, options: periodicityOptions },
@@ -58,7 +55,7 @@ export default function BulletinsList() {
       ]}
       onClearFilters={() => { setAdmin(""); setPeriodicity(""); setCreated(""); setSort(SORT_OPTIONS[0]); }}
     />
-    <BulletinCreateModal open={createOpen} onClose={() => setCreateOpen(false)} />
+    <BulletinCreateModal open={createOpen} onClose={closeCreate} />
     </>
   );
 }

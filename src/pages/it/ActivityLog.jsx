@@ -46,6 +46,7 @@ export default function ActivityLog() {
       searchPlaceholder="بحث فى السجل"
       columns={COLUMNS}
       rows={rows}
+      showActions={false}
       search={search}
       onSearchChange={setSearch}
       filterFields={[

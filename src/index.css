@@ -123,9 +123,9 @@ body {
 }
 
 .it-quick-chevron {
-  width: 18px;
-  height: 18px;
-  background: #fff;
+  width: 24px;
+  height: 24px;
+  background: #f8f9fa;
   flex-shrink: 0;
   -webkit-mask: url("/it-quick-chevron.png") center / contain no-repeat;
   mask: url("/it-quick-chevron.png") center / contain no-repeat;

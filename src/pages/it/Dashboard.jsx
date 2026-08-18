@@ -14,8 +14,9 @@ import {
 const ICONS = { FileText, Users, Building2, Building };
 
 const QUICK_ACTIONS = [
-  { label: "إنشاء البيان جديد", to: "/it/forms/new" },
-  { label: "إنشاء إدارة", to: "/it/admins/new" },
+  { label: "إنشاء جهة خارجية", to: "/it/entities?create=1" },
+  { label: "إنشاء إدارة جديدة", to: "/it/admins/new" },
+  { label: "إنشاء النشرة", to: "/it/bulletins?create=1" },
   { label: "إنشاء مستخدم جديد", to: "/it/users/new" },
 ];
 
@@ -40,8 +41,12 @@ function QuickActionsButton() {
         aria-expanded={open}
         aria-haspopup="menu"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex w-[224px] items-center justify-center gap-3 text-white text-[18px] font-semibold rounded-[12px] shadow-sm cursor-pointer"
-        style={{ height: SHELL.navItemH, background: "linear-gradient(90deg, #003d96 0%, #052c65 100%)" }}
+        className="inline-flex w-[224px] items-center justify-center gap-[43px] text-[#F8F9FA] text-[22px] font-semibold rounded-[12px] cursor-pointer"
+        style={{
+          height: SHELL.navItemH,
+          background: "linear-gradient(90deg, #003d96 0%, #052c65 100%)",
+          boxShadow: "0 4px 4px rgba(0, 0, 0, 0.04)",
+        }}
       >
         إجراءات سريعة
         <span
@@ -52,14 +57,15 @@ function QuickActionsButton() {
       {open && (
         <div
           role="menu"
-          className="it-quick-menu absolute top-[calc(100%+8px)] right-0 z-20 w-[224px] rounded-[12px] bg-white shadow-lg border border-[#D8D8D8] overflow-hidden py-1"
+          className="it-quick-menu absolute top-[calc(100%+9px)] right-0 z-20 w-[224px] bg-white overflow-hidden"
+          style={{ outline: "2px solid #052C65", boxShadow: "0 4px 24px rgba(0, 0, 0, 0.25)" }}
         >
           {QUICK_ACTIONS.map((a) => (
             <button
               key={a.to}
               type="button"
               role="menuitem"
-              className="w-full text-right px-4 py-2.5 text-[16px] text-[#052c65] hover:bg-[rgba(9,134,237,0.09)] cursor-pointer"
+              className="block w-full h-[47px] px-4 text-center text-[15.6px] font-semibold text-[#052c65] hover:bg-[rgba(9,134,237,0.09)] cursor-pointer"
               onClick={() => {
                 setOpen(false);
                 navigate(a.to);

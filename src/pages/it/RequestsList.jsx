@@ -48,10 +48,7 @@ export default function RequestsList() {
       search={search}
       onSearchChange={setSearch}
       onRowClick={(r) => navigate(`/it/requests/${r.id}`)}
-      actions={[
-        { label: "إنشاء البيان جديد", primary: true, onClick: () => navigate("/it/forms/new") },
-        { label: "تصدير Excel" },
-      ]}
+      actions={[{ label: "إنشاء البيان جديد", primary: true, onClick: () => navigate("/it/forms/new") }]}
       filterFields={[
         { label: "الإدارة / الجهة", value: admin, onChange: setAdmin, options: adminOptions },
         { label: "الحالة", value: status, onChange: setStatus, options: statusOptions },

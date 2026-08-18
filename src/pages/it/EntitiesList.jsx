@@ -4,7 +4,7 @@ import ItListPage from "../../components/it/ItListPage";
 import StatusBadge from "../../components/it/StatusBadge";
 import EntityCreateModal from "../../components/it/EntityCreateModal";
 import { externalEntities } from "../../data/mockIt";
-import { SORT_OPTIONS } from "./listUtils";
+import { SORT_OPTIONS, useCreateModal } from "./listUtils";
 
 const COLUMNS = [
   { key: "name", label: "اسم الجهة" },
@@ -16,7 +16,7 @@ const COLUMNS = [
 
 export default function EntitiesList() {
   const navigate = useNavigate();
-  const [createOpen, setCreateOpen] = useState(false);
+  const [createOpen, openCreate, closeCreate] = useCreateModal();
   const [search, setSearch] = useState("");
   const [type, setType] = useState("");
   const [status, setStatus] = useState("");
@@ -44,7 +44,7 @@ export default function EntitiesList() {
       search={search}
       onSearchChange={setSearch}
       onRowClick={(r) => navigate(`/it/entities/${r.id}`)}
-      actions={[{ label: "إنشاء جهة خارجية", primary: true, onClick: () => setCreateOpen(true) }]}
+      actions={[{ label: "إنشاء جهة خارجية", primary: true, onClick: openCreate }]}
       filterFields={[
         { label: "نوع الجهة", value: type, onChange: setType, options: typeOptions },
         { label: "الحالة", value: status, onChange: setStatus, options: statusOptions },
@@ -52,7 +52,7 @@ export default function EntitiesList() {
       ]}
       onClearFilters={() => { setType(""); setStatus(""); setSort(SORT_OPTIONS[0]); }}
     />
-    <EntityCreateModal open={createOpen} onClose={() => setCreateOpen(false)} />
+    <EntityCreateModal open={createOpen} onClose={closeCreate} />
     </>
   );
 }
