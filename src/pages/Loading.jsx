@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import AuthShell, { Spinner, AUTH, AUTH_SCALE } from "../components/AuthShell";
+import AuthShell, { Spinner } from "../components/AuthShell";
 import { useAuth } from "../context/AuthContext";
 import { homePathForRole } from "../auth/roleHome";
 
@@ -21,7 +21,7 @@ export default function Loading() {
   return (
     <AuthShell>
       <div className="flex flex-col items-center gap-5">
-        <Spinner size={Math.round(72 * AUTH_SCALE)} />
+        <Spinner size={72} />
         <div className="text-center">
           <div className="text-[14px] font-bold text-navy-deep">جارٍ تحضير لوحة التحكم…</div>
           <div className="mt-1.5 text-[11px] text-muted">

@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap");
 @import "tailwindcss";
 
 @theme {
@@ -111,4 +111,38 @@ body {
 }
 .ga-date-input::-webkit-inner-spin-button {
   display: none;
+}
+
+@keyframes it-kpi-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.it-kpi-card {
+  animation: it-kpi-in 0.3s ease-out both;
+}
+
+.it-quick-chevron {
+  width: 18px;
+  height: 18px;
+  background: #fff;
+  flex-shrink: 0;
+  -webkit-mask: url("/it-quick-chevron.png") center / contain no-repeat;
+  mask: url("/it-quick-chevron.png") center / contain no-repeat;
+  transform: scaleY(1);
+  transition: transform 0.3s ease-out;
+}
+
+.it-quick-chevron.is-open {
+  transform: scaleY(-1);
+}
+
+.it-quick-menu {
+  animation: it-kpi-in 0.3s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .it-kpi-card,
+  .it-quick-menu { animation: none; }
+  .it-quick-chevron { transition: none; }
 }

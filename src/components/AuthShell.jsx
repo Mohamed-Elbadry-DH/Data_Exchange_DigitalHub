@@ -1,26 +1,47 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { APP_NAME } from "../constants/branding";
+import { APP_NAME_AR, APP_NAME_EN } from "../constants/branding";
 
-/** Auth chrome scaled to 80% of the accepted baseline */
 export const AUTH_SCALE = 0.8;
 
 export const AUTH = {
-  cardWidth: 660.8 * AUTH_SCALE,
-  cardMinHeight: 581.6 * AUTH_SCALE,
-  contentWidth: 478.94 * AUTH_SCALE,
-  radius: 26.67 * AUTH_SCALE,
-  shadow: 5.33 * AUTH_SCALE,
-  gap: 35 * AUTH_SCALE,
-  pad: 40 * AUTH_SCALE,
-  logo: 56 * AUTH_SCALE,
-  titleSize: 20 * AUTH_SCALE,
-  subtitleSize: 13 * AUTH_SCALE,
-  inputH: 52 * AUTH_SCALE,
-  buttonH: 65.61 * AUTH_SCALE,
-  buttonRadius: 11.72 * AUTH_SCALE,
-  otpBox: 58 * AUTH_SCALE,
+  pageWidth: 1920,
+  pageHeight: 1215,
+  cardWidth: 826,
+  cardMinHeight: 727,
+  contentWidth: 598.67,
+  radius: 26.667,
+  shadow: 5.333,
+  gap: 60,
+  fieldGap: 40,
+  padX: 113.67,
+  padY: 75.93,
+  logoW: 100,
+  logoH: 96,
+  titleSize: 30,
+  subtitleSize: 20,
+  inputH: 82.4,
+  inputRadius: 15.55,
+  buttonH: 65.607,
+  buttonRadius: 11.716,
+  otpBox: 58,
 };
+
+/** Figma card is 826×727 on a 1920×1215 artboard (~43% × 60%).
+ *  On a live screen we keep that aspect and cap at 80% of Figma so it
+ *  reads as a card, not a panel: ~36% of viewport width, ~56% of height. */
+const CARD_VIEW_W = 0.36;
+const CARD_VIEW_H = 0.56;
+
+function cardFitScale() {
+  if (typeof window === "undefined") return AUTH_SCALE;
+  return Math.min(
+    AUTH_SCALE,
+    (window.innerWidth * CARD_VIEW_W) / AUTH.cardWidth,
+    (window.innerHeight * CARD_VIEW_H) / AUTH.cardMinHeight,
+  );
+}
 
 export function Spinner({ size = 20 }) {
   return (
@@ -47,6 +68,14 @@ export default function AuthShell({
   const dotsWidth = `${(DOTS_RATIO * 100).toFixed(4)}%`;
   const navigate = useNavigate();
   const { signOut } = useAuth();
+  const [scale, setScale] = useState(cardFitScale);
+
+  useEffect(() => {
+    const fit = () => setScale(cardFitScale());
+    fit();
+    window.addEventListener("resize", fit);
+    return () => window.removeEventListener("resize", fit);
+  }, []);
 
   const backToLogin = () => {
     signOut();
@@ -54,65 +83,76 @@ export default function AuthShell({
   };
 
   return (
-    <div dir="rtl" className="h-dvh w-full overflow-auto bg-[#1b1d22] font-sans">
-      <div
-        style={{ background: "#F6F7F8" }}
-        className="relative mx-auto flex min-h-full min-w-[1100px] w-full max-w-[1920px] items-center justify-center overflow-hidden px-6 py-10 shadow-2xl"
-      >
-        <img
-          src="/dots.png"
-          alt=""
-          aria-hidden="true"
-          draggable={false}
-          style={{ width: dotsWidth, opacity: 0.6 }}
-          className="pointer-events-none absolute top-0 right-0 h-auto select-none"
-        />
-        <img
-          src="/dots.png"
-          alt=""
-          aria-hidden="true"
-          draggable={false}
-          style={{ width: dotsWidth, opacity: 0.6 }}
-          className="pointer-events-none absolute bottom-0 left-0 h-auto rotate-180 select-none"
-        />
+    <div dir="rtl" className="relative flex h-dvh w-full items-center justify-center overflow-hidden bg-[#F6F7F8] font-sans">
+      <img
+        src="/dots.png"
+        alt=""
+        aria-hidden="true"
+        draggable={false}
+        style={{ width: dotsWidth, opacity: 0.6 }}
+        className="pointer-events-none absolute top-0 right-0 h-auto select-none"
+      />
+      <img
+        src="/dots.png"
+        alt=""
+        aria-hidden="true"
+        draggable={false}
+        style={{ width: dotsWidth, opacity: 0.6 }}
+        className="pointer-events-none absolute bottom-0 left-0 h-auto rotate-180 select-none"
+      />
 
+      <div
+        style={{
+          width: width * scale,
+          height: minHeight * scale,
+        }}
+        className="relative z-10 shrink-0"
+      >
         <div
           style={{
-            maxWidth: width,
+            width,
             minHeight,
             borderRadius: `${AUTH.radius}px`,
             background: "#E9ECEF",
-            boxShadow: `0px ${AUTH.shadow}px ${AUTH.shadow}px 0px #00000040`,
-            padding: `${AUTH.pad}px`,
+            boxShadow: `0px ${AUTH.shadow}px ${AUTH.shadow}px 0px rgba(0,0,0,0.25)`,
+            padding: `${AUTH.padY}px ${AUTH.padX}px`,
             gap: `${AUTH.gap}px`,
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
           }}
-          className="relative z-10 flex w-full flex-col justify-center"
+          className="absolute top-0 left-0 flex flex-col items-center justify-center"
         >
           <button
             type="button"
             onClick={backToLogin}
             title="العودة إلى صفحة تسجيل الدخول"
-            className="flex flex-col items-center gap-1 transition-opacity hover:opacity-80"
+            className="flex w-[252px] shrink-0 flex-col items-center justify-center gap-[22px] transition-opacity hover:opacity-80"
           >
             <img
               src="/auth-logo.png"
-              alt={APP_NAME}
-              width={AUTH.logo}
-              height={AUTH.logo}
-              className="h-auto select-none"
-              style={{ width: AUTH.logo, height: AUTH.logo }}
+              alt={APP_NAME_AR}
+              width={AUTH.logoW}
+              height={AUTH.logoH}
+              className="select-none object-contain"
+              style={{ width: AUTH.logoW, height: AUTH.logoH }}
               draggable={false}
             />
-            <span
-              className="mt-2.5 font-bold text-navy-deep"
-              dir="ltr"
-              style={{ fontSize: `${AUTH.titleSize}px` }}
-            >
-              {APP_NAME}
+            <span className="flex w-[252px] flex-col items-center gap-[3px] text-center">
+              <span className="flex h-[40px] w-[252px] items-center justify-center text-center text-[30px] font-bold leading-none text-[#052C65]">
+                {APP_NAME_AR}
+              </span>
+              <span
+                className="mt-[4px] flex h-[24px] w-[252px] items-center justify-center text-center text-[20px] font-normal leading-none text-[#ADB5BD]"
+                dir="ltr"
+              >
+                {APP_NAME_EN}
+              </span>
             </span>
           </button>
 
-          <div style={{ maxWidth: contentWidth }} className="w-full mx-auto">{children}</div>
+          <div style={{ width: contentWidth, maxWidth: "100%" }} className="w-full">
+            {children}
+          </div>
         </div>
       </div>
     </div>
