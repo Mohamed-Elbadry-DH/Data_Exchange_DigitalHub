@@ -233,4 +233,65 @@ Still to build from the PDF (design differs from the supervisor clone):
 
 ---
 
+## 11. IT specialist module (`/it`)
+
+Third isolated module, built from Figma section `146:14` («أخصائي تقنية النظم والمعلومات») in file `zZTaMqB2BxBGru5HxlYSWZ`. Same isolation contract as `/ga` (§10): it never edits the supervisor or general-admin surfaces.
+
+```
+src/components/it/ItLayout.jsx      copy of GaLayout; NAV = 7 items prefixed /it
+src/components/it/StatusBadge.jsx   driven by statusBadge in mockIt
+src/components/it/ItListPage.jsx    shared shell for the 6 list screens
+src/components/it/ItFilterModal.jsx field-driven filter (adds «ترتيب حسب»)
+src/components/it/ItDetailPage.jsx  breadcrumb + tiles + status chips + tabs
+                                    (also exports StatusChips/InfoTile/DetailTable)
+src/components/it/ItForm.jsx        Field/TextInput/SelectInput/TextArea/
+                                    CheckboxGroup/FormSection/FormActions
+src/components/it/ItModal.jsx       760px create-dialog shell
+src/components/it/{Entity,Bulletin}CreateModal.jsx, LinkEntitiesModal.jsx
+src/components/it/BuilderStepper.jsx         3-step wizard header
+src/components/it/StructureValidationModal.jsx
+src/pages/it/Dashboard.jsx          KPIs, 2 chart cards, alerts, pending tasks
+src/pages/it/{Admins,Entities,Bulletins,Users,Requests}List.jsx, ActivityLog.jsx
+src/pages/it/{Admin,Entity,Request}Detail.jsx, {Admin,User}Create.jsx
+src/pages/it/listUtils.js           date parsing + «الأحدث/الأقدم» sorting
+src/pages/it/builder/FormBuilder.jsx         wizard container + sticky action bar
+src/pages/it/builder/Step{Metadata,Structure,Review}.jsx
+src/pages/it/builder/formBuilderState.js     counts, validation rows, % complete
+src/data/mockIt.js                  `export * from "./mock"` + local overrides
+```
+
+Routes (all wrapped in `RequireAuth allow={[ROLES.IT_SPECIALIST]}`):
+`/it` · `/it/admins` · `/it/admins/new` · `/it/admins/:id` · `/it/entities` · `/it/entities/:id` · `/it/bulletins` · `/it/users` · `/it/users/new` · `/it/forms/new` · `/it/requests` · `/it/requests/:id` · `/it/activity`
+
+Form/modal sizing comes from Figma node `1049:911` and is shared by every create surface: label 20px bold `#1f254b` with a red asterisk, control 55px tall / radius 10 / border `rgba(5,44,101,0.16)`, placeholder 18px at 30% opacity, modal 760px wide / radius 26.667 / bg `#e9ecef` with a 69px header, buttons 142×41 (`#adb5bd` cancel, `#0986ed` submit).
+
+The three Figma «إنشاء مستخدم» variants (`1054:1144` / `1060:2621` / `1060:3042`) differ only by «تبعية المستخدم», so they are one page (`UserCreate.jsx`) whose «بيانات الربط» section is conditional — hidden for صانع القرار.
+
+Rules while working here:
+- Edit only `src/pages/it/**`, `src/components/it/**` and `src/data/mockIt.js`.
+- The shared `FilterModal` is fixed to status + one select + a date. These screens vary their fields per list and add a «ترتيب حسب» sort, so the module uses its own field-driven `ItFilterModal` rather than changing the shared one.
+- New status vocabulary lives in `mockIt.statusBadge`: منتظم `#16A34A` · متأخر/متأخرة `#DC2626` · لا يوجد `#7F8999` · قيد المراجعة `#9747FF` · قيد تنفيذ `#5C5C5C` · لم يبدأ بعد `#1B75FF` · معتمد/معتمدة `#16A34A`.
+- `src/data/mock.js` was touched once, by explicit approval: the `it-specialist` demoUsers row is now `enabled: true` with `home: "/it"`. That row is the single source of truth for login and role-routing; nothing the supervisor renders changed.
+- `vite.config.js` now reads `process.env.PORT` (falling back to 5173) so the preview can pick a free port when 5174 is taken.
+
+### 11.1 نموذج البيان builder (`/it/forms/new`)
+
+Three-step wizard (Figma `279:77` → `282:185` → `645:3331`), reached from the dashboard «إجراءات سريعة» button and the الطلبات list «إنشاء البيان جديد».
+
+1. **البيانات الوصفية** — metadata, the four «متطلبات الهيكل» counts, and الدورية والمواعيد.
+2. **بناء نموذج البيان** — tool panel (إضافة مجموعة / عمود / صف) on a `#dbe9f9` rail beside a live table preview; columns can be nested under a group, producing the two-tier header. Both empty states come from the design.
+3. **مراجعة و إرسال** — ملخص التحقق (unset fields read «غير محدد»), هيكل الجدول counts, خيارات التصدير, and مسار الاعتماد.
+
+The design carries **two distinct stepper concepts**, and `src/domain/workflow.js` now names both as additive exports — `STAGES` was not touched:
+- `FORM_WIZARD_STEPS` — the 3 authoring steps above.
+- `FORM_BUILD_STEPS` + `FORM_BUILD_STATUS` — the 4-stage «مسار الاعتماد» (إنشاء القالب → بناء الهيكل → اعتماد المشرف → إرسال للجهة الخارجية) rendered inside step 3. **This is not the 7-stage `STAGES` request lifecycle**, which begins only once a template exists; never merge the two.
+
+Moving from step 2 to step 3 is gated: if any «متطلبات الهيكل» count is unmet, `StructureValidationModal` (Figma `916:4407`) opens instead, listing المطلوب vs الحالى per item (red when short, green when met) with a completion percentage.
+
+All structure mutations in `StepStructure` use the **updater form** of `onChange`, because several add-clicks can land in a single render pass and reading state from the closure would silently drop all but the last.
+
+Still not built: real Excel/PDF export (the buttons are present but inert) and the standalone structure canvas variant `916:4005`.
+
+---
+
 *When in doubt: match Dashboard + RequestDetail + Layout as the visual source of truth.*

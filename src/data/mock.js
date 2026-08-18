@@ -20,7 +20,8 @@ export const demoUsers = [
     name: "م. مصطفى سيد",
     email: "it.specialist@capmas.gov.eg",
     password: "Mped@2026",
-    enabled: false,
+    enabled: true,
+    home: "/it",
   },
   {
     id: "general-admin-supervisor",

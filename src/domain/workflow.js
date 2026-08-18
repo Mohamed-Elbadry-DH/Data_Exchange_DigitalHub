@@ -48,3 +48,33 @@ export const isRequiredStage = (stageId) => hasReachedStage(stageId, "fulfill");
 /** مسار تفاصيل الطلب حسب المرحلة */
 export const gaDetailBasePath = (stageId) =>
   isRequiredStage(stageId) ? "/ga/required" : "/ga/forms";
+
+/**
+ * «مسار الاعتماد» shown while a نموذج البيان template is being built
+ * (Figma 645:3331). This is the template-authoring approval path and is
+ * deliberately separate from `STAGES`, which is the request lifecycle that
+ * begins only once the template exists — do not merge the two.
+ */
+export const FORM_BUILD_STEPS = [
+  { id: "create-template", label: "إنشاء القالب", owner: "مرسل الطلب - الإدارة" },
+  { id: "build-structure", label: "بناء الهيكل", owner: "مدير النظام" },
+  { id: "supervisor-approval", label: "اعتماد المشرف", owner: "مشرف الإدارة" },
+  { id: "send-to-entity", label: "إرسال للجهة الخارجية", owner: "مرسل الطلب - الجهة" },
+];
+
+export const FORM_BUILD_STATUS = {
+  DONE: "مكتمل",
+  ACTIVE: "جاري العمل",
+  WAITING: "في الانتظار",
+};
+
+/**
+ * The three-step wizard the IT specialist walks through to author a template
+ * (Figma 279:77 → 282:185 → 645:3331). Distinct from FORM_BUILD_STEPS above,
+ * which is the approval path displayed *inside* the final wizard step.
+ */
+export const FORM_WIZARD_STEPS = [
+  { id: "metadata", title: "البيانات الوصفية لنموذج البيان", subtitle: "المعلومات الأساسية" },
+  { id: "structure", title: "بناء نموذج البيان", subtitle: "الأعمدة و المجموعات" },
+  { id: "review", title: "مراجعة و إرسال", subtitle: "التحقق من الصحة و الإرسال" },
+];
