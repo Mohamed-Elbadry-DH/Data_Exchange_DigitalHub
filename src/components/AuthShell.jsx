@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { APP_NAME } from "../constants/branding";
 
 /** Auth chrome scaled to 80% of the accepted baseline */
 export const AUTH_SCALE = 0.8;
@@ -95,7 +96,7 @@ export default function AuthShell({
           >
             <img
               src="/auth-logo.png"
-              alt="منصة تبادل البيانات"
+              alt={APP_NAME}
               width={AUTH.logo}
               height={AUTH.logo}
               className="h-auto select-none"
@@ -104,12 +105,10 @@ export default function AuthShell({
             />
             <span
               className="mt-2.5 font-bold text-navy-deep"
+              dir="ltr"
               style={{ fontSize: `${AUTH.titleSize}px` }}
             >
-              منصة تبادل البيانات
-            </span>
-            <span className="text-muted" dir="ltr" style={{ fontSize: `${AUTH.subtitleSize}px` }}>
-              Data Exchange
+              {APP_NAME}
             </span>
           </button>
 
