@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { X, TriangleAlert } from "lucide-react";
 
 /**
@@ -7,8 +8,8 @@ import { X, TriangleAlert } from "lucide-react";
 export default function StructureValidationModal({ open, onClose, rows, percent }) {
   if (!open) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6" onClick={onClose}>
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-6" onClick={onClose}>
       <div
         dir="rtl"
         onClick={(e) => e.stopPropagation()}
@@ -94,6 +95,7 @@ export default function StructureValidationModal({ open, onClose, rows, percent 
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

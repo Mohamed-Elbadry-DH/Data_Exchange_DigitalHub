@@ -2,7 +2,7 @@ import { useState } from "react";
 import { SlidersHorizontal, Search, Plus, SquarePen, Trash2, Eye } from "lucide-react";
 import Layout from "./ItLayout";
 import ItFilterModal from "./ItFilterModal";
-import ConfirmModal from "../ConfirmModal";
+import ConfirmModal from "./ConfirmModal";
 
 export function ToolbarAction({ action }) {
   const isDownload = action.icon === "download";

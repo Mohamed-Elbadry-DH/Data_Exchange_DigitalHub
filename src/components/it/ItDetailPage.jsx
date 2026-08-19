@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft, Search, SquarePen, Trash2, Eye, SlidersHorizontal } from "lucide-react";
 import Layout from "./ItLayout";
-import ConfirmModal from "../ConfirmModal";
+import ConfirmModal from "./ConfirmModal";
 import ItFilterModal from "./ItFilterModal";
 import { ToolbarAction } from "./ItListPage";
 

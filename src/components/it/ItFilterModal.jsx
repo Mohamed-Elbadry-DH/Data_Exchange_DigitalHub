@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { X, ChevronDown, CalendarDays, Search } from "lucide-react";
 
 /**
@@ -72,10 +73,10 @@ function SearchableSelect({ value, onChange, options = [], placeholder = "الك
 
 export default function ItFilterModal({ open, onClose, onClear, fields = [] }) {
   if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40" onClick={onClose}>
       <div
-        className="bg-white rounded-[20px] pt-5 px-7 pb-5 w-[400px] max-h-[85vh] overflow-y-auto"
+        className="bg-white rounded-[20px] pt-5 px-7 pb-5 w-[400px] max-h-[85vh] overflow-visible"
         dir="rtl"
         onClick={(e) => e.stopPropagation()}
       >
@@ -134,6 +135,7 @@ export default function ItFilterModal({ open, onClose, onClear, fields = [] }) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
