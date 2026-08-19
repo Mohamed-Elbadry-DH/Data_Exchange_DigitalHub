@@ -337,4 +337,37 @@ Two entries are worth a note: `916:4005` turned out to be a sub-state of builder
 
 ---
 
+## 12. Decision maker module (`/dm`)
+
+Fourth module, built from Figma section `455:19763` («صانع القرار»). The section holds a **single screen** — the dashboard — so the sidebar has one nav item and there are no list/detail/form surfaces.
+
+```
+src/components/dm/DmLayout.jsx   NAV = 1 item (/dm)
+src/pages/dm/Dashboard.jsx       the whole module
+src/data/mockDm.js               export * from ./mock + DM overrides
+```
+
+Unlike `/ga` and `/it`, this module was assembled almost entirely from existing parts. Three page-local patterns were promoted to shared components on the way in (§7's "not extract unless needed" — a fourth consumer was the trigger):
+
+| Extracted to | From | Now used by |
+|---|---|---|
+| `src/components/KpiCard.jsx` | `ga/Dashboard.jsx` (335×161 card) | `/ga`, `/dm` |
+| `src/components/AlertsCard.jsx` | `it/Dashboard.jsx` (took `alerts` + optional `onViewAll`) | `/it`, `/dm` |
+| `src/data/indicators.js` | `mockGa.js` (`exchangeStatusCards`, `fulfillmentStatusCards`) | `mockGa.js`, `mockDm.js` |
+
+`src/components/PeriodButton.jsx` was also rebuilt to its Figma spec (340×56, 18px label, calendar in a 40×40 badge). Two separate frames (`649:10625` here, and the IT dashboard) specify this size, so the change is global and all four dashboards pick it up.
+
+`topOrgs` (`mock.js`) matched the «أعلى 5 جهات» values exactly and is reused as-is; only `kpis` (4 cards vs the shared 3), the fulfillment donut, the admins pie and the monthly trend are declared locally in `mockDm.js`.
+
+Two deliberate deviations from the frame: the «إنشاء طلب بيان» button is `hidden="true"` in Figma (`649:10620`) and is not built; «عرض جميع الإدارات» is dropped and «عرض جميع التنبيهات» renders non-navigating, since the role has no second page to reach.
+
+### 12.1 Figma node map
+
+| Node | Screen | Key content |
+|------|--------|-------------|
+| `455:19763` | section «صانع القرار» | one frame only |
+| `649:10179` | **Dashboard** | مؤشرات عامة (نماذج البيان 316، الإدارات العامة 30، الجهات الخارجية 40، المستخدمين 60). مؤشرات تبادل نماذج البيان (91/139/74/61/37/102) و مؤشرات استيفاء البيانات (84/112/68/53/29/76). Charts: أعلى 5 جهات من حيث نسبة الألتزام (hbar), اتجاه نماذج البيان خلال الأشهر (line, مكتملة/متأخرة), توزيع نماذج البيان حسب الإدارات (pie), حالات استيفاء البيانات (donut, total 251), التنبيهات. |
+
+---
+
 *When in doubt: match Dashboard + RequestDetail + Layout as the visual source of truth.*

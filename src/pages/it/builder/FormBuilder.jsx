@@ -12,6 +12,9 @@ import {
   emptyMeta, emptyStructure, validationRows, completionPercent, isStructureComplete,
 } from "./formBuilderState";
 
+const BTN =
+  "text-[22px] font-medium rounded-[11.27px] h-[57px] w-[259px] cursor-pointer";
+
 /**
  * إنشاء نموذج البيان — the three-step template builder
  * (Figma 279:77 → 282:185 → 645:3331).
@@ -28,7 +31,6 @@ export default function FormBuilder() {
   const percent = completionPercent(rows);
 
   const next = () => {
-    // Structure requirements gate the move from step 2 to step 3.
     if (step === 1 && !isStructureComplete(rows)) {
       setValidationOpen(true);
       return;
@@ -39,42 +41,50 @@ export default function FormBuilder() {
   const submit = () => setSentOpen(true);
 
   return (
-    <Layout title="لوحة التحكم">
-      <div className="px-8 pt-7 pb-32 space-y-8">
-        <div className="flex items-center gap-2 text-[15px] text-muted justify-end" dir="rtl">
-          <Link to="/it" className="hover:text-primary">لوحة التحكم</Link>
-          <ChevronLeft size={16} />
-          <span className="text-[#052c65] text-[22px] font-semibold">إنشاء نموذج البيان</span>
+    <Layout title="الطلبات">
+      <div className={`flex flex-col ${step === 1 ? "h-full min-h-0 overflow-hidden" : "min-h-full"}`}>
+        <div className={`pt-7 flex-1 flex flex-col min-h-0 ${step === 1 ? "px-8 pb-0 gap-8 overflow-hidden" : "px-8 pb-10 space-y-8"}`}>
+          <div className="flex items-center gap-1 text-[20px] shrink-0" dir="rtl">
+            <Link to="/it/requests" className="text-[#adb5bd] font-medium hover:text-primary">
+              الطلبات
+            </Link>
+            <ChevronLeft size={30} className="text-[#052c65] shrink-0" />
+            <span className="text-[#052c65] font-semibold">إنشاء نموذج البيان</span>
+          </div>
+
+          <div className="shrink-0">
+            <BuilderStepper current={step} />
+          </div>
+
+          <div className={step === 1 ? "flex-1 min-h-0 -mx-8 flex flex-col overflow-hidden" : ""}>
+            {step === 0 && <StepMetadata meta={meta} onChange={setMeta} />}
+            {step === 1 && <StepStructure structure={structure} onChange={setStructure} />}
+            {step === 2 && <StepReview meta={meta} structure={structure} />}
+          </div>
         </div>
 
-        <BuilderStepper current={step} />
-
-        {step === 0 && (
-          <>
-            <p className="text-[18px] text-muted text-right">أدخل المعلومات الأساسية للقالب الجديد</p>
-            <StepMetadata meta={meta} onChange={setMeta} />
-          </>
-        )}
-        {step === 1 && <StepStructure structure={structure} onChange={setStructure} />}
-        {step === 2 && <StepReview meta={meta} structure={structure} />}
-      </div>
-
-      {/* sticky action bar — Figma 641:1223 */}
-      <div className="sticky bottom-0 h-[87px] bg-[#f9f9f9] border-t border-[#eaeaeb] flex items-center justify-between px-12">
-        <button
-          type="button"
-          onClick={() => (step === 0 ? navigate("/it") : setStep(step - 1))}
-          className="bg-[#e0e0e0] text-[#1f254b] text-[22px] rounded-[11.27px] h-[57px] w-[259px] cursor-pointer"
-        >
-          السابق
-        </button>
-        <button
-          type="button"
-          onClick={step === 2 ? submit : next}
-          className="bg-[#0986ed] text-white text-[22px] rounded-[11.27px] h-[57px] w-[259px] cursor-pointer"
-        >
-          {step === 2 ? "إرسال" : "التالى"}
-        </button>
+        <div className="sticky bottom-0 z-10 h-[87px] shrink-0 bg-[#f9f9f9] border-t border-[#eaeaeb] px-8">
+          <div className="h-full w-full flex items-center justify-between" dir="rtl">
+            {step > 0 ? (
+              <button
+                type="button"
+                onClick={() => setStep(step - 1)}
+                className={`${BTN} bg-[#e0e0e0] text-[#1f254b]`}
+              >
+                السابق
+              </button>
+            ) : (
+              <span />
+            )}
+            <button
+              type="button"
+              onClick={step === 2 ? submit : next}
+              className={`${BTN} bg-[#0986ed] text-white`}
+            >
+              {step === 2 ? "إرسال" : "التالى"}
+            </button>
+          </div>
+        </div>
       </div>
 
       <StructureValidationModal

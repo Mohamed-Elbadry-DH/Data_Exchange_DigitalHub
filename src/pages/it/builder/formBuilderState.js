@@ -4,7 +4,7 @@ export const emptyMeta = {
   title: "", admin: "", bulletin: "", entity: "", scope: "",
   methodology: "", description: "",
   groupsRequired: "", subsectionsRequired: "", columnsRequired: "", rowsRequired: "",
-  yearType: "ميلادية", year: "", periodicity: "", periodicityDetail: "",
+  yearType: "", year: "", periodicity: "", periodicityDetail: "",
   collectFrom: "", collectTo: "", dueDate: "", graceDays: "",
 };
 

@@ -8,6 +8,7 @@ import CreateStatementModal from "../../components/ga/CreateStatementModal";
 import PageToolbar from "../../components/PageToolbar";
 import PeriodButton from "../../components/PeriodButton";
 import StatusCard from "../../components/StatusCard";
+import KpiCard from "../../components/KpiCard";
 import { SHELL } from "../../constants/shell";
 import {
   ChartCard, SwitchableChart, PieOrDonutChart, StatusLineChart,
@@ -83,27 +84,6 @@ function shortOrgName(name) {
   return name.length > 18 ? `${name.slice(0, 16)}…` : name;
 }
 
-function KpiCard({ k }) {
-  const Icon = ICONS[k.icon];
-  return (
-    <div className="card-hover bg-white rounded-2xl p-4 w-[335px] shrink-0 min-w-0 shadow-sm">
-      <div className="flex items-start justify-end gap-3 text-right">
-        <div
-          className="w-[60px] h-[60px] rounded-[15px] flex items-center justify-center shrink-0"
-          style={{ background: k.dark ? "#F8F9FA" : k.color }}
-        >
-          <Icon size={26} className={k.dark ? "text-[#c89637]" : "text-white"} />
-        </div>
-        <div className="min-w-0 flex-1 text-right">
-          <div className="text-[32px] font-bold leading-none text-[rgba(0,0,0,0.9)] text-right">{k.value}</div>
-          <div className="text-[18px] text-[#404040] mt-3 text-right">{k.label}</div>
-          <div className={`text-[14px] mt-2 text-right ${k.up ? "text-success" : "text-danger"}`}>{k.delta} عن الربع السابق</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function Dashboard() {
   const [createOpen, setCreateOpen] = useState(false);
   const containerRef = useRef(null);
@@ -140,7 +120,7 @@ export default function Dashboard() {
         <div>
           <h2 className="text-[20px] font-bold text-[rgba(0,0,0,0.9)] mb-4 text-right">مؤشرات عامة</h2>
           <div className="flex flex-row-reverse justify-center gap-[65px] flex-nowrap">
-            {kpis.map((k) => <KpiCard key={k.label + k.value} k={k} />)}
+            {kpis.map((k) => <KpiCard key={k.label + k.value} k={k} icons={ICONS} />)}
           </div>
         </div>
 

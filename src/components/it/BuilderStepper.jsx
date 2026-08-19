@@ -1,4 +1,3 @@
-import { Check } from "lucide-react";
 import { FORM_WIZARD_STEPS } from "../../domain/workflow";
 
 /**
@@ -17,15 +16,19 @@ export default function BuilderStepper({ current }) {
               className="h-[92px] rounded-[17.61px] flex items-center gap-4 px-5 min-w-[280px]"
               style={{ background: active ? "rgba(52,152,219,0.22)" : "transparent" }}
             >
-              <span
-                className="w-[66px] h-[66px] rounded-full flex items-center justify-center shrink-0 text-[32px] font-bold text-white"
-                style={{
-                  background: done ? "#16A34A" : active ? "#0986ED" : "#ADB5BD",
-                  boxShadow: active ? "0 0 0 6px rgba(9,134,237,0.18)" : "none",
-                }}
-              >
-                {done ? <Check size={30} strokeWidth={3} /> : i + 1}
-              </span>
+              {done ? (
+                <img src="/it/stepper-done.svg" alt="" className="size-[66px] shrink-0 object-contain" />
+              ) : (
+                <span
+                  className="w-[66px] h-[66px] rounded-full flex items-center justify-center shrink-0 text-[32px] font-bold text-white"
+                  style={{
+                    background: active ? "#0986ED" : "#ADB5BD",
+                    boxShadow: active ? "0 0 0 6px rgba(9,134,237,0.18)" : "none",
+                  }}
+                >
+                  {i + 1}
+                </span>
+              )}
               <span className="text-right min-w-0">
                 <span
                   className="block text-[17.6px] font-semibold leading-tight"

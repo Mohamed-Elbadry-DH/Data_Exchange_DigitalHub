@@ -24,7 +24,8 @@ export default function SwitchableChart({
     return <PieOrDonutChart data={rows} donut={false} showLegend valueSuffix={pieSuffix} />;
   }
   if (type === "donut") {
-    const sum = rows.reduce((s, d) => s + Number(d.value || 0), 0);
+    // rounded: decimal series (e.g. نسب الألتزام) otherwise surface float error
+    const sum = Math.round(rows.reduce((s, d) => s + Number(d.value || 0), 0));
     return (
       <PieOrDonutChart
         data={rows}

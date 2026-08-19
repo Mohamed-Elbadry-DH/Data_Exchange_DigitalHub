@@ -141,6 +141,31 @@ body {
   animation: it-kpi-in 0.3s ease-out both;
 }
 
+/* Form-builder step 1 (Figma 631:9181 / 631:9243): Cairo Regular 14 #b0b6b7 */
+.it-compact-control {
+  font-family: "Cairo", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: normal;
+  color: #1f254b;
+}
+.it-compact-control.it-compact-empty,
+.it-compact-control::placeholder {
+  color: #b0b6b7;
+}
+.it-compact-control::-webkit-datetime-edit,
+.it-compact-control::-webkit-datetime-edit-fields-wrapper,
+.it-compact-control::-webkit-datetime-edit-text,
+.it-compact-control::-webkit-datetime-edit-month-field,
+.it-compact-control::-webkit-datetime-edit-day-field,
+.it-compact-control::-webkit-datetime-edit-year-field {
+  font-family: "Cairo", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: normal;
+  color: inherit;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .it-kpi-card,
   .it-quick-menu { animation: none; }

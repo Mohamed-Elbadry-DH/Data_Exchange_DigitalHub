@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { CHART_TYPES, CHART_TYPE_ICONS, CHART_TYPE_LABELS } from "./constants";
 
-export default function ChartCard({ title, defaultType = "pie", children }) {
+export default function ChartCard({ title, defaultType = "pie", height = 345, children }) {
   const defaultIndex = Math.max(0, CHART_TYPES.indexOf(defaultType));
   const [activeChart, setActiveChart] = useState(defaultIndex);
   const type = CHART_TYPES[activeChart] || CHART_TYPES[0];
 
   return (
-    <div className="bg-white shadow-sm overflow-hidden min-w-0 flex-1 h-full min-h-0" style={{ height: 345, borderRadius: 20 }}>
+    <div className="bg-white shadow-sm overflow-hidden min-w-0 flex-1 h-full min-h-0" style={{ height, borderRadius: 20 }}>
       <div className="flex h-full min-h-0 flex-col p-5">
         <div className="mb-4 flex shrink-0 items-center justify-between">
           <h3 className="text-[17px] font-bold text-[rgba(0,0,0,0.9)]">{title}</h3>

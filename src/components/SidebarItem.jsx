@@ -1,8 +1,11 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { SHELL } from "../constants/shell";
 
-export default function SidebarItem({ to, label, icon: Icon, collapsed, end }) {
+export default function SidebarItem({ to, label, icon: Icon, collapsed, end, extraActive = [] }) {
+  const { pathname } = useLocation();
   if (!to || !label) return null;
+
+  const extraOn = extraActive.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
   return (
     <NavLink
@@ -16,7 +19,7 @@ export default function SidebarItem({ to, label, icon: Icon, collapsed, end }) {
             ? "justify-center mx-auto gap-0"
             : "justify-start mx-[33px] gap-3 px-4"
         } ${
-          isActive
+          isActive || extraOn
             ? "bg-primary text-white font-semibold"
             : "text-white/80 hover:bg-white/10"
         }`

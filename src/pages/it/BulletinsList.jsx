@@ -48,10 +48,10 @@ export default function BulletinsList() {
       onSearchChange={setSearch}
       actions={[{ label: "إنشاء نشرة", primary: true, onClick: openCreate }]}
       filterFields={[
-        { label: "الإدارة", value: admin, onChange: setAdmin, options: adminOptions },
-        { label: "الدورية", value: periodicity, onChange: setPeriodicity, options: periodicityOptions },
         { label: "تاريخ الإنشاء", type: "date", value: created, onChange: setCreated },
         { label: "ترتيب حسب", value: sort, onChange: setSort, options: SORT_OPTIONS },
+        { label: "الدورية", value: periodicity, onChange: setPeriodicity, options: periodicityOptions },
+        { label: "الإدارة", value: admin, onChange: setAdmin, options: adminOptions },
       ]}
       onClearFilters={() => { setAdmin(""); setPeriodicity(""); setCreated(""); setSort(SORT_OPTIONS[0]); }}
     />

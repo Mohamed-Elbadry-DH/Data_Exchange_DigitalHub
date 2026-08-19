@@ -4,7 +4,7 @@ import ItListPage from "../../components/it/ItListPage";
 import StatusBadge from "../../components/it/StatusBadge";
 import EntityCreateModal from "../../components/it/EntityCreateModal";
 import { externalEntities } from "../../data/mockIt";
-import { SORT_OPTIONS, useCreateModal } from "./listUtils";
+import { ddmmyyyyToIso, SORT_OPTIONS, useCreateModal } from "./listUtils";
 
 const COLUMNS = [
   { key: "name", label: "اسم الجهة" },
@@ -20,6 +20,7 @@ export default function EntitiesList() {
   const [search, setSearch] = useState("");
   const [type, setType] = useState("");
   const [status, setStatus] = useState("");
+  const [created, setCreated] = useState("");
   const [sort, setSort] = useState(SORT_OPTIONS[0]);
 
   const typeOptions = useMemo(() => [...new Set(externalEntities.map((r) => r.type))], []);
@@ -29,6 +30,7 @@ export default function EntitiesList() {
     if (search.trim() && !r.name.includes(search.trim())) return false;
     if (type && r.type !== type) return false;
     if (status && r.status !== status) return false;
+    if (created && ddmmyyyyToIso(r.created) !== created) return false;
     return true;
   });
   const rows = sort === "الأقدم" ? [...filtered].reverse() : filtered;
@@ -48,9 +50,10 @@ export default function EntitiesList() {
       filterFields={[
         { label: "نوع الجهة", value: type, onChange: setType, options: typeOptions },
         { label: "الحالة", value: status, onChange: setStatus, options: statusOptions },
+        { label: "تاريخ الإنشاء", type: "date", value: created, onChange: setCreated },
         { label: "ترتيب حسب", value: sort, onChange: setSort, options: SORT_OPTIONS },
       ]}
-      onClearFilters={() => { setType(""); setStatus(""); setSort(SORT_OPTIONS[0]); }}
+      onClearFilters={() => { setType(""); setStatus(""); setCreated(""); setSort(SORT_OPTIONS[0]); }}
     />
     <EntityCreateModal open={createOpen} onClose={closeCreate} />
     </>

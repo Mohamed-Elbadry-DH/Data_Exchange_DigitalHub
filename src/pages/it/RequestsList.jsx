@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ItListPage from "../../components/it/ItListPage";
 import StatusBadge from "../../components/it/StatusBadge";
-import { itRequests } from "../../data/mockIt";
+import { itRequests, requestListChips } from "../../data/mockIt";
 import { ddmmyyyyToIso, sortRows, SORT_OPTIONS } from "./listUtils";
 
 const COLUMNS = [
@@ -15,22 +15,26 @@ const COLUMNS = [
   { key: "status", label: "الحالة", render: (r) => <StatusBadge status={r.status} /> },
 ];
 
+/** قائمة الطلبات — Figma 649:7406 */
 export default function RequestsList() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [admin, setAdmin] = useState("");
-  const [status, setStatus] = useState("");
+  const [type, setType] = useState("");
+  const [sentBy, setSentBy] = useState("");
   const [submitted, setSubmitted] = useState("");
   const [sort, setSort] = useState(SORT_OPTIONS[0]);
 
   const adminOptions = useMemo(() => [...new Set(itRequests.map((r) => r.admin))], []);
-  const statusOptions = useMemo(() => [...new Set(itRequests.map((r) => r.status))], []);
+  const typeOptions = useMemo(() => [...new Set(itRequests.map((r) => r.type))], []);
+  const userOptions = useMemo(() => [...new Set(itRequests.map((r) => r.sentBy))], []);
 
   const rows = sortRows(
     itRequests.filter((r) => {
-      if (search.trim() && !r.title.includes(search.trim())) return false;
+      if (search.trim() && !`${r.title}${r.id}`.includes(search.trim())) return false;
       if (admin && r.admin !== admin) return false;
-      if (status && r.status !== status) return false;
+      if (type && r.type !== type) return false;
+      if (sentBy && r.sentBy !== sentBy) return false;
       if (submitted && ddmmyyyyToIso(r.submitted) !== submitted) return false;
       return true;
     }),
@@ -41,21 +45,24 @@ export default function RequestsList() {
   return (
     <ItListPage
       title="الطلبات"
-      listTitle="قائمة الطلبات"
-      searchPlaceholder="بحث عن طلب"
+      searchPlaceholder="بحث"
+      searchBoxed
+      chips={requestListChips}
+      showDelete={false}
+      viewWhenStatus={(r) => r.status === "معتمد" || r.status === "معتمدة"}
       columns={COLUMNS}
       rows={rows}
       search={search}
       onSearchChange={setSearch}
       onRowClick={(r) => navigate(`/it/requests/${r.id}`)}
-      actions={[{ label: "إنشاء البيان جديد", primary: true, onClick: () => navigate("/it/forms/new") }]}
       filterFields={[
+        { label: "التاريخ والوقت", type: "date", value: submitted, onChange: setSubmitted },
+        { label: "المستخدم", value: sentBy, onChange: setSentBy, options: userOptions },
         { label: "الإدارة / الجهة", value: admin, onChange: setAdmin, options: adminOptions },
-        { label: "الحالة", value: status, onChange: setStatus, options: statusOptions },
-        { label: "تاريخ تقديم الطلب", type: "date", value: submitted, onChange: setSubmitted },
+        { label: "نوع الإجراء", value: type, onChange: setType, options: typeOptions },
         { label: "ترتيب حسب", value: sort, onChange: setSort, options: SORT_OPTIONS },
       ]}
-      onClearFilters={() => { setAdmin(""); setStatus(""); setSubmitted(""); setSort(SORT_OPTIONS[0]); }}
+      onClearFilters={() => { setAdmin(""); setType(""); setSentBy(""); setSubmitted(""); setSort(SORT_OPTIONS[0]); }}
     />
   );
 }

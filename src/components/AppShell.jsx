@@ -40,7 +40,7 @@ export default function AppShell({ nav = [], title, breadcrumb, children, notifi
 
         <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
           <AppTopbar title={title} breadcrumb={breadcrumb} notifications={notifications} />
-          <div className="flex-1 overflow-auto">{children}</div>
+          <div className="flex-1 min-h-0 overflow-auto">{children}</div>
         </div>
       </div>
     </div>

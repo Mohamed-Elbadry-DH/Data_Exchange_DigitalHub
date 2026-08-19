@@ -12,7 +12,8 @@ export const demoUsers = [
     name: "د. خالد عبد الرحمن",
     email: "decision.maker@capmas.gov.eg",
     password: "Mped@2026",
-    enabled: false,
+    enabled: true,
+    home: "/dm",
   },
   {
     id: "it-specialist",

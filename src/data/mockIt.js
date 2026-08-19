@@ -34,9 +34,12 @@ export const statusBadge = {
   منتظم: { bg: "#DDF2E5", fg: "#16A34A" },
   متأخر: { bg: "#FCE4E4", fg: "#DC2626" },
   "لا يوجد": { bg: "#F1F1F1", fg: "#7F8999" },
-  "قيد المراجعة": { bg: "#F1E8FF", fg: "#9747FF" },
+  "قيد المراجعة": { bg: "rgba(202,138,4,0.1)", fg: "#ca8a04" },
   "قيد تنفيذ": { bg: "rgba(92,92,92,0.1)", fg: "#5C5C5C" },
-  "لم يبدأ بعد": { bg: "#E3EEFF", fg: "#1B75FF" },
+  "لم يبدأ بعد": { bg: "rgba(29,78,216,0.1)", fg: "#1d4ed8" },
+  نشط: { bg: "rgba(22,163,74,0.1)", fg: "#16a34a" },
+  "غير نشط": { bg: "rgba(200,150,55,0.1)", fg: "#c89637" },
+  تعديل: { bg: "#FFE8D6", fg: "#EA580C" },
   معتمد: { bg: "#DDF2E5", fg: "#16A34A" },
   معتمدة: { bg: "#DDF2E5", fg: "#16A34A" },
   متأخرة: { bg: "#FCE4E4", fg: "#DC2626" },
@@ -73,6 +76,7 @@ export const adminsBarSeries = [
   { name: "إدارة الموارد البشرية", value: 79 },
   { name: "الادارة العامة لاحصاءات التجارة الخارجية والداخلية", value: 9 },
   { name: "الادارة العامة لاحصاءات النقل والاتصالات", value: 33 },
+  { name: "الادارة العامة لاحصاءات العمل", value: 41 },
   { name: "الادارة العامة للإحصاءات الزراعية", value: 66 },
 ];
 
@@ -83,54 +87,66 @@ export const pendingTasks = [
   { id: 3, date: "2026-04-30", status: "معتمد", type: "بناء نموذج بيان", title: "بيانات الحاصلين على الدرجات" },
 ];
 
-/** الإدارات العامة — list */
+/** الإدارات العامة — list (Figma 645:3671) */
 export const generalAdmins = [
-  { id: 1, name: "الإدارة العامة لإحصاءات السكان", created: "01/06/2026", usersCount: 12, status: "منتظم", bulletinsCount: 4, entitiesCount: 6, formsCount: 18 },
-  { id: 2, name: "الإدارة العامة للتنمية الصناعية", created: "03/06/2026", usersCount: 9, status: "متأخر", bulletinsCount: 3, entitiesCount: 5, formsCount: 11 },
-  { id: 3, name: "الإدارة العامة للمتابعة والتقييم", created: "02/06/2026", usersCount: 7, status: "منتظم", bulletinsCount: 2, entitiesCount: 3, formsCount: 9 },
-  { id: 4, name: "الإدارة العامة للإحصاء التربوي", created: "05/06/2026", usersCount: 15, status: "منتظم", bulletinsCount: 5, entitiesCount: 8, formsCount: 22 },
-  { id: 5, name: "الإدارة العامة لشئون الطلاب والخريجين", created: "04/06/2026", usersCount: 6, status: "لا يوجد", bulletinsCount: 1, entitiesCount: 2, formsCount: 4 },
-  { id: 6, name: "الإدارة العامة لمسوح الأسرة", created: "06/06/2026", usersCount: 8, status: "منتظم", bulletinsCount: 3, entitiesCount: 4, formsCount: 10 },
-  { id: 7, name: "الإدارة العامة للمعلومات الصحية", created: "01/06/2026", usersCount: 11, status: "متأخر", bulletinsCount: 4, entitiesCount: 6, formsCount: 15 },
-  { id: 8, name: "الإدارة العامة للحسابات الختامية", created: "07/06/2026", usersCount: 5, status: "منتظم", bulletinsCount: 2, entitiesCount: 3, formsCount: 7 },
+  { id: 1, name: "إدارة تقنية المعلومات", created: "2026-04-30", usersCount: 12, status: "منتظم", bulletinsCount: 6, entitiesCount: 8, formsCount: 13 },
+  { id: 2, name: "إدارة الإحصاءات الاقتصادية", created: "2026-04-30", usersCount: 16, status: "منتظم", bulletinsCount: 12, entitiesCount: 10, formsCount: 17 },
+  { id: 3, name: "إدارة الموارد البشرية", created: "2026-04-30", usersCount: 12, status: "منتظم", bulletinsCount: 6, entitiesCount: 8, formsCount: 13 },
+  { id: 4, name: "الإدارة العامة لإحصاءات السكان", created: "2026-04-30", usersCount: 12, status: "منتظم", bulletinsCount: 4, entitiesCount: 6, formsCount: 18 },
+  { id: 5, name: "الإدارة العامة للتنمية الصناعية", created: "2026-04-30", usersCount: 9, status: "متأخر", bulletinsCount: 3, entitiesCount: 5, formsCount: 11 },
+  { id: 6, name: "الإدارة العامة للمتابعة والتقييم", created: "2026-04-30", usersCount: 7, status: "منتظم", bulletinsCount: 2, entitiesCount: 3, formsCount: 9 },
+  { id: 7, name: "الإدارة العامة للإحصاء التربوي", created: "2026-04-30", usersCount: 15, status: "منتظم", bulletinsCount: 5, entitiesCount: 8, formsCount: 22 },
+  { id: 8, name: "الإدارة العامة للمعلومات الصحية", created: "2026-04-30", usersCount: 11, status: "متأخر", bulletinsCount: 4, entitiesCount: 6, formsCount: 15 },
 ];
 
 /** الجهات الخارجية — list */
 export const externalEntities = [
-  { id: 1, name: "الجهاز المركزي للتعبئة العامة والإحصاء", type: "جهة حكومية", admin: "الإدارة العامة لإحصاءات السكان", status: "منتظم", formsCount: 18 },
-  { id: 2, name: "وزارة التجارة والصناعة", type: "جهة حكومية", admin: "الإدارة العامة للتنمية الصناعية", status: "متأخر", formsCount: 11 },
-  { id: 3, name: "وزارة التربية والتعليم", type: "جهة حكومية", admin: "الإدارة العامة للإحصاء التربوي", status: "منتظم", formsCount: 22 },
-  { id: 4, name: "وزارة الصحة والسكان", type: "جهة حكومية", admin: "الإدارة العامة للمعلومات الصحية", status: "متأخر", formsCount: 15 },
-  { id: 5, name: "وزارة المالية", type: "مؤسسات مالية", admin: "الإدارة العامة للحسابات الختامية", status: "منتظم", formsCount: 7 },
-  { id: 6, name: "مصلحة الجمارك المصرية", type: "جهة حكومية", admin: "الإدارة العامة للحسابات الختامية", status: "منتظم", formsCount: 5 },
-  { id: 7, name: "الهيئة العامة للرقابة المالية", type: "هيئات رقابية", admin: "الإدارة العامة للمتابعة والتقييم", status: "لا يوجد", formsCount: 2 },
+  { id: 1, name: "الجهاز المركزي للتعبئة العامة والإحصاء", type: "جهة حكومية", admin: "الإدارة العامة لإحصاءات السكان", status: "منتظم", formsCount: 18, bulletinsCount: 4, created: "01/06/2026" },
+  { id: 2, name: "وزارة التجارة والصناعة", type: "جهة حكومية", admin: "الإدارة العامة للتنمية الصناعية", status: "متأخر", formsCount: 11, bulletinsCount: 2, created: "03/06/2026" },
+  { id: 3, name: "وزارة التربية والتعليم", type: "جهة حكومية", admin: "الإدارة العامة للإحصاء التربوي", status: "منتظم", formsCount: 22, bulletinsCount: 5, created: "05/06/2026" },
+  { id: 4, name: "وزارة الصحة والسكان", type: "جهة حكومية", admin: "الإدارة العامة للمعلومات الصحية", status: "متأخر", formsCount: 15, bulletinsCount: 4, created: "01/06/2026" },
+  { id: 5, name: "وزارة المالية", type: "مؤسسات مالية", admin: "الإدارة العامة للحسابات الختامية", status: "منتظم", formsCount: 7, bulletinsCount: 2, created: "07/06/2026" },
+  { id: 6, name: "مصلحة الجمارك المصرية", type: "جهات حكومية", admin: "إدارة تقنية المعلومات", status: "منتظم", formsCount: 12, bulletinsCount: 12, created: "2026-04-30" },
+  { id: 7, name: "الهيئة العامة للرقابة المالية", type: "هيئات رقابية", admin: "إدارة تقنية المعلومات", status: "متأخر", formsCount: 12, bulletinsCount: 12, created: "2026-04-30" },
+  { id: 8, name: "اتحاد الغرف التجارية", type: "منظمات أعمال", admin: "إدارة الإحصاءات الاقتصادية", status: "منتظم", formsCount: 4, bulletinsCount: 2, created: "2026-04-30" },
 ];
 
-/** النشرات — list */
+/** النشرات — list (Figma 1060:3607) */
 export const bulletins = [
-  { id: 1, name: "نشرة التقديرات السكانية", admin: "الإدارة العامة لإحصاءات السكان", periodicity: "شهري", entitiesCount: 3, formsCount: 8, created: "01/06/2026" },
-  { id: 2, name: "نشرة المنشآت الصناعية", admin: "الإدارة العامة للتنمية الصناعية", periodicity: "ربع سنوي", entitiesCount: 2, formsCount: 5, created: "03/06/2026" },
-  { id: 3, name: "نشرة التعليم قبل الجامعي", admin: "الإدارة العامة للإحصاء التربوي", periodicity: "سنوي", entitiesCount: 5, formsCount: 12, created: "05/06/2026" },
-  { id: 4, name: "نشرة الخدمات الصحية", admin: "الإدارة العامة للمعلومات الصحية", periodicity: "ربع سنوي", entitiesCount: 4, formsCount: 9, created: "01/06/2026" },
-  { id: 5, name: "نشرة المالية العامة", admin: "الإدارة العامة للحسابات الختامية", periodicity: "ربع سنوي", entitiesCount: 2, formsCount: 4, created: "07/06/2026" },
+  { id: 1, name: "الدرجات العلمية", admin: "إدارة تقنية المعلومات", periodicity: "شهري", entitiesCount: 3, formsCount: 3, created: "2026-04-30" },
+  { id: 2, name: "الدرجات العلمية", admin: "إدارة تقنية المعلومات", periodicity: "ربع سنوي", entitiesCount: 5, formsCount: 5, created: "2026-04-30" },
+  { id: 3, name: "الدرجات العلمية", admin: "إدارة تقنية المعلومات", periodicity: "سنوي", entitiesCount: 3, formsCount: 3, created: "2026-04-30" },
+  { id: 4, name: "نشرة التقديرات السكانية", admin: "الإدارة العامة لإحصاءات السكان", periodicity: "شهري", entitiesCount: 3, formsCount: 8, created: "2026-04-30" },
+  { id: 5, name: "نشرة المنشآت الصناعية", admin: "الإدارة العامة للتنمية الصناعية", periodicity: "ربع سنوي", entitiesCount: 2, formsCount: 5, created: "2026-04-30" },
 ];
 
-/** المستخدمين — list */
+/** المستخدمين — list (Figma 645:5488) */
 export const itUsers = [
-  { id: 1, name: "أحمد محمد", phone: "01123432435", affiliation: "مشرف الإدارة العامة", jobRole: "مشرف إدارة", org: "الإدارة العامة لإحصاءات السكان", joined: "2026-04-30", stopped: "-", status: "منتظم" },
-  { id: 2, name: "سارة علي", phone: "01123432435", affiliation: "الإدارة العامة", jobRole: "موظف إدارة", org: "الإدارة العامة للتنمية الصناعية", joined: "2026-04-30", stopped: "-", status: "منتظم" },
-  { id: 3, name: "هدى فؤاد", phone: "01123432435", affiliation: "مشرف الجهة الخارجية", jobRole: "مشرف جهة", org: "وزارة التجارة والصناعة", joined: "2026-04-30", stopped: "2026-05-30", status: "متأخر" },
-  { id: 4, name: "عمر حسن", phone: "01123432435", affiliation: "الجهة الخارجية", jobRole: "موظف جهة", org: "وزارة الصحة والسكان", joined: "2026-04-30", stopped: "-", status: "منتظم" },
-  { id: 5, name: "خالد عبد الرحمن", phone: "01123432435", affiliation: "صانع القرار", jobRole: "صانع قرار", org: "-", joined: "2026-04-30", stopped: "-", status: "منتظم" },
+  { id: 1, name: "م. أحمد محمود", email: "admin@capmas.gov.eg", phone: "01123432435", affiliation: "مشرف الإدارة العامة", jobRole: "موظف", org: "وزارة التعليم العالى", joined: "2026-04-30", stopped: "-", status: "نشط" },
+  { id: 2, name: "م. أحمد محمود", email: "admin@capmas.gov.eg", phone: "01123432435", affiliation: "الإدارة العامة", jobRole: "مشرف", org: "وزارة التعليم العالى", joined: "2026-04-30", stopped: "2027-01-30", status: "غير نشط" },
+  { id: 3, name: "سارة علي", email: "sara@capmas.gov.eg", phone: "01123432435", affiliation: "الإدارة العامة", jobRole: "موظف", org: "وزارة التجارة والصناعة", joined: "2026-04-30", stopped: "-", status: "نشط" },
+  { id: 4, name: "هدى فؤاد", email: "hoda@capmas.gov.eg", phone: "01123432435", affiliation: "مشرف الجهة الخارجية", jobRole: "مشرف", org: "وزارة الصحة والسكان", joined: "2026-04-30", stopped: "-", status: "نشط" },
+  { id: 5, name: "عمر حسن", email: "omar@capmas.gov.eg", phone: "01123432435", affiliation: "الجهة الخارجية", jobRole: "موظف", org: "وزارة المالية", joined: "2026-04-30", stopped: "2026-05-30", status: "غير نشط" },
 ];
 
-/** الطلبات — list */
+/** الطلبات — list (Figma 649:7406) */
 export const itRequests = [
-  { id: "REQ-2024-085", title: "بيانات السكان", admin: "الإدارة العامة لإحصاءات السكان", type: "بناء نموذج بيان", submitted: "01/06/2026", due: "15/06/2026", status: "قيد تنفيذ" },
-  { id: "REQ-2024-086", title: "بيانات المنشآت الصناعية", admin: "الإدارة العامة للتنمية الصناعية", type: "بناء نموذج بيان", submitted: "03/06/2026", due: "18/06/2026", status: "متأخرة" },
-  { id: "REQ-2024-087", title: "بيانات الطلاب المقيدين", admin: "الإدارة العامة للإحصاء التربوي", type: "بناء نموذج بيان", submitted: "05/06/2026", due: "22/06/2026", status: "قيد تنفيذ" },
-  { id: "REQ-2024-088", title: "بيانات المستشفيات الحكومية", admin: "الإدارة العامة للمعلومات الصحية", type: "بناء نموذج بيان", submitted: "01/06/2026", due: "16/06/2026", status: "متأخرة" },
-  { id: "REQ-2024-089", title: "بيانات الإيرادات العامة", admin: "الإدارة العامة للحسابات الختامية", type: "بناء نموذج بيان", submitted: "07/06/2026", due: "28/06/2026", status: "قيد تنفيذ" },
+  { id: "REQ-2024-085", title: "بيانات الحاصلين على الدرجات", admin: "إدارة تقنية المعلومات", type: "بناء نموذج بيان", submitted: "2026-04-30", due: "2026-04-30", status: "قيد تنفيذ", sentBy: "أحمد محمد علي" },
+  { id: "REQ-2024-084", title: "بيانات الحاصلين على الدرجات", admin: "هيئة الاتصالات", type: "تعديل", submitted: "2026-04-30", due: "2026-04-30", status: "متأخر", sentBy: "سارة علي" },
+  { id: "REQ-2024-083", title: "بيانات الحاصلين على الدرجات", admin: "هيئة الإحصاء", type: "بناء نموذج بيان", submitted: "2026-04-30", due: "2026-04-30", status: "معتمد", sentBy: "هدى فؤاد" },
+  { id: "REQ-2024-088", title: "بيانات المستشفيات الحكومية", admin: "الإدارة العامة للمعلومات الصحية", type: "بناء نموذج بيان", submitted: "2026-04-30", due: "2026-04-30", status: "قيد المراجعة", sentBy: "عمر حسن" },
+  { id: "REQ-2024-089", title: "بيانات الإيرادات العامة", admin: "الإدارة العامة للحسابات الختامية", type: "بناء نموذج بيان", submitted: "2026-04-30", due: "2026-04-30", status: "لم يبدأ بعد", sentBy: "أحمد محمد علي" },
+];
+
+/** Status cards on قائمة الطلبات — Figma 649:7406 */
+export const requestListChips = [
+  { label: "إجمالي", value: 47, color: "#281df4" },
+  { label: "لم يبدأ بعد", value: 3, color: "#1d4ed8" },
+  { label: "قيد تنفيذ", value: 3, color: "#5c5c5c" },
+  { label: "قيد المراجعة", value: 18, color: "#ca8a04" },
+  { label: "تعديل", value: 2, color: "#ea580c" },
+  { label: "معتمد", value: 24, color: "#16a34a" },
+  { label: "متأخر", value: 3, color: "#dc2626" },
 ];
 
 /** نماذج البيان shown inside an إدارة / جهة detail tab */
@@ -143,15 +159,22 @@ export const detailForms = [
   { id: "REQ-2024-090", title: "بيان الرسوم المحصلة", entity: "وزارة المالية", admin: "الإدارة العامة للحسابات الختامية", periodicity: "ربع سنوي", status: "قيد تنفيذ", delivered: "2026-04-30", delay: "لا يوجد" },
 ];
 
-/** Status chip row shown above the detail tables */
+/** Status chip row shown above the المستخدمين detail tab (Figma 645:5488) */
+export const detailUserChips = [
+  { label: "المستخدمين", value: 12, color: "#1B75FF" },
+  { label: "نشط", value: 10, color: "#16A34A" },
+  { label: "غير نشط", value: 2, color: "#DC2626" },
+];
+
+/** Status chip row shown above the detail tables (Figma 645:5076) */
 export const detailStatusChips = [
-  { label: "متأخر", value: 3, color: "#DC2626" },
-  { label: "معتمد", value: 24, color: "#16A34A" },
-  { label: "تعديل", value: 2, color: "#FF8C08" },
-  { label: "قيد المراجعة", value: 18, color: "#9747FF" },
-  { label: "قيد تنفيذ", value: 47, color: "#5C5C5C" },
-  { label: "لم يبدأ بعد", value: 3, color: "#1B75FF" },
-  { label: "إجمالي", value: 97, color: "#052C65" },
+  { label: "إجمالي", value: 47, color: "#281df4" },
+  { label: "لم يبدأ بعد", value: 3, color: "#1d4ed8" },
+  { label: "قيد تنفيذ", value: 3, color: "#5c5c5c" },
+  { label: "قيد المراجعة", value: 18, color: "#ca8a04" },
+  { label: "تعديل", value: 2, color: "#ea580c" },
+  { label: "معتمد", value: 24, color: "#16a34a" },
+  { label: "متأخر", value: 3, color: "#dc2626" },
 ];
 
 /** الصلاحيات offered when creating an إدارة عامة */
@@ -159,14 +182,14 @@ export const adminPermissions = [
   "طلب إنشاء نموذج البيان",
   "مراجعة نموذج البيان",
   "اعتماد نموذج البيان",
-  "ادارة الجهات",
-  "مراجعة بيانات",
   "اعتماد البيانات",
+  "مراجعة بيانات",
+  "ادارة الجهات",
   "ادارة المستخدمين",
 ];
 
 /** الصلاحيات offered when creating a جهة خارجية */
-export const entityPermissions = ["إرسال", "اعتماد بيانات", "تعديل بيانات", "إدخال بيانات"];
+export const entityPermissions = ["إدخال بيانات", "تعديل بيانات", "اعتماد بيانات", "إرسال"];
 
 export const entityTypes = ["جهة حكومية", "مؤسسات مالية", "هيئات رقابية", "منظمات أعمال", "جامعات"];
 
@@ -216,11 +239,13 @@ export const requestDetails = {
   },
 };
 
-/** سجل النشاط — list */
+/** سجل النشاط — Figma 649:6968 */
 export const activityLog = [
-  { id: 1, datetime: "30/06/2026 - 10:15 ص", user: "أحمد محمد", userSubRole: "Super Admin", actionType: "اعتماد", org: "الإدارة العامة لإحصاءات السكان", details: "تم اعتماد نموذج بيانات السكان" },
-  { id: 2, datetime: "29/06/2026 - 02:40 م", user: "محمد علي", userSubRole: "Sector Admin", actionType: "إنشاء", org: "الإدارة العامة للتنمية الصناعية", details: "تم إنشاء طلب بناء نموذج جديد" },
-  { id: 3, datetime: "28/06/2026 - 09:05 ص", user: "سارة حسن", userSubRole: "Sector Admin", actionType: "ربط", org: "وزارة التجارة والصناعة", details: "تم ربط جهة خارجية جديدة بالإدارة" },
-  { id: 4, datetime: "27/06/2026 - 11:20 ص", user: "نورا عبد الله", userSubRole: "Sector Admin", actionType: "إنشاء", org: "الإدارة العامة للإحصاء التربوي", details: "تم إنشاء نشرة جديدة" },
-  { id: 5, datetime: "26/06/2026 - 04:05 م", user: "فاطمة محمود", userSubRole: "Sector Admin", actionType: "اعتماد", org: "الإدارة العامة للمعلومات الصحية", details: "تم اعتماد بيانات المستشفيات الحكومية" },
+  { id: 1, datetime: "28 Apr 2026, 14:30", dateIso: "2026-04-28", user: "أحمد محمود", userSubRole: "Super Admin", actionType: "ربط", org: "مستشفى الأمل العام", details: "تم ربط الجهة الخارجية بـ \"إدارة تقنية المعلومات\"" },
+  { id: 2, datetime: "28 Apr 2026, 11:15", dateIso: "2026-04-28", user: "سارة علي", userSubRole: "Sector Admin", actionType: "اعتماد", org: "مديرية التعليم الأساسي", details: "تم اعتماد التقرير المالي للربع الأول بنجاح." },
+  { id: 3, datetime: "27 Apr 2026, 09:00", dateIso: "2026-04-27", user: "سارة علي", userSubRole: "Super Admin", actionType: "إنشاء", org: "إدارة الموارد البشرية", details: "تم إنشاء إدارة عامة جديدة وإضافتها للنظام." },
+  { id: 4, datetime: "26 Apr 2026, 16:05", dateIso: "2026-04-26", user: "فاطمة محمود", userSubRole: "Sector Admin", actionType: "اعتماد", org: "الإدارة العامة للمعلومات الصحية", details: "تم اعتماد بيانات المستشفيات الحكومية." },
+  { id: 5, datetime: "25 Apr 2026, 10:15", dateIso: "2026-04-25", user: "أحمد محمد", userSubRole: "Super Admin", actionType: "اعتماد", org: "الإدارة العامة لإحصاءات السكان", details: "تم اعتماد نموذج بيانات السكان." },
+  { id: 6, datetime: "24 Apr 2026, 14:40", dateIso: "2026-04-24", user: "محمد علي", userSubRole: "Sector Admin", actionType: "إنشاء", org: "الإدارة العامة للتنمية الصناعية", details: "تم إنشاء طلب بناء نموذج جديد." },
+  { id: 7, datetime: "23 Apr 2026, 09:05", dateIso: "2026-04-23", user: "سارة حسن", userSubRole: "Sector Admin", actionType: "ربط", org: "وزارة التجارة والصناعة", details: "تم ربط جهة خارجية جديدة بالإدارة." },
 ];

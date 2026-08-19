@@ -16,19 +16,19 @@ export default function AppTopbar({ title, breadcrumb, notifications = SHELL.def
       style={{ height: SHELL.headerHeight, paddingInline: SHELL.topbarPadX }}
       className="flex shrink-0 items-center justify-between bg-white sticky top-0 z-10"
     >
-      <div className="min-w-0 text-right">
+      <div className="shrink-0 text-right">
         {breadcrumb ? (
           <div className="flex items-center gap-2 text-[15px] text-muted">
             <button type="button" onClick={() => navigate(-1)} className="hover:text-primary">
               {breadcrumb}
             </button>
             <span>‹</span>
-            <span className="truncate font-semibold text-[rgba(0,0,0,0.9)]">{title}</span>
+            <span className="whitespace-nowrap font-semibold text-[rgba(0,0,0,0.9)]">{title}</span>
           </div>
         ) : (
           <h1
             style={{ fontSize: SHELL.titleSize }}
-            className="truncate font-bold leading-none text-[rgba(0,0,0,0.9)]"
+            className="whitespace-nowrap font-bold leading-none text-[rgba(0,0,0,0.9)]"
           >
             {title}
           </h1>

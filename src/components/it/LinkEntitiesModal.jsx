@@ -1,51 +1,66 @@
 import { useState } from "react";
-import { Search, SquareCheck, Square } from "lucide-react";
+import { Search } from "lucide-react";
 import ItModal from "./ItModal";
 import { externalEntities } from "../../data/mockIt";
 
-/** ربط جهة خارجية — search + multi-select list (Figma 916:4474 / 951:2689) */
+/** ربط جهة خارجية — Figma 916:4474 */
 export default function LinkEntitiesModal({ open, onClose, title = "ربط جهة خارجية", onSubmit }) {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState([]);
 
-  const toggle = (name) =>
-    setSelected((s) => (s.includes(name) ? s.filter((x) => x !== name) : [...s, name]));
+  const toggle = (id) =>
+    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
 
-  const rows = externalEntities.filter((e) => !search.trim() || e.name.includes(search.trim()));
+  const rows = externalEntities.filter((e) => !search.trim() || e.name.includes(search.trim()) || e.type.includes(search.trim()));
 
   const submit = () => {
     onSubmit?.(selected);
+    setSelected([]);
+    onClose();
+  };
+
+  const close = () => {
+    setSelected([]);
     onClose();
   };
 
   return (
-    <ItModal open={open} onClose={onClose} title={title} onSubmit={submit} submitLabel="ربط">
+    <ItModal
+      open={open}
+      onClose={close}
+      title={title}
+      width={588}
+      splitFooter
+      onSubmit={submit}
+      submitLabel={`ربط المختار (${selected.length})`}
+    >
       <div className="relative">
-        <Search size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#1f254b]/40" />
+        <Search size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-black/30" />
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="بحث"
-          className="w-full h-[55px] rounded-[10px] border border-[rgba(5,44,101,0.16)] bg-white pr-12 pl-5 text-[18px] text-right text-[#1f254b] placeholder:text-[#1f254b]/30 outline-none focus:border-[#0986ed]"
+          className="w-full h-[46px] rounded-[10px] bg-white pr-11 pl-5 text-[16px] text-right text-[#1f254b] placeholder:text-black/30 outline-none"
         />
       </div>
 
-      <ul className="flex flex-col gap-3">
+      <ul className="flex flex-col gap-[35px]">
         {rows.map((e) => {
-          const on = selected.includes(e.name);
-          const Icon = on ? SquareCheck : Square;
+          const on = selected.includes(e.id);
           return (
             <li key={e.id}>
               <button
                 type="button"
-                onClick={() => toggle(e.name)}
+                onClick={() => toggle(e.id)}
                 aria-pressed={on}
-                className="w-full bg-white rounded-[10px] border border-[rgba(5,44,101,0.16)] px-5 py-4 flex items-center gap-4 text-right cursor-pointer hover:border-[#0986ed] transition-colors"
+                className="w-full h-[79px] bg-transparent rounded-[20px] border border-[#3498db] px-5 flex items-center gap-4 text-right cursor-pointer"
               >
-                <Icon size={25} className={on ? "text-[#0986ed]" : "text-[#1f254b]/40"} />
-                <span className="flex-1">
-                  <span className="block text-[18px] text-[#1f254b]">{e.name}</span>
-                  <span className="block text-[14px] text-muted">{e.type}</span>
+                <span className="flex-1 min-w-0">
+                  <span className="block text-[17px] font-bold text-[#052c65] truncate">{e.name}</span>
+                  <span className="block text-[17px] font-normal text-[#052c65]/40">{e.type}</span>
+                </span>
+                <span className="size-[25px] shrink-0 overflow-clip">
+                  <img src={on ? "/it/icon-square-check.svg" : "/it/icon-square.svg"} alt="" className="size-full" />
                 </span>
               </button>
             </li>

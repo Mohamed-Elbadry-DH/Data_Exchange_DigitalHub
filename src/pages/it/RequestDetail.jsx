@@ -1,41 +1,93 @@
-import { useParams } from "react-router-dom";
-import { FileSpreadsheet, FileText, Download, Check } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
+import { FileText, Download, Paperclip, History } from "lucide-react";
 import ItDetailPage from "../../components/it/ItDetailPage";
 import { requestDetails, itRequests } from "../../data/mockIt";
 
-function KVCard({ title, entries }) {
+const CARD_SHADOW = { boxShadow: "0px 4px 4px 0px rgba(0,0,0,0.25)" };
+
+function SectionTitle({ icon: Icon, children }) {
   return (
-    <section className="bg-white rounded-[20px] shadow-sm p-6">
-      <h3 className="text-[20px] font-bold text-[#052c65] text-right mb-5">{title}</h3>
-      <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-4" dir="rtl">
-        {Object.entries(entries).map(([k, v]) => (
-          <div key={k} className="flex flex-col gap-1 border-b border-[#E9ECEF] pb-3 last:border-0">
-            <dt className="text-[14px] text-muted">{k}</dt>
-            <dd className="text-[16px] text-[#052c65] font-medium">{v}</dd>
-          </div>
+    <div className="flex items-center gap-3 mb-5" dir="rtl">
+      {Icon && <Icon size={24} className="text-[#052c65] shrink-0" />}
+      <h3 className="text-[22px] font-bold text-[#052c65] text-right">{children}</h3>
+    </div>
+  );
+}
+
+function InfoBar({ title, fields }) {
+  return (
+    <section
+      className="bg-[#f8f9fa] rounded-[20px] px-6 pt-5 pb-6"
+      style={CARD_SHADOW}
+    >
+      <h3 className="text-[22px] font-bold text-[#052c65] text-right mb-5">{title}</h3>
+      <div className="flex flex-nowrap items-center justify-between gap-3 w-full" dir="rtl">
+        {fields.map(([label, value]) => (
+          <p key={label} className="text-[16px] font-semibold text-[#1f254b] whitespace-nowrap shrink-0">
+            {label} :
+            <span className="font-medium text-[15px] text-[rgba(31,37,75,0.6)]"> {value}</span>
+          </p>
         ))}
-      </dl>
+      </div>
+    </section>
+  );
+}
+
+function PairTable({ rows }) {
+  return (
+    <div className="border border-[#d8d8d8] rounded-[20px] overflow-hidden flex-1 min-w-0">
+      <table className="w-full">
+        <tbody>
+          {rows.map(([label, value], i) => (
+            <tr key={label} className={i !== rows.length - 1 ? "border-b border-[#d8d8d8]" : ""}>
+              <th className="w-1/2 min-h-[54px] px-4 py-3 text-right text-[18px] font-semibold text-[#052c65] border-l border-[#d8d8d8] align-top">
+                {label}
+              </th>
+              <td className="px-4 py-3 text-right text-[18px] font-normal text-[rgba(5,44,101,0.57)] align-top">
+                {value}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function FormDataCard({ title, infoRows, yearRows }) {
+  return (
+    <section className="bg-white rounded-[20px] p-6">
+      <SectionTitle icon={FileText}>{title}</SectionTitle>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-[32px] xl:gap-[78px]" dir="rtl">
+        <PairTable rows={infoRows} />
+        <PairTable rows={yearRows} />
+      </div>
     </section>
   );
 }
 
 function Attachments({ files }) {
   return (
-    <section className="bg-white rounded-[20px] shadow-sm p-6">
-      <h3 className="text-[20px] font-bold text-[#052c65] text-right mb-5">المرفقات</h3>
-      <ul className="flex flex-col gap-3" dir="rtl">
+    <section className="bg-white rounded-[20px] p-6">
+      <SectionTitle icon={Paperclip}>المرفقات</SectionTitle>
+      <ul className="flex flex-col gap-[30px]" dir="rtl">
         {files.map((f) => {
-          const Icon = f.type === "Excel" ? FileSpreadsheet : FileText;
-          const tint = f.type === "Excel" ? "#16A34A" : "#DC2626";
+          const src = f.type === "Excel" ? "/it/file-xls.png" : "/it/file-pdf.png";
           return (
             <li
               key={f.name}
-              className="flex items-center gap-4 border border-[#E9ECEF] rounded-[10px] px-4 py-3"
+              className="flex items-center gap-4 bg-[#f8f9fa] border border-[#d8d8d8] rounded-[15px] h-[47px] px-6"
             >
-              <Icon size={24} style={{ color: tint }} className="shrink-0" />
-              <span className="flex-1 text-[15px] text-[#052c65] truncate">{f.name}</span>
-              <button type="button" className="text-muted hover:text-primary cursor-pointer" aria-label={`تحميل ${f.name}`}>
-                <Download size={20} />
+              <img src={src} alt="" className="size-6 shrink-0 object-contain" />
+              <span className="flex-1 text-[18px] font-medium text-[#052c65] truncate text-right">
+                {f.name}
+              </span>
+              <button
+                type="button"
+                className="text-[#0986ed] hover:opacity-70 cursor-pointer shrink-0"
+                aria-label={`تحميل ${f.name}`}
+              >
+                <Download size={24} />
               </button>
             </li>
           );
@@ -48,36 +100,52 @@ function Attachments({ files }) {
 
 function Timeline({ events }) {
   return (
-    <section className="bg-white rounded-[20px] shadow-sm p-6">
-      <h3 className="text-[20px] font-bold text-[#052c65] text-right mb-5">سجل الطلب</h3>
-      <ol className="flex flex-col gap-6" dir="rtl">
-        {events.map((e, i) => (
-          <li key={i} className="flex gap-4">
-            <div className="flex flex-col items-center shrink-0">
-              <span className="w-8 h-8 rounded-full bg-[#16A34A] flex items-center justify-center">
-                <Check size={18} className="text-white" strokeWidth={3} />
-              </span>
-              {i !== events.length - 1 && <span className="flex-1 w-px bg-[#DEE2E6] mt-1" />}
-            </div>
-            <div className="text-right pb-2">
-              <div className="text-[16px] font-semibold text-[#052c65]">{e.title}</div>
-              <div className="text-[14px] text-muted mt-1">{e.by}</div>
-              <div className="text-[13px] text-muted" dir="ltr">{e.at}</div>
-            </div>
-          </li>
-        ))}
+    <section className="bg-white rounded-[20px] p-6">
+      <SectionTitle icon={History}>سجل النشاط</SectionTitle>
+      <ol className="flex flex-col" dir="rtl">
+        {events.map((e, i) => {
+          const sent = i === 0;
+          const src = sent ? "/it/timeline-sent.png" : "/it/timeline-created.png";
+          return (
+            <li key={i} className="flex gap-4">
+              <div className="flex flex-col items-center shrink-0">
+                <img src={src} alt="" className="size-[45px] object-contain" />
+                {i !== events.length - 1 && (
+                  <span className="w-px flex-1 min-h-[40px] bg-[#0986ed]/40 my-1" />
+                )}
+              </div>
+              <div className="text-right pb-6">
+                <div className="text-[18px] font-bold text-[#1f254b]">{e.title}</div>
+                <div className="text-[16px] font-medium text-[#adb5bd] mt-0.5">{e.by}</div>
+                <div className="text-[14px] text-[#0986ed]" dir="ltr">{e.at}</div>
+              </div>
+            </li>
+          );
+        })}
       </ol>
     </section>
   );
 }
 
+/** تفاصيل طلب — Figma 649:7905 */
 export default function RequestDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const listRow = itRequests.find((r) => r.id === id);
   const base = requestDetails[id] || requestDetails["REQ-2024-085"];
   const req = listRow
-    ? { ...base, id: listRow.id, admin: listRow.admin, type: listRow.type, submitted: listRow.submitted, due: listRow.due }
+    ? {
+        ...base,
+        id: listRow.id,
+        admin: listRow.admin,
+        type: listRow.type,
+        submitted: listRow.submitted,
+        due: listRow.due,
+      }
     : base;
+
+  const infoRows = Object.entries(req.info);
+  const yearRows = Object.entries(req.yearInfo);
 
   return (
     <ItDetailPage
@@ -85,21 +153,34 @@ export default function RequestDetail() {
       backTo="/it/requests"
       backLabel="الطلبات"
       heading={req.name}
+      showHeading={false}
+      footer={(
+        <div className="sticky bottom-0 z-10 h-[87px] bg-[#f9f9f9] border-t border-[#eaeaeb] px-8">
+          <div className="h-full max-w-[1535.5px] w-full flex items-center justify-end" dir="rtl">
+            <button
+              type="button"
+              onClick={() => navigate("/it/forms/new")}
+              className="bg-[#0986ed] text-white text-[22px] font-medium rounded-[11px] h-[57px] w-[259px] cursor-pointer"
+            >
+              إنشاء نموذج البيان
+            </button>
+          </div>
+        </div>
+      )}
     >
-      <div className="space-y-6">
-        <KVCard
+      <div className="space-y-8">
+        <InfoBar
           title="معلومات الطلب"
-          entries={{
-            "رقم الطلب :": req.id,
-            "نوع الطلب :": req.type,
-            "الإدارة :": req.admin,
-            "المرسل بواسطة :": req.sentBy,
-            "تاريخ تقديم الطلب :": req.submitted,
-            "الموعد النهائي :": req.due,
-          }}
+          fields={[
+            ["رقم الطلب", req.id],
+            ["نوع الطلب", req.type],
+            ["الإدارة", req.admin],
+            ["المرسل بواسطة", req.sentBy],
+            ["تاريخ تقديم الطلب", req.submitted],
+            ["الموعد النهائي", req.due],
+          ]}
         />
-        <KVCard title="بيانات نموذج البيان" entries={req.info} />
-        <KVCard title="بيانات الدورية و التوقيتات" entries={req.yearInfo} />
+        <FormDataCard title="بيانات نموذج البيان" infoRows={infoRows} yearRows={yearRows} />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Attachments files={req.attachments} />
           <Timeline events={req.timeline} />
