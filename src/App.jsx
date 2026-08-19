@@ -10,6 +10,9 @@ import GaRequiredList from "./pages/ga/RequiredList";
 import GaUsersList from "./pages/ga/UsersList";
 import GaRequestDetail from "./pages/ga/RequestDetail";
 import DmDashboard from "./pages/dm/Dashboard";
+import EntDashboard from "./pages/ent/Dashboard";
+import EntRequiredList from "./pages/ent/RequiredList";
+import EntRequestDetail from "./pages/ent/RequestDetail";
 import ItDashboard from "./pages/it/Dashboard";
 import AdminsList from "./pages/it/AdminsList";
 import EntitiesList from "./pages/it/EntitiesList";
@@ -35,6 +38,7 @@ const SUPERVISOR = ["مشرف الإدارة العامة"];
 const GENERAL_ADMIN = ["الإدارة العامة"];
 const IT_SPECIALIST = [ROLES.IT_SPECIALIST];
 const DECISION_MAKER = [ROLES.DECISION_MAKER];
+const ENTITY = [ROLES.ENTITY];
 
 export default function App() {
   return (
@@ -68,6 +72,13 @@ export default function App() {
           {/* decision maker module */}
           <Route element={<RequireAuth allow={DECISION_MAKER} />}>
             <Route path="/dm" element={<DmDashboard />} />
+          </Route>
+
+          {/* external entity module — موظف الجهة الخارجية */}
+          <Route element={<RequireAuth allow={ENTITY} />}>
+            <Route path="/ent" element={<EntDashboard />} />
+            <Route path="/ent/required" element={<EntRequiredList />} />
+            <Route path="/ent/required/:id" element={<EntRequestDetail />} />
           </Route>
 
           {/* IT specialist module */}

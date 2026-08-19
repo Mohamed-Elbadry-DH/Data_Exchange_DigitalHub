@@ -14,6 +14,13 @@ import { requestDetailById as sharedRequestDetailById } from "./mock";
 
 export * from "./mock";
 
+/** مؤشرات عامة — النشرات المشتركة بدل المستخدمين (أيقونة FilePenLine من كروت الحالة) */
+export const kpis = [
+  { label: "نماذج البيان", value: 316, delta: "+3%", up: true, icon: "FileText", color: "#0986ED" },
+  { label: "الجهات الخارجية", value: 40, delta: "-3%", up: false, icon: "Building2", color: "#C89637" },
+  { label: "النشرات المشتركة", value: 60, delta: "+3%", up: true, icon: "FilePenLine", color: "#34609A" },
+];
+
 /** Palette shared by the general admin indicator cards and charts */
 export const gaStatusColors = {
   "لم تبدأ بعد": "#1B75FF",

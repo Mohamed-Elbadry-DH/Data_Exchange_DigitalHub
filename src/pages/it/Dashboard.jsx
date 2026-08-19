@@ -135,7 +135,7 @@ function PendingTasksCard() {
   return (
     <div className="bg-white rounded-[20px] shadow-sm p-5 overflow-hidden flex-1 min-w-0 min-h-[336px]">
       <div className="flex items-center justify-between mb-5">
-        <h3 className="text-[20px] font-bold text-[#052c65]">الطلبات و المهام المعلقة</h3>
+        <h3 className="text-[20px] font-bold text-[#052c65]">الطلبات و المهام</h3>
         <button type="button" className="text-[#0986ed] text-[16px] font-bold cursor-pointer">عرض كل</button>
       </div>
       <div className="overflow-x-auto">

@@ -56,7 +56,8 @@ export const demoUsers = [
     name: "أ. عمر حسن",
     email: "entity.user@capmas.gov.eg",
     password: "Mped@2026",
-    enabled: false,
+    enabled: true,
+    home: "/ent",
   },
 ];
 

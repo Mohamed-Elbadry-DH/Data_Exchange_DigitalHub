@@ -42,8 +42,8 @@ export default function EntityDetail() {
   return (
     <ItDetailPage
       pageTitle="الجهات الخارجية"
-      backTo="/it/admins"
-      backLabel="الإدارات العامة"
+      backTo="/it/entities"
+      backLabel="الجهات الخارجية"
       midCrumb={owningAdmin ? { label: owningAdmin.name, to: `/it/admins/${owningAdmin.id}` } : { label: entity.admin }}
       heading={entity.name}
       tiles={[
