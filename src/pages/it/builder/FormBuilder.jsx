@@ -43,7 +43,7 @@ export default function FormBuilder() {
   return (
     <Layout title="الطلبات">
       <div className={`flex flex-col ${step === 1 ? "h-full min-h-0 overflow-hidden" : "min-h-full"}`}>
-        <div className={`pt-7 flex-1 flex flex-col min-h-0 ${step === 1 ? "px-8 pb-0 gap-8 overflow-hidden" : "px-8 pb-10 space-y-8"}`}>
+        <div className={`pt-7 flex-1 flex flex-col min-h-0 ${step === 1 ? "px-4 sm:px-6 xl:px-8 pb-0 gap-8 overflow-hidden" : "px-4 sm:px-6 xl:px-8 pb-10 space-y-8"}`}>
           <div className="flex items-center gap-1 text-[20px] shrink-0" dir="rtl">
             <Link to="/it/requests" className="text-[#adb5bd] font-medium hover:text-primary">
               الطلبات
@@ -56,14 +56,14 @@ export default function FormBuilder() {
             <BuilderStepper current={step} />
           </div>
 
-          <div className={step === 1 ? "flex-1 min-h-0 -mx-8 flex flex-col overflow-hidden" : ""}>
+          <div className={step === 1 ? "flex-1 min-h-0 -mx-4 sm:-mx-6 xl:-mx-8 flex flex-col overflow-hidden" : ""}>
             {step === 0 && <StepMetadata meta={meta} onChange={setMeta} />}
             {step === 1 && <StepStructure structure={structure} onChange={setStructure} />}
             {step === 2 && <StepReview meta={meta} structure={structure} />}
           </div>
         </div>
 
-        <div className="sticky bottom-0 z-10 h-[87px] shrink-0 bg-[#f9f9f9] border-t border-[#eaeaeb] px-8">
+        <div className="sticky bottom-0 z-10 h-[87px] shrink-0 bg-[#f9f9f9] border-t border-[#eaeaeb] px-4 sm:px-6 xl:px-8">
           <div className="h-full w-full flex items-center justify-between" dir="rtl">
             {step > 0 ? (
               <button

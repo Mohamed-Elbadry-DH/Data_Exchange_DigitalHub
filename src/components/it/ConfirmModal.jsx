@@ -4,9 +4,9 @@ import { TriangleAlert } from "lucide-react";
 export default function ConfirmModal({ open, message, onConfirm, onCancel }) {
   if (!open) return null;
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40" onClick={onCancel}>
+    <div className="modal-overlay z-[100]" onClick={onCancel}>
       <div
-        className="bg-white rounded-2xl p-8 w-[380px] flex flex-col items-center gap-5"
+        className="bg-white rounded-2xl p-8 w-full max-w-[380px] flex flex-col items-center gap-5"
         dir="rtl"
         onClick={(e) => e.stopPropagation()}
       >

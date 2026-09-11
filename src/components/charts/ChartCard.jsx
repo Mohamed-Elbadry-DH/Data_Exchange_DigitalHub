@@ -7,13 +7,13 @@ export default function ChartCard({ title, defaultType = "pie", height = 345, ch
   const type = CHART_TYPES[activeChart] || CHART_TYPES[0];
 
   return (
-    <div className="bg-white shadow-sm overflow-hidden min-w-0 flex-1 h-full min-h-0" style={{ height, borderRadius: 20 }}>
+    <div className="bg-white shadow-sm overflow-hidden min-w-0 flex-1 basis-[320px] w-full h-full min-h-0" style={{ height, borderRadius: 20 }}>
       <div className="flex h-full min-h-0 flex-col p-5">
-        <div className="mb-4 flex shrink-0 items-center justify-between">
-          <h3 className="text-[17px] font-bold text-[rgba(0,0,0,0.9)]">{title}</h3>
+        <div className="mb-4 flex shrink-0 flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h3 className="min-w-0 text-[15px] sm:text-[17px] font-bold leading-tight text-[rgba(0,0,0,0.9)] sm:truncate">{title}</h3>
           <div
             dir="ltr"
-            className="inline-flex h-[39px] items-center justify-center gap-2 rounded-lg"
+            className="inline-flex h-[39px] shrink-0 items-center justify-center gap-2 rounded-lg"
             style={{ width: 217, background: "rgba(240, 240, 240, 0.53)", padding: "6px 15px" }}
           >
             {CHART_TYPE_ICONS.map((Icon, i) => {

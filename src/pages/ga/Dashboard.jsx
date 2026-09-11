@@ -101,7 +101,7 @@ export default function Dashboard() {
         className={`relative ${createOpen ? "overflow-hidden" : "min-h-full"}`}
         style={createOpen ? { height: `calc(100dvh - ${SHELL.headerHeight}px)` } : undefined}
       >
-        <div className="p-8 space-y-[50px]">
+        <div className="page-shell space-y-8 xl:space-y-[50px]">
         <PageToolbar>
           <button
             ref={createBtnRef}
@@ -119,27 +119,27 @@ export default function Dashboard() {
 
         <div>
           <h2 className="text-[20px] font-bold text-[rgba(0,0,0,0.9)] mb-4 text-right">مؤشرات عامة</h2>
-          <div className="flex flex-row-reverse justify-center gap-[65px] flex-nowrap">
+          <div className="flex flex-row-reverse flex-wrap justify-center gap-6 xl:gap-[65px]">
             {kpis.map((k) => <KpiCard key={k.label + k.value} k={k} icons={ICONS} />)}
           </div>
         </div>
 
-        <div className="w-full max-w-[1535.5px] grid grid-cols-2 gap-[50px] overflow-hidden">
+        <div className=" w-full grid grid-cols-1 xl:grid-cols-2 gap-8 xl:gap-[50px]">
           <div className="min-w-0">
             <h2 className="text-[18px] font-bold text-[rgba(0,0,0,0.9)] mb-4 text-right">مؤشرات تبادل نماذج البيان</h2>
-            <div className="grid grid-cols-3 gap-5">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
               {exchangeStatusCards.map((c, i) => <StatusCard key={i} c={c} icons={ICONS} />)}
             </div>
           </div>
           <div className="min-w-0">
             <h2 className="text-[18px] font-bold text-[rgba(0,0,0,0.9)] mb-4 text-right">مؤشرات اعتماد البيانات</h2>
-            <div className="grid grid-cols-3 gap-5">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
               {fulfillmentStatusCards.map((c, i) => <StatusCard key={i} c={c} icons={ICONS} />)}
             </div>
           </div>
         </div>
 
-        <div className="w-full max-w-[1535.5px] h-[345px] flex flex-row-reverse gap-[50px]">
+        <div className=" w-full flex flex-row-reverse flex-wrap gap-8 xl:gap-[50px]">
           <ChartCard title="توزيع نماذج البيان حسب حالة الاعتماد" defaultType="pie">
             {(type) => (
               <SwitchableChart
@@ -187,7 +187,7 @@ export default function Dashboard() {
           </ChartCard>
         </div>
 
-        <div className="w-full max-w-[1535.5px] h-[345px] flex flex-row-reverse gap-[50px]">
+        <div className=" w-full flex flex-row-reverse flex-wrap gap-8 xl:gap-[50px]">
           <ChartCard title="توزيع البيانات حسب الحالة" defaultType="donut">
             {(type) => (
               <SwitchableChart

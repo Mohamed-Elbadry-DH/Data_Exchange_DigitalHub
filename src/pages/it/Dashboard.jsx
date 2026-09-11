@@ -110,7 +110,7 @@ function KpiCard({ k }) {
   return (
     <div
       dir="rtl"
-      className="it-kpi-card card-hover rounded-[20px] flex-1 min-w-0 h-[113px] shadow-sm flex flex-col items-start"
+      className="it-kpi-card card-hover rounded-[20px] min-w-0 min-h-[113px] shadow-sm flex flex-col items-start justify-between"
       style={{
         padding: "15.731px 19.663px",
         gap: "19.663px",
@@ -119,11 +119,11 @@ function KpiCard({ k }) {
       }}
     >
       <div className="flex w-full items-center gap-2 min-w-0">
-        <div className="text-[16px] xl:text-[18px] font-semibold text-[#052c65] text-right min-w-0 flex-1 truncate">
+        <div className="text-[14px] sm:text-[16px] xl:text-[18px] font-semibold text-[#052c65] text-right min-w-0 flex-1 leading-tight">
           {k.label}
         </div>
-        <div className="bg-[rgba(9,134,237,0.08)] h-[45px] w-[45px] rounded-full flex items-center justify-center shrink-0">
-          <Icon size={26} className="text-[#0986ED]" />
+        <div className="bg-[rgba(9,134,237,0.08)] h-[38px] w-[38px] sm:h-[45px] sm:w-[45px] rounded-full flex items-center justify-center shrink-0">
+          <Icon size={24} className="text-[#0986ED]" />
         </div>
       </div>
       <div className="text-[25px] font-bold text-[#0986ed] text-right w-full -mt-[2px]">{k.value}</div>
@@ -167,17 +167,17 @@ function PendingTasksCard() {
 export default function Dashboard() {
   return (
     <Layout title="لوحة التحكم">
-      <div className="p-8 space-y-[50px]">
+      <div className="page-shell space-y-8 xl:space-y-[50px]">
         <PageToolbar>
           <QuickActionsButton />
           <PeriodButton />
         </PageToolbar>
 
-        <div className="flex w-full max-w-[1535.5px] flex-nowrap items-center gap-[44px]" dir="ltr">
+        <div className="grid w-full grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6 xl:gap-[44px]" dir="ltr">
           {itKpis.map((k) => <KpiCard key={k.label} k={k} />)}
         </div>
 
-        <div className="w-full max-w-[1535.5px] h-[345px] flex flex-row-reverse gap-[50px]">
+        <div className=" w-full flex flex-row-reverse flex-wrap gap-8 xl:gap-[50px]">
           <ChartCard title="توزيع الجهات حسب النوع" defaultType="pie">
             {(type) => (
               <SwitchableChart
@@ -204,8 +204,8 @@ export default function Dashboard() {
           </ChartCard>
         </div>
 
-        <div className="w-full max-w-[1535.5px] flex gap-[50px]">
-          <div className="w-[588px] shrink-0"><AlertsCard alerts={itAlerts} /></div>
+        <div className=" w-full flex flex-wrap gap-8 xl:gap-[50px]">
+          <div className="w-full lg:w-[588px] lg:shrink-0 min-w-0"><AlertsCard alerts={itAlerts} /></div>
           <PendingTasksCard />
         </div>
       </div>

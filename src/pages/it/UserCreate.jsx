@@ -98,7 +98,7 @@ export default function UserCreate() {
   return (
     <Layout title="المستخدمين">
       <div className="flex min-h-full flex-col">
-        <div className="px-8 pt-7 pb-8 space-y-6 max-w-[1535.5px] flex-1">
+        <div className="page-shell space-y-6 flex-1">
           <div className="flex items-center gap-1 text-[20px]" dir="rtl">
             <Link to="/it/users" className="text-[#adb5bd] font-medium hover:text-primary">المستخدمين</Link>
             <ChevronLeft size={30} className="text-[#052c65] shrink-0" />
@@ -207,8 +207,8 @@ export default function UserCreate() {
           </div>
         </div>
 
-        <div className="sticky bottom-0 z-10 h-[87px] bg-[#f9f9f9] border-t border-[#eaeaeb] px-8">
-          <div className="h-full max-w-[1535.5px] w-full flex items-center">
+        <div className="sticky bottom-0 z-10 h-[87px] bg-[#f9f9f9] border-t border-[#eaeaeb] px-4 sm:px-6 xl:px-8">
+          <div className="h-full w-full flex items-center">
             <FormActions className="w-full" onCancel={back} onSubmit={back} submitLabel="إنشاء" />
           </div>
         </div>

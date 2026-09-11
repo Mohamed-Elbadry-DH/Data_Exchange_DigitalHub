@@ -131,7 +131,7 @@ export default function Dashboard() {
 
   return (
     <Layout title="لوحة التحكم">
-      <div className="p-8 space-y-[50px]">
+      <div className="page-shell space-y-8 xl:space-y-[50px]">
         <PageToolbar>
           <span />
           <PeriodButton />
@@ -139,12 +139,12 @@ export default function Dashboard() {
 
         <div>
           <h2 className="text-[20px] font-bold text-[rgba(0,0,0,0.9)] mb-4 text-right">مؤشرات عامة</h2>
-          <div className="flex justify-center gap-5 flex-nowrap">
+          <div className="flex flex-wrap justify-center gap-5">
             {kpis.map((k) => <KpiCard key={k.label + k.value} k={k} />)}
           </div>
         </div>
 
-        <div className="w-full max-w-[1535.5px] grid grid-cols-2 gap-[50px] overflow-hidden">
+        <div className=" w-full grid grid-cols-1 xl:grid-cols-2 gap-8 xl:gap-[50px]">
           <div className="min-w-0">
             <h2 className="text-[18px] font-bold text-[rgba(0,0,0,0.9)] mb-4 text-right">مؤشرات تبادل نماذج البيان</h2>
             <div className="grid grid-cols-4 gap-3">
@@ -159,7 +159,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="w-full max-w-[1535.5px] h-[345px] flex flex-row-reverse gap-[50px]">
+        <div className=" w-full flex flex-row-reverse flex-wrap gap-8 xl:gap-[50px]">
           <ChartCard title="توزيع نماذج البيان حسب حالة الاعتماد" defaultType="pie">
             {(type) => (
               <SwitchableChart
@@ -206,7 +206,7 @@ export default function Dashboard() {
           </ChartCard>
         </div>
 
-        <div className="w-full max-w-[1535.5px] h-[345px] flex flex-row-reverse gap-[50px]">
+        <div className=" w-full flex flex-row-reverse flex-wrap gap-8 xl:gap-[50px]">
           <ChartCard title="توزيع البيانات حسب الحالة" defaultType="donut">
             {(type) => (
               <SwitchableChart

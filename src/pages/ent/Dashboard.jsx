@@ -77,7 +77,7 @@ function UrgentAlertsCard() {
 export default function Dashboard() {
   return (
     <Layout title="لوحة التحكم">
-      <div className="p-4 sm:p-6 xl:p-8 space-y-[40px]">
+      <div className="page-shell space-y-8 xl:space-y-[40px]">
         <div className="flex w-full items-center justify-end" style={{ minHeight: SHELL.navItemH }}>
           <PeriodButton />
         </div>

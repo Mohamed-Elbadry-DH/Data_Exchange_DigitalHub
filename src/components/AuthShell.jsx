@@ -29,17 +29,30 @@ export const AUTH = {
 };
 
 /** Figma card is 826×727 on a 1920×1215 artboard (~43% × 60%).
- *  On a live screen we keep that aspect and cap at 80% of Figma so it
- *  reads as a card, not a panel: ~36% of viewport width, ~56% of height. */
-const CARD_VIEW_W = 0.36;
-const CARD_VIEW_H = 0.56;
+ *  On a wide screen we keep that aspect and cap at 80% of Figma so it reads as
+ *  a card, not a panel. On a phone or tablet the same card is allowed to take
+ *  nearly the whole viewport, otherwise the fixed 826px design would shrink to
+ *  an unreadable sliver. */
+const AUTH_VIEW = {
+  desktop: { w: 0.36, h: 0.56 },
+  tablet: { w: 0.72, h: 0.78 },
+  mobile: { w: 0.94, h: 0.86 },
+};
+
+function viewFractions(vw) {
+  if (vw < 768) return AUTH_VIEW.mobile;
+  if (vw < 1280) return AUTH_VIEW.tablet;
+  return AUTH_VIEW.desktop;
+}
 
 function cardFitScale() {
   if (typeof window === "undefined") return AUTH_SCALE;
+  const { innerWidth: vw, innerHeight: vh } = window;
+  const view = viewFractions(vw);
   return Math.min(
     AUTH_SCALE,
-    (window.innerWidth * CARD_VIEW_W) / AUTH.cardWidth,
-    (window.innerHeight * CARD_VIEW_H) / AUTH.cardMinHeight,
+    (vw * view.w) / AUTH.cardWidth,
+    (vh * view.h) / AUTH.cardMinHeight,
   );
 }
 

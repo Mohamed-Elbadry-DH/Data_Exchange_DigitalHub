@@ -9,7 +9,7 @@ export default function StructureValidationModal({ open, onClose, rows, percent 
   if (!open) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-6" onClick={onClose}>
+    <div className="modal-overlay z-[100]" onClick={onClose}>
       <div
         dir="rtl"
         onClick={(e) => e.stopPropagation()}

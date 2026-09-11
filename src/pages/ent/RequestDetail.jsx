@@ -151,7 +151,7 @@ export default function RequestDetail() {
 
   return (
     <Layout title="البيانات المطلوبة">
-      <div className="p-4 sm:p-6 xl:p-8 pb-28 space-y-5">
+      <div className="page-shell space-y-5 pb-28">
         <div className="flex items-center gap-2 text-[15px] text-muted" dir="rtl">
           <Link to="/ent/required" className="hover:text-primary">البيانات المطلوبة</Link>
           <ChevronLeft size={16} />
@@ -239,7 +239,7 @@ export default function RequestDetail() {
         </div>
       </div>
 
-      <div className="sticky bottom-0 z-10 bg-[#f9f9f9] border-t border-[#eaeaeb] px-8 py-4">
+      <div className="sticky bottom-0 z-10 bg-[#f9f9f9] border-t border-[#eaeaeb] px-4 sm:px-6 xl:px-8 py-4">
         <div className="flex" dir="rtl">
           <button
             type="button"

@@ -129,10 +129,10 @@ export default function ItListPage({
 
   return (
     <Layout title={title}>
-      <div className="p-8">
-        <div className={`flex items-center mb-6 gap-4 ${listTitle ? "justify-between" : "justify-end"}`}>
+      <div className="page-shell">
+        <div className={`flex flex-wrap items-center mb-6 gap-4 ${listTitle ? "justify-between" : "justify-end"}`}>
           {listTitle && <h2 className="text-[18px] font-bold text-[#052c65] shrink-0">{listTitle}</h2>}
-          <div className="flex items-center gap-[15px]" dir={searchBoxed ? "ltr" : undefined}>
+          <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-[15px]" dir={searchBoxed ? "ltr" : undefined}>
             {searchBoxed && (
               <button
                 onClick={() => setFilterOpen(true)}
@@ -143,7 +143,7 @@ export default function ItListPage({
               </button>
             )}
             {searchBoxed && actions.map((a) => <ToolbarAction key={a.label} action={a} />)}
-            <div className="relative">
+            <div className="relative min-w-0 flex-1 basis-[220px] sm:flex-none sm:basis-auto">
               <Search size={searchBoxed ? 16 : 15} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted" />
               <input
                 value={search}
@@ -151,8 +151,8 @@ export default function ItListPage({
                 placeholder={searchPlaceholder}
                 className={
                   searchBoxed
-                    ? "h-[46px] w-[315px] rounded-[10px] bg-[#f0f0f0] border border-[rgba(5,44,101,0.16)] pr-9 pl-4 text-[14px] text-right placeholder:text-black/30 outline-none focus:border-primary"
-                    : "border border-gray-200 rounded-full pr-9 pl-4 py-2 text-[13px] w-64 text-right placeholder:text-gray-400"
+                    ? "h-[46px] w-full sm:w-[315px] rounded-[10px] bg-[#f0f0f0] border border-[rgba(5,44,101,0.16)] pr-9 pl-4 text-[14px] text-right placeholder:text-black/30 outline-none focus:border-primary"
+                    : "border border-gray-200 rounded-full pr-9 pl-4 py-2 text-[13px] w-full sm:w-64 text-right placeholder:text-gray-400"
                 }
               />
             </div>
@@ -170,7 +170,7 @@ export default function ItListPage({
         </div>
 
         {chips && (
-          <div className="flex flex-nowrap items-center gap-3 mb-8 w-full" dir="rtl">
+          <div className="flex flex-wrap items-center gap-3 mb-8 w-full" dir="rtl">
             {chips.map((c) => (
               <div
                 key={c.label}

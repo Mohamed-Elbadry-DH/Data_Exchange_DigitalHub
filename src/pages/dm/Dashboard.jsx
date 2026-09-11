@@ -97,7 +97,7 @@ export default function Dashboard() {
 
   return (
     <Layout title="لوحة التحكم">
-      <div className="p-4 sm:p-6 xl:p-8 space-y-[50px]">
+      <div className="page-shell space-y-8 xl:space-y-[50px]">
         {/*
           Not `PageToolbar` — that caps at SHELL.contentMax, and this dashboard
           spans the full content area. `justify-end` puts the lone control on

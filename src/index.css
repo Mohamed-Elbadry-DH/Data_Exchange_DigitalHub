@@ -171,3 +171,52 @@ body {
   .it-quick-menu { animation: none; }
   .it-quick-chevron { transition: none; }
 }
+
+/* ------------------------------------------------------------------ *
+ * One page shell for every screen in every module.
+ * Owns the three things that used to drift page-to-page: content width,
+ * horizontal padding and vertical padding. Pages add only their own
+ * vertical rhythm (space-y-*), never their own padding or max-width.
+ * ------------------------------------------------------------------ */
+.page-shell {
+  width: 100%;
+  max-width: 1535.5px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  padding-block: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .page-shell { padding-inline: 1.5rem; }
+}
+
+@media (min-width: 1280px) {
+  .page-shell { padding-inline: 2rem; padding-block: 2rem; }
+}
+
+/* For screens that pin their own footer bar and manage block spacing. */
+.page-shell--flush { padding-block: 0; }
+
+/* ------------------------------------------------------------------ *
+ * Modal overlay.
+ * Every dialog in the app centres on the CONTENT area, not the window:
+ * the sidebar stays uncovered and readable. `--app-sidebar-w` is written
+ * by AppShell and falls back to 0 outside the app frame (auth screens)
+ * and on mobile, where the sidebar is itself an overlay.
+ * ------------------------------------------------------------------ */
+.modal-overlay {
+  position: fixed;
+  inset-block: 0;
+  left: 0;
+  right: var(--app-sidebar-w, 0px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+@media (min-width: 640px) {
+  .modal-overlay { padding: 1.5rem; }
+}

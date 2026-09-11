@@ -41,17 +41,17 @@ export default function RequiredList() {
 
   return (
     <Layout title="البيانات المطلوبة">
-      <div className="p-4 sm:p-6 xl:p-8">
-        <div className="flex items-center justify-between mb-6 gap-4">
+      <div className="page-shell">
+        <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
           <h2 className="text-[18px] font-bold text-[rgba(0,0,0,0.9)] shrink-0">قائمة البيانات المطلوبة</h2>
-          <div className="flex items-center gap-3">
-            <div className="relative">
+          <div className="flex min-w-0 flex-1 items-center justify-end gap-3">
+            <div className="relative min-w-0 flex-1 sm:flex-none">
               <Search size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="بحث عن نموذج بيان"
-                className="border border-gray-200 rounded-full pr-9 pl-4 py-2 text-[13px] w-64 text-right placeholder:text-gray-400"
+                className="border border-gray-200 rounded-full pr-9 pl-4 py-2 text-[13px] w-full sm:w-64 text-right placeholder:text-gray-400"
               />
             </div>
             <button

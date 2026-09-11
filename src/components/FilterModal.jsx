@@ -41,9 +41,9 @@ export default function FilterModal({
 }) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
+    <div className="modal-overlay z-50" onClick={onClose}>
       <div
-        className="bg-white rounded-2xl p-7 w-[400px]"
+        className="bg-white rounded-2xl p-7 w-full max-w-[400px]"
         dir="rtl"
         onClick={(e) => e.stopPropagation()}
       >

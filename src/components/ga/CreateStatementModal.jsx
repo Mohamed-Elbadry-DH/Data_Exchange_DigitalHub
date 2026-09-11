@@ -91,9 +91,9 @@ function DateField({ value, onChange }) {
 function DiscardWarning({ open, onConfirm, onCancel }) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40" onClick={onCancel}>
+    <div className="modal-overlay z-[60]" onClick={onCancel}>
       <div
-        className="bg-white rounded-2xl p-8 w-[400px] flex flex-col items-center gap-5 shadow-lg"
+        className="bg-white rounded-2xl p-8 w-full max-w-[400px] flex flex-col items-center gap-5 shadow-lg"
         dir="rtl"
         onClick={(e) => e.stopPropagation()}
       >

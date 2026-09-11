@@ -21,7 +21,7 @@ function InfoBar({ title, fields }) {
       style={CARD_SHADOW}
     >
       <h3 className="text-[22px] font-bold text-[#052c65] text-right mb-5">{title}</h3>
-      <div className="flex flex-nowrap items-center justify-between gap-3 w-full" dir="rtl">
+      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 w-full" dir="rtl">
         {fields.map(([label, value]) => (
           <p key={label} className="text-[16px] font-semibold text-[#1f254b] whitespace-nowrap shrink-0">
             {label} :
@@ -155,8 +155,8 @@ export default function RequestDetail() {
       heading={req.name}
       showHeading={false}
       footer={(
-        <div className="sticky bottom-0 z-10 h-[87px] bg-[#f9f9f9] border-t border-[#eaeaeb] px-8">
-          <div className="h-full max-w-[1535.5px] w-full flex items-center justify-end" dir="rtl">
+        <div className="sticky bottom-0 z-10 h-[87px] bg-[#f9f9f9] border-t border-[#eaeaeb] px-4 sm:px-6 xl:px-8">
+          <div className="h-full w-full flex items-center justify-end" dir="rtl">
             <button
               type="button"
               onClick={() => navigate("/it/forms/new")}

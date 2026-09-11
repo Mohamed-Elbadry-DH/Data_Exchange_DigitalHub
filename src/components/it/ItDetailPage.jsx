@@ -8,7 +8,7 @@ import { ToolbarAction } from "./ItListPage";
 
 export function StatusChips({ chips }) {
   return (
-    <div className="flex flex-nowrap items-center gap-3 w-full" dir="rtl">
+    <div className="flex flex-wrap items-center gap-3 w-full" dir="rtl">
       {chips.map((c) => (
         <div
           key={c.label}
@@ -303,7 +303,7 @@ export default function ItDetailPage({
   return (
     <Layout title={pageTitle}>
       <div className="flex min-h-full flex-col">
-      <div className="px-8 pt-7 pb-10 space-y-6 flex-1">
+      <div className="page-shell space-y-6 flex-1">
         <div className={`flex items-center gap-2 text-right ${cardTabs || headingTone === "primary" ? "" : "text-[15px] text-muted"}`} dir="rtl">
           <Link to={backTo} className={cardTabs || headingTone === "primary" ? "text-[20px] font-medium text-[#adb5bd] hover:text-primary" : "hover:text-primary"}>{backLabel}</Link>
           {midCrumb && (

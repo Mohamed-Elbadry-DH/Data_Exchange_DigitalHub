@@ -10,7 +10,7 @@ export default function DataIncompleteModal({ open, onClose, onContinue, require
   const pct = required > 0 ? Math.round((current / required) * 100) : 0;
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40" onClick={onClose}>
+    <div className="modal-overlay z-[100]" onClick={onClose}>
       <div
         className="bg-page rounded-[20px] w-[560px] max-w-[92vw] px-10 pt-5 pb-8"
         dir="rtl"
