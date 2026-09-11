@@ -18,9 +18,9 @@ export default function UserFormModal({ open, onClose, onSubmit, initial }) {
   const valid = form.name.trim() && form.email.trim() && form.phone.trim();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
+    <div className="modal-overlay z-50" onClick={onClose}>
       <div
-        className="bg-white rounded-2xl p-7 w-[420px]"
+        className="bg-white rounded-2xl p-7 w-full max-w-[420px]"
         dir="rtl"
         onClick={(e) => e.stopPropagation()}
       >

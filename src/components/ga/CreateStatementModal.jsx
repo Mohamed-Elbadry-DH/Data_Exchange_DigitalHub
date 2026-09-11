@@ -91,9 +91,9 @@ function DateField({ value, onChange }) {
 function DiscardWarning({ open, onConfirm, onCancel }) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40" onClick={onCancel}>
+    <div className="modal-overlay z-[60]" onClick={onCancel}>
       <div
-        className="bg-white rounded-2xl p-8 w-[400px] flex flex-col items-center gap-5 shadow-lg"
+        className="bg-white rounded-2xl p-8 w-full max-w-[400px] flex flex-col items-center gap-5 shadow-lg"
         dir="rtl"
         onClick={(e) => e.stopPropagation()}
       >
@@ -144,12 +144,22 @@ export default function CreateStatementModal({ open, onClose, onSubmit, anchorRe
       const anchor = anchorRef?.current;
       if (!container) return;
       const c = container.getBoundingClientRect();
-      const left = anchor
-        ? Math.max(GAP, Math.round(anchor.getBoundingClientRect().right - c.left + GAP))
+      const a = anchor?.getBoundingClientRect();
+      // Create button is on the physical right (RTL inline-start). Open the
+      // sheet in the remaining space to its left — using `anchor.right` here
+      // leaves only the few pixels between the button and the sidebar.
+      const right = a
+        ? Math.max(GAP, Math.round(c.right - a.left + GAP))
         : GAP;
-      const available = Math.max(0, c.width - left - GAP);
+      const leftEdge = GAP;
+      const available = Math.max(0, c.width - leftEdge - right);
       const width = Math.round(available * 0.8);
-      setBox({ left, right: Math.round(c.width - left - width), top: GAP, bottom: GAP });
+      const left = leftEdge + Math.max(0, available - width);
+      if (c.width - left - right < 480) {
+        setBox({ left: GAP, right: GAP, top: GAP, bottom: GAP });
+        return;
+      }
+      setBox({ left, right, top: GAP, bottom: GAP });
     };
 
     measure();

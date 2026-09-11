@@ -735,7 +735,7 @@ export default function RequestDetail({ mode = "forms" }) {
 
   return (
     <Layout title={backLabel}>
-      <div className="px-8 pt-7 space-y-5">
+      <div className="page-shell space-y-5">
         <div>
           <nav className="inline-flex items-center gap-1 h-[41px] text-right" aria-label="مسار التنقل">
             <button

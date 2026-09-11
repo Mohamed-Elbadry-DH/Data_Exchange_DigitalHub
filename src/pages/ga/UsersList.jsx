@@ -87,7 +87,7 @@ export default function UsersList() {
 
   return (
     <Layout title="المستخدمين">
-      <div className="p-8">
+      <div className="page-shell">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-[18px] font-bold text-[rgba(0,0,0,0.9)]">المستخدمين ({filteredUsers.length})</h2>
           <div className="flex items-center gap-3">

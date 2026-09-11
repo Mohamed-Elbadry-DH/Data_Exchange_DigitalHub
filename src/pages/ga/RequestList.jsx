@@ -46,7 +46,7 @@ export default function RequestList({ title, listTitle, rows, detailPath }) {
 
   return (
     <Layout title={title}>
-      <div className="p-8">
+      <div className="page-shell">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-[18px] font-bold text-[rgba(0,0,0,0.9)]">{listTitle}</h2>
           <div className="flex items-center gap-3">

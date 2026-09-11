@@ -233,4 +233,141 @@ Still to build from the PDF (design differs from the supervisor clone):
 
 ---
 
+## 11. IT specialist module (`/it`)
+
+Third isolated module, built from Figma section `146:14` («أخصائي تقنية النظم والمعلومات») in file `zZTaMqB2BxBGru5HxlYSWZ`. Same isolation contract as `/ga` (§10): it never edits the supervisor or general-admin surfaces.
+
+```
+src/components/it/ItLayout.jsx      copy of GaLayout; NAV = 7 items prefixed /it
+src/components/it/StatusBadge.jsx   driven by statusBadge in mockIt
+src/components/it/ItListPage.jsx    shared shell for the 6 list screens
+src/components/it/ItFilterModal.jsx field-driven filter (adds «ترتيب حسب»)
+src/components/it/ItDetailPage.jsx  breadcrumb + tiles + status chips + tabs
+                                    (also exports StatusChips/InfoTile/DetailTable)
+src/components/it/ItForm.jsx        Field/TextInput/SelectInput/TextArea/
+                                    CheckboxGroup/FormSection/FormActions
+src/components/it/ItModal.jsx       760px create-dialog shell
+src/components/it/{Entity,Bulletin}CreateModal.jsx, LinkEntitiesModal.jsx
+src/components/it/BuilderStepper.jsx         3-step wizard header
+src/components/it/StructureValidationModal.jsx
+src/pages/it/Dashboard.jsx          KPIs, 2 chart cards, alerts, pending tasks
+src/pages/it/{Admins,Entities,Bulletins,Users,Requests}List.jsx, ActivityLog.jsx
+src/pages/it/{Admin,Entity,Request}Detail.jsx, {Admin,User}Create.jsx
+src/pages/it/listUtils.js           date parsing + «الأحدث/الأقدم» sorting
+src/pages/it/builder/FormBuilder.jsx         wizard container + sticky action bar
+src/pages/it/builder/Step{Metadata,Structure,Review}.jsx
+src/pages/it/builder/formBuilderState.js     counts, validation rows, % complete
+src/data/mockIt.js                  `export * from "./mock"` + local overrides
+```
+
+Routes (all wrapped in `RequireAuth allow={[ROLES.IT_SPECIALIST]}`):
+`/it` · `/it/admins` · `/it/admins/new` · `/it/admins/:id` · `/it/entities` · `/it/entities/:id` · `/it/bulletins` · `/it/users` · `/it/users/new` · `/it/forms/new` · `/it/requests` · `/it/requests/:id` · `/it/activity`
+
+Form/modal sizing comes from Figma node `1049:911` and is shared by every create surface: label 20px bold `#1f254b` with a red asterisk, control 55px tall / radius 10 / border `rgba(5,44,101,0.16)`, placeholder 18px at 30% opacity, modal 760px wide / radius 26.667 / bg `#e9ecef` with a 69px header, buttons 142×41 (`#adb5bd` cancel, `#0986ed` submit).
+
+The three Figma «إنشاء مستخدم» variants (`1054:1144` / `1060:2621` / `1060:3042`) differ only by «تبعية المستخدم», so they are one page (`UserCreate.jsx`) whose «بيانات الربط» section is conditional — hidden for صانع القرار.
+
+Rules while working here:
+- Edit only `src/pages/it/**`, `src/components/it/**` and `src/data/mockIt.js`.
+- The shared `FilterModal` is fixed to status + one select + a date. These screens vary their fields per list and add a «ترتيب حسب» sort, so the module uses its own field-driven `ItFilterModal` rather than changing the shared one.
+- New status vocabulary lives in `mockIt.statusBadge`: منتظم `#16A34A` · متأخر/متأخرة `#DC2626` · لا يوجد `#7F8999` · قيد المراجعة `#9747FF` · قيد تنفيذ `#5C5C5C` · لم يبدأ بعد `#1B75FF` · معتمد/معتمدة `#16A34A`.
+- `src/data/mock.js` was touched once, by explicit approval: the `it-specialist` demoUsers row is now `enabled: true` with `home: "/it"`. That row is the single source of truth for login and role-routing; nothing the supervisor renders changed.
+- `vite.config.js` now reads `process.env.PORT` (falling back to 5173) so the preview can pick a free port when 5174 is taken.
+
+### 11.1 نموذج البيان builder (`/it/forms/new`)
+
+Three-step wizard (Figma `279:77` → `282:185` → `645:3331`), reached from the dashboard «إجراءات سريعة» button and the الطلبات list «إنشاء البيان جديد».
+
+1. **البيانات الوصفية** — metadata, the four «متطلبات الهيكل» counts, and الدورية والمواعيد.
+2. **بناء نموذج البيان** — tool panel (إضافة مجموعة / عمود / صف) on a `#dbe9f9` rail beside a live table preview; columns can be nested under a group, producing the two-tier header. Both empty states come from the design.
+3. **مراجعة و إرسال** — ملخص التحقق (unset fields read «غير محدد»), هيكل الجدول counts, خيارات التصدير, and مسار الاعتماد.
+
+The design carries **two distinct stepper concepts**, and `src/domain/workflow.js` now names both as additive exports — `STAGES` was not touched:
+- `FORM_WIZARD_STEPS` — the 3 authoring steps above.
+- `FORM_BUILD_STEPS` + `FORM_BUILD_STATUS` — the 4-stage «مسار الاعتماد» (إنشاء القالب → بناء الهيكل → اعتماد المشرف → إرسال للجهة الخارجية) rendered inside step 3. **This is not the 7-stage `STAGES` request lifecycle**, which begins only once a template exists; never merge the two.
+
+Moving from step 2 to step 3 is gated: if any «متطلبات الهيكل» count is unmet, `StructureValidationModal` (Figma `916:4407`) opens instead, listing المطلوب vs الحالى per item (red when short, green when met) with a completion percentage.
+
+All structure mutations in `StepStructure` use the **updater form** of `onChange`, because several add-clicks can land in a single render pass and reading state from the closure would silently drop all but the last.
+
+Still not built: real Excel/PDF export (the buttons are present but inert) and the standalone structure canvas variant `916:4005`.
+
+### 11.2 Figma node map
+
+Node ids for every screen in section `146:14` (file `zZTaMqB2BxBGru5HxlYSWZ`), preserved here so the designs can be re-opened without re-crawling the file. Implemented unless noted in §11.1.
+
+| # | Node | Screen | Key content |
+|---|------|--------|-------------|
+| — | `895:2509` | **Dashboard** | KPIs: نماذج البيان النشطة (43), المستخدمين, النشرات, الجهات المرتبطة, الإدارات. Alerts: "3 جهات لم ترفع بياناتها فى الموعد المحدد", "7 بيانات تجاوزت الموعد النهائى". Entity-type distribution: وزارات 30% / جامعات 60% / هيئات حكومية 20% / مؤسسات عامة 10%. Per-إدارة bar chart. Recent-requests table. CTA «إنشاء طلب بيان». Period selector "النصف الأول من عام 2026". |
+| 10 | `645:3671` | الإدارات العامة — list | cols: اسم الإدارة، تاريخ الإنشاء، عدد المستخدمين، الحالة، عدد النشرات، عدد الجهات المرتبطة، عدد نماذج البيان، إجراءات. + «إنشاء إدارة», search |
+| 10- | `1057:2271` | " — filter modal | اسم الإدارة، تاريخ الإنشاء، ترتيب حسب (الأحدث) |
+| 3 | `315:1170` | " — create page | اسم الإدارة العامة*, وصف الإدارة, ربط الجهات خارجية*(الجهة الخارجية) |
+| 11 | `645:5076` | " — detail tab: نماذج البيان | tabs المستخدمين/النشرات/الجهات المرتبطة/نماذج البيان; cols رقم الطلب، عنوان نموذج البيان، الجهة الخارجية، الدورية، الحالة، تاريخ التسليم، التأخير، إجراءات |
+| 12 | `645:4221` | " — detail tab: الجهات المرتبطة | cols الجهة الخارجية، نوع الجهة، عدد النشرات، عدد نماذج البيان، الحالة، الإجراءات |
+| 12- | `916:4474` | " — ربط جهة خارجية modal | search + list (مصلحة الجمارك المصرية/جهات حكومية، الهيئة العامة للرقابة المالية/هيئات رقابية, اتحاد الغرف التجارية/منظمات أعمال) |
+| 14 | `1060:3607` | " — detail tab: النشرات | cols اسم نشرة، الدورية، عدد الجهات المرتبطة، عدد نماذج البيان، تاريخ الإنشاء، إجراءات |
+| 13 | `645:4699` | " — admin→entity drilldown | status chips: متأخر/معتمد/تعديل/قيد المراجعة/قيد تنفيذ/لم يبدأ بعد/إجمالي; cols عنوان نموذج البيان، الدورية، الحالة، تاريخ التسليم، التأخير، إجراءات |
+| 15 | `645:5488` | " — detail tab: المستخدمين | cols المستخدم، رقم الهاتف، الدور الوظيفي، الجهة المرتبطة، الدورية، تاريخ الانضمام، تاريخ الإيقاف، الحالة، إجراءات |
+| 8 | `649:5944` | الجهات الخارجية — list | cols اسم الجهة، النوع (جهة حكومية/مؤسسات مالية), الإدارة المرتبطة، الحالة (منتظم/متأخر), عدد نماذج البيان، إجراءات |
+| 8- | `889:1883` | " — filter | نوع الجهة، الحالة، تاريخ الإنشاء، ترتيب حسب |
+| 2 | `1049:911` | " — create modal | اسم الجهة*, نوع الجهة*, وصف الجهة, الصلاحيات*(اعتماد بيانات/تعديل بيانات/إدخال بيانات) |
+| 9 | `1060:4073` | " — detail | tabs المستخدمين/الإدارات المرتبطة/نماذج البيان; cols رقم الطلب، عنوان نموذج البيان، الإداراة المسؤلة، الدورية، الحالة، تاريخ التسليم، التأخير |
+| 16 | `940:3160` | النشرات — list | cols اسم نشرة، الإدارة التابعة، الدورية (شهري/ربع سنوي/سنوي), عدد الجهات المرتبطة، عدد نماذج البيان، تاريخ الإنشاء، إجراءات. + «إنشاء نشرة», «إنشاء البيان جديد», «تصدير Excel» |
+| 16- | `1060:4482` | " — filter | الإدارة، الدورية، تاريخ الإنشاء، ترتيب حسب |
+| 4 | `951:2388` | " — create modal | اسم النشرة*, نوع السنة*(ميلادية), الدورية*(سنوي), الإدارة التابعة*, ربط الجهات |
+| 16-- | `951:2689` | " — ربط الجهات modal | search + entity list |
+| 17 | `649:6456` | المستخدمين — list | cols المستخدم، رقم الهاتف، تبعية المستخدم، الدور الوظيفي، الإدارة/الجهة، تاريخ الانضمام، تاريخ الإيقاف، الحالة، إجراءات |
+| 17- | `1060:4573` | " — filter | الإدارة/الجهة، الدور الوظيفي، تاريخ الانضمام، ترتيب حسب |
+| 5 | `1054:1144` | " — create (tenancy: الإدارة العامة) | رقم الهاتف*, الاسم بالكامل*, تبعية المستخدم*(الإدارة العامة), الحالة*(نشط), كلمة المرور المؤقتة*, البريد الإلكترونى*, النشرات*(اختر نشرة أو أكثر) |
+| 6 | `1060:2621` | " — create (tenancy: الجهة الخارجية) | same fields, تبعية المستخدم = الجهة الخارجية |
+| 7 | `1060:3042` | " — create (tenancy: صانع القرار) | same fields, تبعية المستخدم = صانع القرار (no النشرات field) |
+| 18 | `649:6968` | سجل النشاط — list | cols التاريخ والوقت، المستخدم (+ their sub-role e.g. Super Admin/Sector Admin)، نوع الإجراء (ربط/اعتماد/إنشاء)، الجهة/الإدارة المرتبطة، التفاصيل |
+| 18- | `1060:5077` | " — filter | الإدارة/الجهة، نوع الإجراء، التاريخ والوقت |
+| 19 | `649:7406` | الطلبات — list | cols رقم الطلب، عنوان نموذج البيان، الإدارة، نوع الطلب (بناء نموذج بيان), تاريخ تقديم الطلب، الموعد النهائي، الحالة (قيد تنفيذ/متأخرة), الإجرائات. + «إنشاء البيان جديد», «تصدير Excel» |
+| 19- | `1060:5174` | " — filter | الإدارة/الجهة، نوع الإجراء، التاريخ والوقت |
+| 20 | `649:7905` | " — request detail | رقم الطلب (REQ-2024-085), نوع الطلب, الإدارة, المرسل بواسطة, تاريخ تقديم الطلب, الموعد النهائي; metadata card: عنوان نموذج البيان، الإدارة المسؤولة، النشرة، الجهة المسؤولة، النطاق الجغرافي، وصف البيان; year info: نوع السنة، السنة، الدورية، تفصيل الدورية، فترة تجميع البيان، تاريخ الاستحقاق، فترة السماح; attachments: بيانات_الحاصلين_...xlsx، دليل تعبئة البيان.pdf; activity timeline (تم إرسال/إنشاء الطلب بواسطة ... تاريخ/وقت); search box |
+| 21 | `279:77` | **Builder step 1/4** — المعلومات الأساسية + البيانات الوصفية | عنوان نموذج البيان* (placeholder "مثال: استمارة رقم 306"), الإدارة المسؤولة*, النشرة المرتبطة/النشرة*, الجهة المسؤولة*, النطاق الجغرافي*, المنهجية (helper "يرجى توضيح المنهجية المستخدمة لإعداد البيانات"), وصف البيان (helper "وصف تفصيلى للبيان و الغرض منة...."), عدد المجموعات الرئيسية المطلوبة*, عدد الأقسام الفرعية المطلوبة*, عدد الأعمدة المطلوبة*, عدد الصفوف المطلوبة*, نوع السنة* (مالية/٢٠٢١-٢٠٢٢ example), السنة*, الدورية* (ربع سنوي), تفصيل الدورية* (الربع الأول), فترة تجميع البيان* (من/إلى mm/dd/yyyy), تاريخ الاستحقاق*, فترة السماح (أيام)*. Stepper: 1 البيانات الوصفية لنموذج البيان (active) → 2 بناء نموذج البيان (الأعمدة و المجموعات) → 3 مراجعة و إرسال (التحقق من الصحة و الإرسال). |
+| 22 | `282:185` | **Builder step 2/4** — الأعمدة و المجموعات | «إضافة مجموعة», «إضافة عمود», «إضافة صف» — same 3-step stepper, step 2 active |
+| 23 | `916:4005` | **Builder step 3/4** — بناء نموذج البيان (structure) | same header/stepper as step 2 — this appears to be a sub-state of step 2 or a distinct structure-building canvas; needs visual confirmation |
+| 23- | `916:4407` | " — validation modal | «لم يتم استكمال بناء الهيكل» — table: العنصر / المطلوب / الحالى for عدد المجموعات الرئيسية، عدد الأقسام الفرعية، عدد الأعمدة، عدد الصفوف؛ نسبة اكتمال الهيكل |
+| 24 | `645:3331` | **Builder step 4/4** — مراجعة و إرسال / التحقق من الصحة | workflow stepper (NOT the same as the 3-step builder stepper): إنشاء القالب (مرسل الطلب - الإدارة, مكتمل) → بناء الهيكل (مدير النظام, جاري العمل) → اعتماد المشرف (مشرف الإدارة, في الانتظار) → إرسال للجهة الخارجية (مرسل الطلب - الجهة, في الانتظار). + «تصدير Excel», «تصدير PDF» |
+| — | `642:1416`, `645:842`, `645:1513` | **Unidentified popups** | no text layers extracted; need `get_design_context` or screenshot to identify |
+
+Two entries are worth a note: `916:4005` turned out to be a sub-state of builder step 2 rather than a separate screen, so it is folded into `StepStructure`; and `642:1416` / `645:842` / `645:1513` are popups with no extractable text layers, never identified and never built.
+
+---
+
+## 12. Decision maker module (`/dm`)
+
+Fourth module, built from Figma section `455:19763` («صانع القرار»). The section holds a **single screen** — the dashboard — so the sidebar has one nav item and there are no list/detail/form surfaces.
+
+```
+src/components/dm/DmLayout.jsx   NAV = 1 item (/dm)
+src/pages/dm/Dashboard.jsx       the whole module
+src/data/mockDm.js               export * from ./mock + DM overrides
+```
+
+Unlike `/ga` and `/it`, this module was assembled almost entirely from existing parts. Three page-local patterns were promoted to shared components on the way in (§7's "not extract unless needed" — a fourth consumer was the trigger):
+
+| Extracted to | From | Now used by |
+|---|---|---|
+| `src/components/KpiCard.jsx` | `ga/Dashboard.jsx` (335×161 card) | `/ga`, `/dm` |
+| `src/components/AlertsCard.jsx` | `it/Dashboard.jsx` (took `alerts` + optional `onViewAll`) | `/it`, `/dm` |
+| `src/data/indicators.js` | `mockGa.js` (`exchangeStatusCards`, `fulfillmentStatusCards`) | `mockGa.js`, `mockDm.js` |
+
+`src/components/PeriodButton.jsx` was also rebuilt to its Figma spec (340×56, 18px label, calendar in a 40×40 badge). Two separate frames (`649:10625` here, and the IT dashboard) specify this size, so the change is global and all four dashboards pick it up.
+
+`topOrgs` (`mock.js`) matched the «أعلى 5 جهات» values exactly and is reused as-is; only `kpis` (4 cards vs the shared 3), the fulfillment donut, the admins pie and the monthly trend are declared locally in `mockDm.js`.
+
+Two deliberate deviations from the frame: the «إنشاء طلب بيان» button is `hidden="true"` in Figma (`649:10620`) and is not built; «عرض جميع الإدارات» is dropped and «عرض جميع التنبيهات» renders non-navigating, since the role has no second page to reach.
+
+### 12.1 Figma node map
+
+| Node | Screen | Key content |
+|------|--------|-------------|
+| `455:19763` | section «صانع القرار» | one frame only |
+| `649:10179` | **Dashboard** | مؤشرات عامة (نماذج البيان 316، الإدارات العامة 30، الجهات الخارجية 40، المستخدمين 60). مؤشرات تبادل نماذج البيان (91/139/74/61/37/102) و مؤشرات استيفاء البيانات (84/112/68/53/29/76). Charts: أعلى 5 جهات من حيث نسبة الألتزام (hbar), اتجاه نماذج البيان خلال الأشهر (line, مكتملة/متأخرة), توزيع نماذج البيان حسب الإدارات (pie), حالات استيفاء البيانات (donut, total 251), التنبيهات. |
+
+---
+
 *When in doubt: match Dashboard + RequestDetail + Layout as the visual source of truth.*

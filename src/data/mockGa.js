@@ -14,6 +14,13 @@ import { requestDetailById as sharedRequestDetailById } from "./mock";
 
 export * from "./mock";
 
+/** مؤشرات عامة — النشرات المشتركة بدل المستخدمين (أيقونة FilePenLine من كروت الحالة) */
+export const kpis = [
+  { label: "نماذج البيان", value: 316, delta: "+3%", up: true, icon: "FileText", color: "#0986ED" },
+  { label: "الجهات الخارجية", value: 40, delta: "-3%", up: false, icon: "Building2", color: "#C89637" },
+  { label: "النشرات المشتركة", value: 60, delta: "+3%", up: true, icon: "FilePenLine", color: "#34609A" },
+];
+
 /** Palette shared by the general admin indicator cards and charts */
 export const gaStatusColors = {
   "لم تبدأ بعد": "#1B75FF",
@@ -24,25 +31,8 @@ export const gaStatusColors = {
   معتمدة: "#16A34A",
 };
 
-/** مؤشرات تبادل نماذج البيان */
-export const exchangeStatusCards = [
-  { label: "لم تبدأ بعد", value: 91, delta: "+3%", up: true, icon: "FileText", color: "#0147B2" },
-  { label: "قيد التنفيذ", value: 139, delta: "+3%", up: true, icon: "RefreshCw", color: "#FFC107" },
-  { label: "تعديل", value: 74, delta: "+3%", up: true, icon: "FilePenLine", color: "#FF8C08" },
-  { label: "قيد المراجعة", value: 61, delta: "+3%", up: true, icon: "FileSearch", color: "#9747FF" },
-  { label: "المتأخرة", value: 37, delta: "-3%", up: false, icon: "TriangleAlert", color: "#DC2626" },
-  { label: "معتمدة", value: 102, delta: "+3%", up: true, icon: "CircleCheckBig", color: "#16A34A" },
-];
-
-/** مؤشرات استيفاء البيانات */
-export const fulfillmentStatusCards = [
-  { label: "لم تبدأ بعد", value: 84, delta: "+3%", up: true, icon: "FileText", color: "#0147B2" },
-  { label: "قيد التنفيذ", value: 112, delta: "+3%", up: true, icon: "RefreshCw", color: "#FFC107" },
-  { label: "تعديل", value: 68, delta: "+3%", up: true, icon: "FilePenLine", color: "#FF8C08" },
-  { label: "قيد المراجعة", value: 53, delta: "+3%", up: true, icon: "FileSearch", color: "#9747FF" },
-  { label: "المتأخرة", value: 29, delta: "-3%", up: false, icon: "TriangleAlert", color: "#DC2626" },
-  { label: "معتمدة", value: 76, delta: "+3%", up: true, icon: "CircleCheckBig", color: "#16A34A" },
-];
+/** مؤشرات تبادل نماذج البيان / استيفاء البيانات — shared with the decision maker module */
+export { exchangeStatusCards, fulfillmentStatusCards } from "./indicators";
 
 /** توزيع نماذج البيان حسب الحالة — نسب مئوية */
 export const gaStatusPie = [

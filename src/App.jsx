@@ -9,14 +9,36 @@ import GaFormsList from "./pages/ga/FormsList";
 import GaRequiredList from "./pages/ga/RequiredList";
 import GaUsersList from "./pages/ga/UsersList";
 import GaRequestDetail from "./pages/ga/RequestDetail";
+import DmDashboard from "./pages/dm/Dashboard";
+import EntDashboard from "./pages/ent/Dashboard";
+import EntRequiredList from "./pages/ent/RequiredList";
+import EntRequestDetail from "./pages/ent/RequestDetail";
+import ItDashboard from "./pages/it/Dashboard";
+import AdminsList from "./pages/it/AdminsList";
+import EntitiesList from "./pages/it/EntitiesList";
+import BulletinsList from "./pages/it/BulletinsList";
+import ItUsersList from "./pages/it/UsersList";
+import RequestsList from "./pages/it/RequestsList";
+import ActivityLog from "./pages/it/ActivityLog";
+import AdminDetail from "./pages/it/AdminDetail";
+import AdminEntityDetail from "./pages/it/AdminEntityDetail";
+import AdminCreate from "./pages/it/AdminCreate";
+import EntityDetail from "./pages/it/EntityDetail";
+import UserCreate from "./pages/it/UserCreate";
+import ItRequestDetail from "./pages/it/RequestDetail";
+import FormBuilder from "./pages/it/builder/FormBuilder";
 import Login from "./pages/Login";
 import VerifyCode from "./pages/VerifyCode";
 import LoadingPage from "./pages/Loading";
 import RequireAuth, { RequireStage } from "./components/RequireAuth";
 import { AuthProvider } from "./context/AuthContext";
+import { ROLES } from "./domain/roles";
 
 const SUPERVISOR = ["مشرف الإدارة العامة"];
 const GENERAL_ADMIN = ["الإدارة العامة"];
+const IT_SPECIALIST = [ROLES.IT_SPECIALIST];
+const DECISION_MAKER = [ROLES.DECISION_MAKER];
+const ENTITY = [ROLES.ENTITY];
 
 export default function App() {
   return (
@@ -45,6 +67,36 @@ export default function App() {
             <Route path="/ga/required" element={<GaRequiredList />} />
             <Route path="/ga/required/:id" element={<GaRequestDetail mode="required" />} />
             <Route path="/ga/users" element={<GaUsersList />} />
+          </Route>
+
+          {/* decision maker module */}
+          <Route element={<RequireAuth allow={DECISION_MAKER} />}>
+            <Route path="/dm" element={<DmDashboard />} />
+          </Route>
+
+          {/* external entity module — موظف الجهة الخارجية */}
+          <Route element={<RequireAuth allow={ENTITY} />}>
+            <Route path="/ent" element={<EntDashboard />} />
+            <Route path="/ent/required" element={<EntRequiredList />} />
+            <Route path="/ent/required/:id" element={<EntRequestDetail />} />
+          </Route>
+
+          {/* IT specialist module */}
+          <Route element={<RequireAuth allow={IT_SPECIALIST} />}>
+            <Route path="/it" element={<ItDashboard />} />
+            <Route path="/it/admins" element={<AdminsList />} />
+            <Route path="/it/admins/new" element={<AdminCreate />} />
+            <Route path="/it/admins/:id" element={<AdminDetail />} />
+            <Route path="/it/admins/:id/entities/:entityId" element={<AdminEntityDetail />} />
+            <Route path="/it/entities" element={<EntitiesList />} />
+            <Route path="/it/entities/:id" element={<EntityDetail />} />
+            <Route path="/it/bulletins" element={<BulletinsList />} />
+            <Route path="/it/users" element={<ItUsersList />} />
+            <Route path="/it/users/new" element={<UserCreate />} />
+            <Route path="/it/forms/new" element={<FormBuilder />} />
+            <Route path="/it/requests" element={<RequestsList />} />
+            <Route path="/it/requests/:id" element={<ItRequestDetail />} />
+            <Route path="/it/activity" element={<ActivityLog />} />
           </Route>
         </Routes>
       </AuthProvider>

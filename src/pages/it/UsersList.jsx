@@ -1,0 +1,61 @@
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import ItListPage from "../../components/it/ItListPage";
+import StatusBadge from "../../components/it/StatusBadge";
+import { itUsers } from "../../data/mockIt";
+import { ddmmyyyyToIso, sortRows, SORT_OPTIONS } from "./listUtils";
+
+const COLUMNS = [
+  { key: "name", label: "المستخدم" },
+  { key: "phone", label: "رقم الهاتف", dir: "ltr" },
+  { key: "affiliation", label: "تبعية المستخدم" },
+  { key: "jobRole", label: "الدور الوظيفي" },
+  { key: "org", label: "الإدارة / الجهة" },
+  { key: "joined", label: "تاريخ الانضمام", dir: "ltr" },
+  { key: "stopped", label: "تاريخ الإيقاف", dir: "ltr" },
+  { key: "status", label: "الحالة", render: (r) => <StatusBadge status={r.status} /> },
+];
+
+export default function UsersList() {
+  const navigate = useNavigate();
+  const [search, setSearch] = useState("");
+  const [org, setOrg] = useState("");
+  const [jobRole, setJobRole] = useState("");
+  const [joined, setJoined] = useState("");
+  const [sort, setSort] = useState(SORT_OPTIONS[0]);
+
+  const orgOptions = useMemo(() => [...new Set(itUsers.map((r) => r.org))], []);
+  const roleOptions = useMemo(() => [...new Set(itUsers.map((r) => r.jobRole))], []);
+
+  const rows = sortRows(
+    itUsers.filter((r) => {
+      if (search.trim() && !r.name.includes(search.trim())) return false;
+      if (org && r.org !== org) return false;
+      if (jobRole && r.jobRole !== jobRole) return false;
+      if (joined && ddmmyyyyToIso(r.joined) !== joined) return false;
+      return true;
+    }),
+    sort,
+    "joined",
+  );
+
+  return (
+    <ItListPage
+      title="المستخدمين"
+      listTitle="قائمة المستخدمين"
+      searchPlaceholder="بحث عن مستخدم"
+      columns={COLUMNS}
+      rows={rows}
+      search={search}
+      onSearchChange={setSearch}
+      actions={[{ label: "إنشاء مستخدم جديد", primary: true, onClick: () => navigate("/it/users/new") }]}
+      filterFields={[
+        { label: "الإدارة / الجهة", value: org, onChange: setOrg, options: orgOptions },
+        { label: "الدور الوظيفي", value: jobRole, onChange: setJobRole, options: roleOptions },
+        { label: "تاريخ الانضمام", type: "date", value: joined, onChange: setJoined },
+        { label: "ترتيب حسب", value: sort, onChange: setSort, options: SORT_OPTIONS },
+      ]}
+      onClearFilters={() => { setOrg(""); setJobRole(""); setJoined(""); setSort(SORT_OPTIONS[0]); }}
+    />
+  );
+}

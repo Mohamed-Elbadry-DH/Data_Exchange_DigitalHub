@@ -5,9 +5,9 @@ export default function RequestEditModal({ open, onClose, onSubmit }) {
   const [reason, setReason] = useState("");
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
+    <div className="modal-overlay z-50" onClick={onClose}>
       <div
-        className="bg-white rounded-2xl p-7 w-[440px]"
+        className="bg-white rounded-2xl p-7 w-full max-w-[440px]"
         dir="rtl"
         onClick={(e) => e.stopPropagation()}
       >

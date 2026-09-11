@@ -12,7 +12,8 @@ export const demoUsers = [
     name: "د. خالد عبد الرحمن",
     email: "decision.maker@capmas.gov.eg",
     password: "Mped@2026",
-    enabled: false,
+    enabled: true,
+    home: "/dm",
   },
   {
     id: "it-specialist",
@@ -20,7 +21,8 @@ export const demoUsers = [
     name: "م. مصطفى سيد",
     email: "it.specialist@capmas.gov.eg",
     password: "Mped@2026",
-    enabled: false,
+    enabled: true,
+    home: "/it",
   },
   {
     id: "general-admin-supervisor",
@@ -54,7 +56,8 @@ export const demoUsers = [
     name: "أ. عمر حسن",
     email: "entity.user@capmas.gov.eg",
     password: "Mped@2026",
-    enabled: false,
+    enabled: true,
+    home: "/ent",
   },
 ];
 
