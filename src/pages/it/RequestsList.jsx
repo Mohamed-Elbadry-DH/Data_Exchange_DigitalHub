@@ -4,6 +4,7 @@ import ItListPage from "../../components/it/ItListPage";
 import StatusBadge from "../../components/it/StatusBadge";
 import { itRequests, requestListChips } from "../../data/mockIt";
 import { ddmmyyyyToIso, sortRows, SORT_OPTIONS } from "./listUtils";
+import { downloadCsv } from "./exportDownload";
 
 const COLUMNS = [
   { key: "id", label: "رقم الطلب", dir: "ltr" },
@@ -14,6 +15,17 @@ const COLUMNS = [
   { key: "due", label: "الموعد النهائي", dir: "ltr" },
   { key: "status", label: "الحالة", render: (r) => <StatusBadge status={r.status} /> },
 ];
+
+function exportRequestsCsv(rows) {
+  downloadCsv(
+    "الطلبات.csv",
+    [
+      "رقم الطلب", "عنوان نموذج البيان", "الإدارة", "نوع الطلب",
+      "تاريخ تقديم الطلب", "الموعد النهائي", "الحالة",
+    ],
+    rows.map((r) => [r.id, r.title, r.admin, r.type, r.submitted, r.due, r.status]),
+  );
+}
 
 /** قائمة الطلبات — Figma 649:7406 */
 export default function RequestsList() {
@@ -55,6 +67,11 @@ export default function RequestsList() {
       search={search}
       onSearchChange={setSearch}
       onRowClick={(r) => navigate(`/it/requests/${r.id}`)}
+      actions={[
+        /* LTR toolbar (searchBoxed): filter → تصدير → إنشاء → بحث — matches Figma 649:7406 */
+        { label: "تصدير Excel", icon: "download", onClick: () => exportRequestsCsv(rows) },
+        { label: "إنشاء البيان جديد", primary: true, boxed: true, onClick: () => navigate("/it/forms/new") },
+      ]}
       filterFields={[
         { label: "التاريخ والوقت", type: "date", value: submitted, onChange: setSubmitted },
         { label: "المستخدم", value: sentBy, onChange: setSentBy, options: userOptions },

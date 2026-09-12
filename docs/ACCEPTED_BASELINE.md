@@ -44,7 +44,7 @@ Arabic RTL admin for **منصة تبادل البيانات (Data Exchange)**.
 | `/login` | Login | Demo user picker fills email + password → `/verify` |
 | `/verify` | Verification code | Random 4-digit code typed in automatically → `/loading` |
 | `/loading` | Loading | 3s spinner → role home |
-| `/ga`, `/ga/forms`, `/ga/forms/:id`, `/ga/required`, `/ga/required/:id`, `/ga/users` | General admin module | Isolated clone — see section 10 |
+| `/ga`, `/ga/forms`, `/ga/forms/new`, `/ga/forms/:id`, `/ga/required`, `/ga/required/:id`, `/ga/users` | General admin module | Isolated module — see section 10 |
 
 Supervisor routes are wrapped in `RequireAuth allow={["مشرف الإدارة العامة"]}`, general admin routes in `RequireAuth allow={["الإدارة العامة"]}`; the three auth routes are wrapped in `RequireStage`. A role landing outside its module is redirected to `homePathForRole(role)`.
 
@@ -224,12 +224,17 @@ src/domain/notes.js      loadNotes / saveNotes on one key `mped-notes-${id}`
 - When a new flow needs writes (create request, advance stage), add the mutation to `src/domain/` and call it from both modules rather than storing it under a module-scoped key.
 
 Still to build from the PDF (design differs from the supervisor clone):
-1. Dashboard: three indicator groups (مؤشرات عامة / مؤشرات تبادل نماذج البيان / مؤشرات استيفاء البيانات) and an «إنشاء طلب بيان» action.
-2. New page: طلب إنشاء نموذج البيان (توجيه الطلب إلى، العنوان، الإدارة المسؤولة، النشرة، الجهة المسؤولة، النطاق الجغرافي، وصف البيان، المنهجية، نوع/السنة، الدورية وتفصيلها، فترة التجميع، تاريخ الاستحقاق، فترة السماح، رفع الملف).
-3. Request detail: 7-stage stepper (إنشاء → مراجعة → اعتماد نموذج البيان → استيفاء البيانات → مراجعة البيانات → اعتماد نهائي → غلق الطلب) with header tiles الحالة / المسؤول الحالي / الجهة الحالية / المرحلة الحالية, and stage-driven actions (طلب تعديل، اعتماد و إرساله لمشرف الإدارة، إرسال للجهة، غلق الطلب).
-4. Attachments tab as a real table (اسم الملف، نوع الملف، تاريخ الرفع، الحجم، رفع بواسطة، إجراءات) plus the empty state «لا يوجد نموذج بيان للعرض».
-5. استيفاء البيانات matrix for الدرجات العلمية (دبلوم/ماجستير/دكتوراه × ذكور/إناث × مصري/وافد، rows محافظات + التخصص).
-6. List columns and filters per the PDF (المرحلة، الحالة، موجه إلى، تاريخ الإنشاء، مسح الكل).
+~~1–6 below — implemented in `/ga` (2026-09).~~
+
+Shipped status:
+1. Dashboard: three indicator groups (مؤشرات عامة / مؤشرات تبادل نماذج البيان / مؤشرات استيفاء البيانات) + «إنشاء طلب بيان» → `/ga/forms/new`. KPIs match Figma `649:10179` (4 عامة cards).
+2. Page: طلب إنشاء نموذج البيان at `/ga/forms/new` (fields per PDF/docs).
+3. Request detail: 7-stage stepper with header tiles and stage-driven actions.
+4. Attachments tab (table + empty «لا يوجد نموذج بيان للعرض» + mock download).
+5. استيفاء البيانات matrix for الدرجات العلمية (Figma `1179:812` — تخصص rows; مصري/وافد × دبلوم/ماجستير/دكتوراه × ذكور/إناث).
+6. List columns/filters (Figma `1094:1007`: المرحلة، الحالة، موجه إلى، تاريخ الإنشاء، مسح الكل).
+
+Routes: `/ga` · `/ga/forms` · `/ga/forms/new` · `/ga/forms/:id` · `/ga/required` · `/ga/required/:id` · `/ga/users` · `/ga/settings`.
 
 ---
 

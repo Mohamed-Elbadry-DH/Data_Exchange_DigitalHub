@@ -1,6 +1,15 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { StatusLegend, DonutCalloutLabel, buildDonutLabelLayout } from "./legend";
 
+/** Kill IEEE float noise in donut center totals (e.g. 80.39999999999999 → 80.4). */
+export function formatChartTotal(total) {
+  if (total == null) return null;
+  const n = Number(total);
+  if (!Number.isFinite(n)) return total;
+  const cleaned = Math.round(n * 10) / 10;
+  return Number.isInteger(cleaned) ? cleaned : cleaned;
+}
+
 export default function PieOrDonutChart({
   data,
   donut = false,
@@ -11,6 +20,7 @@ export default function PieOrDonutChart({
   const rows = Array.isArray(data) ? data : [];
   const beside = showLegend && !donut;
   const calloutLayout = donut ? buildDonutLabelLayout(rows) : null;
+  const centerTotal = formatChartTotal(total);
 
   return (
     <div
@@ -24,7 +34,7 @@ export default function PieOrDonutChart({
           <PieChart
             margin={
               donut
-                ? { top: 18, right: 88, bottom: 18, left: 88 }
+                ? { top: 12, right: 72, bottom: 12, left: 72 }
                 : { top: 4, right: 4, bottom: 4, left: 4 }
             }
           >
@@ -34,8 +44,9 @@ export default function PieOrDonutChart({
               nameKey="name"
               cx="50%"
               cy="50%"
-              innerRadius={donut ? "24%" : 0}
-              outerRadius={donut ? "48%" : "72%"}
+              /* Larger hole so center total fits screen typography (~17–20px) */
+              innerRadius={donut ? "36%" : 0}
+              outerRadius={donut ? "54%" : "72%"}
               paddingAngle={2}
               isAnimationActive
               animationBegin={0}
@@ -65,15 +76,19 @@ export default function PieOrDonutChart({
               formatter={(value, _name, item) => {
                 const label = item?.payload?.name || _name;
                 const suffix = valueSuffix === "%" ? " %" : valueSuffix ? ` ${valueSuffix}` : "";
-                return [`${value}${suffix}`, label];
+                const shown = formatChartTotal(value) ?? value;
+                return [`${shown}${suffix}`, label];
               }}
               separator=" : "
             />
           </PieChart>
         </ResponsiveContainer>
-        {donut && total != null && (
+        {donut && centerTotal != null && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <span className="text-[28px] font-bold leading-none text-[rgba(0,0,0,0.9)]">{total}</span>
+            {/* Match ChartCard title scale (15→17) — not oversized KPI 28/32 */}
+            <span className="text-[17px] sm:text-[20px] font-bold leading-none text-[rgba(0,0,0,0.9)]">
+              {centerTotal}
+            </span>
           </div>
         )}
       </div>

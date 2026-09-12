@@ -89,17 +89,17 @@ export const entRequiredRows = [
   },
   {
     id: 203, title: "بيانات الاستثمار", stageLabel: "مراجعة البيانات", org: "مشرف الجهة",
-    currentEntity: "مشرف الجهة", officer: "محمد على", status: "قيد المراجعة",
+    currentEntity: "مشرف الجهة", officer: "محمد علي", status: "قيد المراجعة",
     created: "01/06/2026", due: "15/06/2026",
   },
   {
     id: 204, title: "بيانات النقل", stageLabel: "الاعتماد النهائي", org: "مشرف الإدارة",
-    currentEntity: "مشرف الإدارة", officer: "ساره شمس", status: "مطلوب تعديل",
+    currentEntity: "مشرف الإدارة", officer: "سارة حسن", status: "مطلوب تعديل",
     created: "01/06/2026", due: "15/06/2026",
   },
   {
     id: 205, title: "بيانات الإسكان", stageLabel: "إغلاق الطلب", org: "الإدارة العامة",
-    currentEntity: "الإدارة العامة", officer: "محمد على", status: "معتمد",
+    currentEntity: "الإدارة العامة", officer: "محمد علي", status: "معتمد",
     created: "01/06/2026", due: "15/06/2026",
   },
 ];
@@ -152,8 +152,23 @@ export const entRequestDetail = {
     /** عدد البيانات المطلوب إدخالها للتحقق قبل الإرسال (Figma 914:3960) */
     requiredCount: 6,
   },
+  /** مرفقات — Figma 1706:9783 */
   attachments: [
-    { name: "بيانات_الحاصلين_على_الدرجات_الربع_الثاني_2026.xlsx", type: "Excel" },
-    { name: "دليل تعبئة البيان.pdf", type: "PDF" },
+    {
+      id: 1,
+      name: "بيانات_الحاصلين_على_الدرجات_الربع_الثاني",
+      type: "Excel",
+      uploadedAt: "30/06/2026",
+      size: "245 KB",
+      by: "محمد علي",
+    },
+    {
+      id: 2,
+      name: "دليل تعبئة البيان",
+      type: "PDF",
+      uploadedAt: "30/06/2026",
+      size: "1.2 MB",
+      by: "محمد علي",
+    },
   ],
 };

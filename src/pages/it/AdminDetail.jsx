@@ -4,8 +4,13 @@ import ItDetailPage, { DetailTable } from "../../components/it/ItDetailPage";
 import StatusBadge from "../../components/it/StatusBadge";
 import LinkEntitiesModal from "../../components/it/LinkEntitiesModal";
 import {
-  generalAdmins, externalEntities, bulletins, itUsers, detailForms, detailStatusChips, detailUserChips,
+  generalAdmins, externalEntities, bulletins, detailForms, detailStatusChips, detailUserChips,
 } from "../../data/mockIt";
+import {
+  loadItUsers,
+  removeItUser,
+  toggleItUserActive,
+} from "../../domain/itUsersStore";
 
 const FORM_COLUMNS = [
   { key: "id", label: "رقم الطلب", dir: "ltr", className: "text-right" },
@@ -78,6 +83,8 @@ export default function AdminDetail() {
   const [entityStatus, setEntityStatus] = useState("");
   const [bullPeriod, setBullPeriod] = useState("");
   const [userStatus, setUserStatus] = useState("");
+  const [users, setUsers] = useState(() => loadItUsers());
+  const refreshUsers = (next) => setUsers(next);
 
   const admin = generalAdmins.find((a) => String(a.id) === String(id)) || generalAdmins[0];
   const linkedEntities = useMemo(
@@ -107,8 +114,8 @@ export default function AdminDetail() {
     [bullPeriod, linkedBulletins],
   );
   const userRows = useMemo(
-    () => (userStatus ? itUsers.filter((r) => r.status === userStatus) : itUsers),
-    [userStatus],
+    () => (userStatus ? users.filter((r) => r.status === userStatus) : users),
+    [userStatus, users],
   );
 
   return (
@@ -207,10 +214,20 @@ export default function AdminDetail() {
                 searchPlaceholder="بحث"
                 chips={detailUserChips}
                 actions={[{ label: "تعيين مستخدم", primary: true, boxed: true, onClick: () => navigate("/it/users/new") }]}
+                onEdit={(r) => navigate(`/it/users/${r.id}/edit`)}
+                onDelete={(r) => refreshUsers(removeItUser(r.id))}
                 leadingAction={(r) => (
                   r.status === "نشط"
-                    ? { src: "/it/icon-circle-pause.svg", label: "إيقاف" }
-                    : { src: "/it/icon-circle-play.svg", label: "تفعيل" }
+                    ? {
+                        src: "/it/icon-circle-pause.svg",
+                        label: "إيقاف",
+                        onClick: () => refreshUsers(toggleItUserActive(r.id)),
+                      }
+                    : {
+                        src: "/it/icon-circle-play.svg",
+                        label: "تفعيل",
+                        onClick: () => refreshUsers(toggleItUserActive(r.id)),
+                      }
                 )}
                 filterFields={[
                   { label: "الحالة", value: userStatus, onChange: setUserStatus, options: ["نشط", "غير نشط"] },

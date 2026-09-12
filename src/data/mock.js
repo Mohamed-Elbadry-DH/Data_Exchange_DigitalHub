@@ -210,17 +210,18 @@ export const formsRows = [
   { id: 10, title: "بيانات الإيرادات العامة", org: "وزارة المالية", officer: "عمر سعيد", created: "07/06/2026", due: "28/06/2026", status: "معتمدة" },
 ];
 
+/** detailId → requestDetailById key when list title ≠ forms catalog id */
 export const requiredRows = [
-  { id: 1, title: "بيانات السكان", org: "الجهاز المركزي للتعبئة العامة والإحصاء", officer: "أحمد محمد", created: "01/06/2026", due: "15/06/2026", status: "قيد الاعتماد النهائي" },
-  { id: 2, title: "بيانات المنشآت الصناعية", org: "وزارة التجارة والصناعة", officer: "محمد علي", created: "03/06/2026", due: "18/06/2026", status: "تعديل" },
-  { id: 3, title: "بيانات الإنتاج الصناعي", org: "وزارة التجارة والصناعة", officer: "سارة حسن", created: "28/05/2026", due: "10/06/2026", status: "المتأخرة" },
-  { id: 4, title: "بيانات الوحدات السكنية", org: "وزارة الإسكان والمرافق", officer: "محمود إبراهيم", created: "02/06/2026", due: "20/06/2026", status: "معتمدة" },
-  { id: 5, title: "بيانات الطلاب المقيدين", org: "وزارة التربية والتعليم", officer: "نورا عبد الله", created: "05/06/2026", due: "22/06/2026", status: "قيد الاعتماد النهائي" },
-  { id: 6, title: "بيانات المستشفيات الحكومية", org: "وزارة الصحة والسكان", officer: "فاطمة محمود", created: "01/06/2026", due: "16/06/2026", status: "تعديل" },
-  { id: 7, title: "بيانات الإيرادات العامة", org: "وزارة المالية", officer: "عمر سعيد", created: "07/06/2026", due: "28/06/2026", status: "معتمدة" },
-  { id: 8, title: "بيانات الجمارك والواردات", org: "مصلحة الجمارك المصرية", officer: "محمد علي", created: "02/06/2026", due: "17/06/2026", status: "قيد الاعتماد النهائي" },
-  { id: 9, title: "بيانات الحوادث المرورية", org: "وزارة الداخلية", officer: "ياسر حسين", created: "09/06/2026", due: "24/06/2026", status: "المتأخرة" },
-  { id: 10, title: "بيانات الإنتاج الزراعي", org: "وزارة الزراعة واستصلاح الأراضي", officer: "طارق نبيل", created: "25/05/2026", due: "08/06/2026", status: "تعديل" },
+  { id: 1, detailId: 1, title: "بيانات السكان", org: "الجهاز المركزي للتعبئة العامة والإحصاء", officer: "أحمد محمد", created: "01/06/2026", due: "15/06/2026", status: "قيد الاعتماد النهائي" },
+  { id: 2, detailId: 2, title: "بيانات المنشآت الصناعية", org: "وزارة التجارة والصناعة", officer: "محمد علي", created: "03/06/2026", due: "18/06/2026", status: "تعديل" },
+  { id: 3, detailId: 3, title: "بيانات الإنتاج الصناعي", org: "وزارة التجارة والصناعة", officer: "سارة حسن", created: "28/05/2026", due: "10/06/2026", status: "المتأخرة" },
+  { id: 4, detailId: 4, title: "بيانات الوحدات السكنية", org: "وزارة الإسكان والمرافق", officer: "محمود إبراهيم", created: "02/06/2026", due: "20/06/2026", status: "معتمدة" },
+  { id: 5, detailId: 5, title: "بيانات الطلاب المقيدين", org: "وزارة التربية والتعليم", officer: "نورا عبد الله", created: "05/06/2026", due: "22/06/2026", status: "قيد الاعتماد النهائي" },
+  { id: 6, detailId: 8, title: "بيانات المستشفيات الحكومية", org: "وزارة الصحة والسكان", officer: "فاطمة محمود", created: "01/06/2026", due: "16/06/2026", status: "تعديل" },
+  { id: 7, detailId: 10, title: "بيانات الإيرادات العامة", org: "وزارة المالية", officer: "عمر سعيد", created: "07/06/2026", due: "28/06/2026", status: "معتمدة" },
+  { id: 8, detailId: 11, title: "بيانات الجمارك والواردات", org: "مصلحة الجمارك المصرية", officer: "محمد علي", created: "02/06/2026", due: "17/06/2026", status: "قيد الاعتماد النهائي" },
+  { id: 9, detailId: 12, title: "بيانات الحوادث المرورية", org: "وزارة الداخلية", officer: "ياسر حسين", created: "09/06/2026", due: "24/06/2026", status: "المتأخرة" },
+  { id: 10, detailId: 13, title: "بيانات الإنتاج الزراعي", org: "وزارة الزراعة واستصلاح الأراضي", officer: "طارق نبيل", created: "25/05/2026", due: "08/06/2026", status: "تعديل" },
 ];
 
 export const usersRows = [
@@ -393,6 +394,46 @@ const publicRevenueTable = {
     { label: "الجمارك", values: [62400, 58110, 93.1, 4.6] },
     { label: "المنح", values: [12800, 11450, 89.5, -3.2] },
     { label: "إيرادات أخرى", values: [84600, 79820, 94.3, 6.1] },
+  ],
+};
+
+const customsImportsTable = {
+  rowHeader: "البند",
+  columns: ["قيمة الواردات (مليون ج.م)", "عدد البيانات", "نسبة الفحص %", "التغير السنوي %"],
+  formats: ["number", "number", "percent1", "percent1"],
+  summable: [true, true, false, false],
+  rows: [
+    { label: "سلع استهلاكية", values: [82400, 18620, 42.5, 6.1] },
+    { label: "مواد خام", values: [112300, 9420, 58.2, 3.4] },
+    { label: "سلع رأسمالية", values: [67800, 4210, 71.0, -1.2] },
+    { label: "أخرى", values: [21400, 11850, 35.8, 2.0] },
+  ],
+};
+
+const trafficAccidentsTable = {
+  rowHeader: "المحافظة",
+  columns: ["حوادث", "وفيات", "إصابات", "مركبات مشاركة"],
+  formats: ["number", "number", "number", "number"],
+  summable: [true, true, true, true],
+  rows: [
+    { label: "القاهرة", values: [4820, 186, 3120, 9140] },
+    { label: "الجيزة", values: [3610, 142, 2480, 6820] },
+    { label: "الإسكندرية", values: [2140, 98, 1560, 4010] },
+    { label: "الشرقية", values: [1680, 74, 1210, 3250] },
+    { label: "أسيوط", values: [920, 51, 680, 1780] },
+  ],
+};
+
+const agriculturalProductionTable = {
+  rowHeader: "المحصول",
+  columns: ["المساحة (ألف فدان)", "الإنتاج (ألف طن)", "الإنتاجية", "التغير السنوي %"],
+  formats: ["number", "number", "decimal1", "percent1"],
+  summable: [true, true, false, false],
+  rows: [
+    { label: "قمح", values: [3400, 9600, 2.8, 4.2] },
+    { label: "أرز", values: [1100, 4800, 4.4, -2.1] },
+    { label: "ذرة", values: [2200, 7500, 3.4, 1.8] },
+    { label: "قطن", values: [280, 210, 0.8, 6.5] },
   ],
 };
 
@@ -708,7 +749,140 @@ export const requestDetailById = {
     formTable: publicRevenueTable,
     fulfillmentTable: publicRevenueTable,
   },
+  11: {
+    title: "بيانات الجمارك والواردات",
+    due: "17/06/2026",
+    officer: "محمد علي",
+    officerRole: "أخصائي إحصاءات التجارة الخارجية",
+    org: "مصلحة الجمارك المصرية",
+    status: "قيد الاعتماد النهائي",
+    info: {
+      "عنوان نموذج البيان": "الواردات الجمركية حسب البنود الرئيسية",
+      "الإدارة المسؤولة": "الإدارة العامة للإحصاء الجمركي",
+      "النشرة": "نشرة التجارة الخارجية",
+      "الجهة المسؤولة": "مصلحة الجمارك المصرية",
+      "النطاق الجغرافي": "جمهورية مصر العربية",
+      "وصف البيان": "رصد قيم الواردات وعدد البيانات الجمركية ونسب الفحص حسب مجموعات السلع.",
+      "المنهجية": "نظام النافذة الواحدة والتقارير الشهرية للمنافذ الجمركية.",
+    },
+    yearInfo: {
+      "نوع السنة": "ميلادية",
+      "السنة": "2026",
+      "الدورية": "شهرية",
+      "تفصيل الدورية": "مايو 2026",
+      "فترة تجميع البيان (من - إلى)": "01/05/2026 - 31/05/2026",
+      "تاريخ الاستحقاق": "17/06/2026",
+      "فترة السماح (أيام)": "5 أيام",
+    },
+    attachments: [
+      { name: "واردات_الجمارك_مايو_2026", type: "Excel", size: "540 KB", date: "14/06/2026", by: "محمد علي" },
+    ],
+    formTable: customsImportsTable,
+    fulfillmentTable: customsImportsTable,
+  },
+  12: {
+    title: "بيانات الحوادث المرورية",
+    due: "24/06/2026",
+    officer: "ياسر حسين",
+    officerRole: "أخصائي إحصاءات المرور",
+    org: "وزارة الداخلية",
+    status: "المتأخرة",
+    info: {
+      "عنوان نموذج البيان": "الحوادث المرورية حسب المحافظة",
+      "الإدارة المسؤولة": "الإدارة العامة للمرور",
+      "النشرة": "نشرة الحوادث المرورية",
+      "الجهة المسؤولة": "وزارة الداخلية",
+      "النطاق الجغرافي": "جمهورية مصر العربية",
+      "وصف البيان": "تسجيل أعداد الحوادث والوفيات والإصابات والمركبات المشاركة حسب المحافظة.",
+      "المنهجية": "سجلات إدارات المرور ونظام البلاغات الإلكترونية.",
+    },
+    yearInfo: {
+      "نوع السنة": "ميلادية",
+      "السنة": "2026",
+      "الدورية": "شهرية",
+      "تفصيل الدورية": "مايو 2026",
+      "فترة تجميع البيان (من - إلى)": "01/05/2026 - 31/05/2026",
+      "تاريخ الاستحقاق": "24/06/2026",
+      "فترة السماح (أيام)": "7 أيام",
+    },
+    attachments: [
+      { name: "حوادث_المرور_مايو_2026", type: "Excel", size: "380 KB", date: "20/06/2026", by: "ياسر حسين" },
+      { name: "دليل تصنيف الحوادث", type: "PDF", size: "1.1 MB", date: "09/06/2026", by: "ياسر حسين" },
+    ],
+    formTable: trafficAccidentsTable,
+    fulfillmentTable: trafficAccidentsTable,
+  },
+  13: {
+    title: "بيانات الإنتاج الزراعي",
+    due: "08/06/2026",
+    officer: "طارق نبيل",
+    officerRole: "أخصائي إحصاءات زراعية",
+    org: "وزارة الزراعة واستصلاح الأراضي",
+    status: "تعديل",
+    info: {
+      "عنوان نموذج البيان": "الإنتاج الزراعي للمحاصيل الرئيسية",
+      "الإدارة المسؤولة": "الإدارة العامة للإحصاء الزراعي",
+      "النشرة": "نشرة الإنتاج النباتي",
+      "الجهة المسؤولة": "وزارة الزراعة واستصلاح الأراضي",
+      "النطاق الجغرافي": "جمهورية مصر العربية",
+      "وصف البيان": "تقدير المساحات والإنتاج والإنتاجية للمحاصيل الاستراتيجية.",
+      "المنهجية": "المسح الزراعي بالعينة وتقارير المديريات الزراعية.",
+    },
+    yearInfo: {
+      "نوع السنة": "زراعية",
+      "السنة": "2025/2026",
+      "الدورية": "موسمية",
+      "تفصيل الدورية": "العروة الشتوية",
+      "فترة تجميع البيان (من - إلى)": "01/11/2025 - 30/04/2026",
+      "تاريخ الاستحقاق": "08/06/2026",
+      "فترة السماح (أيام)": "10 أيام",
+    },
+    attachments: [
+      { name: "الإنتاج_الزراعي_شتاء_2025_2026", type: "Excel", size: "620 KB", date: "05/06/2026", by: "طارق نبيل" },
+    ],
+    formTable: agriculturalProductionTable,
+    fulfillmentTable: agriculturalProductionTable,
+  },
 };
+
+/**
+ * Supervisor detail seed: overlay list-row presentation (title/status/…) on the
+ * correct requestDetailById entry via requiredRows[].detailId when mode=required.
+ */
+export function getSupervisorRequestSeed(id, mode = "forms") {
+  const key = String(id);
+  if (mode === "required") {
+    const row = requiredRows.find((r) => String(r.id) === key);
+    if (!row) {
+      return requestDetailById[key] || requestDetailById[1];
+    }
+    const detailKey = String(row.detailId ?? row.id);
+    const detail = requestDetailById[detailKey] || requestDetailById[1];
+    return {
+      ...detail,
+      title: row.title,
+      org: row.org,
+      officer: row.officer,
+      due: row.due,
+      status: row.status,
+      listId: row.id,
+      detailId: Number(detailKey) || detailKey,
+    };
+  }
+  const detail = requestDetailById[key] || requestDetailById[1];
+  const row = formsRows.find((r) => String(r.id) === key);
+  if (!row) return { ...detail, listId: Number(key) || key };
+  return {
+    ...detail,
+    title: row.title,
+    org: row.org,
+    officer: row.officer,
+    due: row.due,
+    status: row.status,
+    listId: row.id,
+    detailId: row.id,
+  };
+}
 
 /** Seed notes shown when localStorage has none yet */
 export const notesByRequestId = {

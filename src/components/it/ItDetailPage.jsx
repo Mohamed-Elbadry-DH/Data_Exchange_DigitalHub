@@ -64,6 +64,7 @@ export function DetailTable({
   rows,
   onRowClick,
   onEdit,
+  onDelete,
   showActions = false,
   showDelete = true,
   viewWhenStatus,
@@ -140,7 +141,11 @@ export function DetailTable({
       {toolbar && (
         <div className={`flex items-center gap-4 ${title ? "justify-between" : "justify-end"}`}>
           {title && <h3 className="text-[22px] font-bold text-[#052c65] shrink-0 text-right">{title}</h3>}
-          <div className="flex items-center gap-[15px]" dir={searchBoxed ? "ltr" : undefined}>
+          {/* searchBoxed: dir=ltr + justify-start → actions on visual left (Figma) */}
+          <div
+            className={`flex flex-1 items-center gap-[15px] ${searchBoxed ? "justify-start" : "justify-end"}`}
+            dir={searchBoxed ? "ltr" : undefined}
+          >
             {searchBoxed && filterFields.length > 0 && (
               <button
                 type="button"
@@ -234,7 +239,9 @@ export function DetailTable({
           open={pendingDelete !== null}
           message="هل أنت متأكد من حذف هذا العنصر؟"
           onConfirm={() => {
-            setRemovedIds((ids) => [...ids, pendingDelete.id]);
+            const row = pendingDelete;
+            setRemovedIds((ids) => [...ids, row.id]);
+            onDelete?.(row);
             setPendingDelete(null);
           }}
           onCancel={() => setPendingDelete(null)}
@@ -321,7 +328,12 @@ export default function ItDetailPage({
         </div>
 
         {(showHeading !== false || actions) && (
-        <div className={`flex items-center gap-4 ${showHeading !== false ? "justify-between" : "justify-end"}`}>
+        <div
+          className={`flex items-center gap-4 ${
+            showHeading !== false ? "justify-between" : "justify-start"
+          }`}
+          dir={showHeading === false && actions ? "ltr" : undefined}
+        >
           {showHeading !== false && <h2 className="text-[27px] font-bold text-[#052c65]">{heading}</h2>}
           {actions}
         </div>

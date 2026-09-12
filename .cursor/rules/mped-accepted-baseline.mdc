@@ -23,10 +23,11 @@ React 19 + Vite + Tailwind 4 + Recharts 3 + lucide-react + Cairo (RTL). Mock dat
 ## Tokens (`src/index.css`)
 navy `#1f254b` · navy-deep `#052c65` · primary `#1b75ff` · primary-2 `#0986ed` · page `#f5f6fa` · ink `#404040` · muted `#7f8999` · success/danger/warning/purple as themed. Outer chrome `#1b1d22`. Borders often `#D8D8D8`.
 
-## Shell (`Layout.jsx`)
-- RTL `dir="rtl"`; frame `min-w-[1100px]` `max-w-[1920px]` `bg-page`
-- Sidebar expanded **329px** / collapsed **121px**; active pill `bg-primary`
-- Topbar **74px**; page padding typically `p-8` (detail: `px-8 pt-7`)
+## Shell (`AppShell.jsx` — all role layouts)
+- RTL `dir="rtl"`; content `bg-page`; **no** frame `min-width: 1100` (responsive reflow — see `mped-responsive-shell`)
+- Sidebar expanded **329px** (≥1280) / rail **121px** (768–1279) / mobile drawer (&lt;768); active pill `bg-primary`
+- Topbar sticky; titles scale `18 → 22 → 26`; notifications via `NotificationsMenu`
+- Page content: **`.page-shell`** (not ad-hoc `p-8`); modals: **`.modal-overlay`**
 
 ## Dashboard charts (`Dashboard.jsx`)
 - Card: **345×** flex, radius **20**, selector frame **217×39**, icons **26** hit / **19** draw
@@ -65,7 +66,7 @@ navy `#1f254b` · navy-deep `#052c65` · primary `#1b75ff` · primary-2 `#0986ed
 - `mockGa.js` overrides **presentation only** (KPI labels, chart series, columns); requests / notes / users stay single-sourced
 - New writes (create request, advance stage) go into `src/domain/`, called from both modules — no module-scoped storage keys
 - Route groups: `RequireAuth allow={["مشرف الإدارة العامة"]}` for `/`, `allow={["الإدارة العامة"]}` for `/ga`; a role outside its module is redirected to its own home
-- Still to build from `الإدارة العامة.pdf`: 3 indicator groups + إنشاء طلب بيان, create-statement-form page, 7-stage stepper detail with stage-driven actions, attachments table, الدرجات العلمية matrix, PDF list columns/filters
+- General admin (`/ga`) PDF gaps (3 indicator groups, create page, 7-stage detail, attachments, graduates matrix, list filters) are **shipped**. Create flow: `/ga/forms/new`. Further work is visual QA only — edit `src/pages/ga/**`, `src/components/ga/**`, `src/data/mockGa.js`.
 
 ## Rules of engagement
 - Prefer extending existing patterns over new visual systems

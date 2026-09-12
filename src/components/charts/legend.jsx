@@ -57,20 +57,21 @@ export function DonutCalloutLabel({
   const isRight = cos >= 0;
   const sx = cx + (outerRadius + 2) * cos;
   const sy = cy + (outerRadius + 2) * sin;
-  const reach = outerRadius + 22;
+  const reach = outerRadius + 18;
   const ey = planned ? cy + planned.yNorm * reach : cy + reach * sin;
-  const mx = sx + (isRight ? 14 : -14);
+  const mx = sx + (isRight ? 12 : -12);
   const my = ey;
-  const ex = cx + (isRight ? 1 : -1) * (outerRadius + 44);
+  const ex = cx + (isRight ? 1 : -1) * (outerRadius + 36);
   const textAnchor = isRight ? "start" : "end";
-  const textX = ex + (isRight ? 8 : -8);
-  const displayValue = Number.isInteger(Number(value)) ? value : Number(value).toFixed(2);
+  const textX = ex + (isRight ? 6 : -6);
+  const displayValue = Number.isInteger(Number(value)) ? value : Number(value).toFixed(1);
 
   return (
     <g>
       <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke={fill} fill="none" strokeWidth={1.5} />
       <circle cx={ex} cy={ey} r={2.5} fill={fill} />
-      <text x={textX} y={ey + 4} textAnchor={textAnchor} fontSize={12}>
+      {/* 14px matches StatusLegend / body copy on dashboards */}
+      <text x={textX} y={ey + 4} textAnchor={textAnchor} fontSize={14} fontFamily="Cairo, sans-serif">
         <tspan fill="#404040">{name}</tspan>
         <tspan fill={fill} fontWeight={700}>{` ${displayValue}`}</tspan>
       </text>

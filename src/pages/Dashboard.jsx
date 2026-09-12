@@ -1,20 +1,28 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Users, Building2, FileText, CircleCheckBig, FilePenLine, TriangleAlert,
   FileSearch,
 } from "lucide-react";
 import Layout from "../components/Layout";
 import PageToolbar from "../components/PageToolbar";
-import PeriodButton from "../components/PeriodButton";
+import PeriodButton, { PERIOD_OPTIONS } from "../components/PeriodButton";
 import StatusCard from "../components/StatusCard";
 import {
   ChartCard, SwitchableChart, PieOrDonutChart, StatusLineChart,
   SingleLineChart, VerticalBarChart, HorizontalBarChart,
 } from "../components/charts";
 import {
-  kpis, approvalStatusCards, exchangeStatusCards, approvalPie, monthlyApproved,
-  statusDonut, statusDonutTotal, topOrgs,
+  kpis as baseKpis,
+  approvalStatusCards as baseApprovalCards,
+  exchangeStatusCards as baseExchangeCards,
+  approvalPie as baseApprovalPie,
+  monthlyApproved as baseMonthlyApproved,
+  statusDonut as baseStatusDonut,
+  topOrgs as baseTopOrgs,
 } from "../data/mock";
+import {
+  periodFactor, scaleKpis, scaleCards, scalePiePercents, scaleValueList, scaleMonthlyRows, scaleInt,
+} from "../data/dashboardPeriod";
 
 const ICONS = { Users, Building2, FileText, CircleCheckBig, FilePenLine, TriangleAlert, FileSearch };
 
@@ -84,13 +92,6 @@ const topOrgsMonthly = [
   { month: "ديسمبر", "الجهاز المركزي…": 66.27, "وزارة التربية…": 35.63, "وزارة الصحة": 27.04, "وزارة المالية": 26.86, "وزارة الداخلية": 26.86 },
 ];
 
-const monthlyAsPie = [
-  { name: "Q1", value: 78, color: "#1B75FF" },
-  { name: "Q2", value: 167, color: "#0986ED" },
-  { name: "Q3", value: 156, color: "#16A34A" },
-  { name: "Q4", value: 135, color: "#FF8C08" },
-];
-
 function shortOrgName(name) {
   if (name.includes("التعبئة")) return "الجهاز المركزي…";
   if (name.includes("التربية")) return "وزارة التربية…";
@@ -123,6 +124,39 @@ function KpiCard({ k }) {
 
 
 export default function Dashboard() {
+  const [period, setPeriod] = useState(PERIOD_OPTIONS[0]);
+  const dash = useMemo(() => {
+    const factor = periodFactor(period);
+    const statusDonut = scaleValueList(baseStatusDonut, factor);
+    return {
+      factor,
+      kpis: scaleKpis(baseKpis, factor),
+      exchangeStatusCards: scaleCards(baseExchangeCards, factor),
+      approvalStatusCards: scaleCards(baseApprovalCards, factor),
+      approvalPie: scalePiePercents(baseApprovalPie, factor),
+      monthlyApproved: scaleValueList(baseMonthlyApproved, factor),
+      statusDonut,
+      statusDonutTotal: statusDonut.reduce((s, d) => s + d.value, 0),
+      topOrgs: scaleValueList(baseTopOrgs, factor),
+      approvalStatusMonthly: scaleMonthlyRows(approvalStatusMonthly, factor),
+      exchangeStatusMonthly: scaleMonthlyRows(exchangeStatusMonthly, factor),
+      topOrgsMonthly: scaleMonthlyRows(topOrgsMonthly, factor),
+      monthlyAsPie: [
+        { name: "Q1", value: scaleInt(78, factor), color: "#1B75FF" },
+        { name: "Q2", value: scaleInt(167, factor), color: "#0986ED" },
+        { name: "Q3", value: scaleInt(156, factor), color: "#16A34A" },
+        { name: "Q4", value: scaleInt(135, factor), color: "#FF8C08" },
+      ],
+    };
+  }, [period]);
+
+  const {
+    kpis, exchangeStatusCards, approvalStatusCards, approvalPie, monthlyApproved,
+    statusDonut, statusDonutTotal, topOrgs, approvalStatusMonthly: approvalMonthlyScaled,
+    exchangeStatusMonthly: exchangeMonthlyScaled, topOrgsMonthly: topOrgsMonthlyScaled,
+    monthlyAsPie,
+  } = dash;
+
   const topOrgsPie = topOrgs.map((o, i) => ({
     name: shortOrgName(o.name),
     value: o.value,
@@ -134,7 +168,7 @@ export default function Dashboard() {
       <div className="page-shell space-y-8 xl:space-y-[50px]">
         <PageToolbar>
           <span />
-          <PeriodButton />
+          <PeriodButton label={period} onChange={setPeriod} />
         </PageToolbar>
 
         <div>
@@ -165,7 +199,7 @@ export default function Dashboard() {
               <SwitchableChart
                 type={type}
                 categorical={approvalPie}
-                monthlySeries={approvalStatusMonthly}
+                monthlySeries={approvalMonthlyScaled}
                 pieSuffix="%"
                 donutSuffix="%"
                 hbarDomain={50}
@@ -212,7 +246,7 @@ export default function Dashboard() {
               <SwitchableChart
                 type={type}
                 categorical={statusDonut}
-                monthlySeries={exchangeStatusMonthly}
+                monthlySeries={exchangeMonthlyScaled}
                 pieSuffix=""
                 donutTotal={statusDonutTotal}
                 donutSuffix=""
@@ -239,7 +273,7 @@ export default function Dashboard() {
               if (type === "line") {
                 return (
                   <StatusLineChart
-                    data={topOrgsMonthly}
+                    data={topOrgsMonthlyScaled}
                     seriesKeys={ORG_LINE_KEYS}
                     colors={ORG_LINE_COLORS}
                     showLegend

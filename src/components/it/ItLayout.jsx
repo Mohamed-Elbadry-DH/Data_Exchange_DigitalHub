@@ -8,8 +8,8 @@ const NAV = [
   { to: "/it/entities", label: "الجهات الخارجية", icon: Building2 },
   { to: "/it/admins", label: "الإدارات العامة", icon: Building },
   { to: "/it/bulletins", label: "النشرات", icon: ScrollText },
-  { to: "/it/users", label: "المستخدمين", icon: Users },
   { to: "/it/requests", label: "الطلبات", icon: NotepadText, extraActive: ["/it/forms"] },
+  { to: "/it/users", label: "المستخدمين", icon: Users },
   { to: "/it/activity", label: "سجل النشاط", icon: Clock },
 ];
 

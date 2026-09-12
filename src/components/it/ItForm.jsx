@@ -16,9 +16,9 @@ export const CONTROL_COMPACT =
 
 export function Field({ label, required, children, hint, hintIcon = false, compact = false }) {
   return (
-    <div className={`flex flex-col w-full ${compact ? "gap-[22px]" : "gap-3"}`}>
+    <div className={`flex flex-col w-full ${compact ? "gap-2" : "gap-3"}`}>
       <label
-        className={`${compact ? "text-[16.634px] leading-normal" : "text-[20px]"} font-bold text-[#1f254b] text-right`}
+        className={`${compact ? "text-[14px] leading-normal" : "text-[20px]"} font-bold text-[#1f254b] text-right`}
       >
         {label}
         {required && <span className={compact ? "text-[#dc2626]" : "text-danger"}> *</span>}

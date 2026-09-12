@@ -1,6 +1,7 @@
+import { useMemo, useState } from "react";
 import { Users, Building2, Building, FileText as LucideFileText } from "lucide-react";
 import Layout from "../../components/dm/DmLayout";
-import PeriodButton from "../../components/PeriodButton";
+import PeriodButton, { PERIOD_OPTIONS } from "../../components/PeriodButton";
 import { SHELL } from "../../constants/shell";
 import StatusCard from "../../components/StatusCard";
 import KpiCard from "../../components/KpiCard";
@@ -10,10 +11,19 @@ import {
   VerticalBarChart, HorizontalBarChart,
 } from "../../components/charts";
 import {
-  kpis, exchangeStatusCards, fulfillmentStatusCards, topOrgs, dmAdminsPie,
-  dmFulfillmentDonut, dmFulfillmentDonutTotal, dmMonthlyTrend, dmAlerts,
+  kpis as baseKpis,
+  exchangeStatusCards as baseExchange,
+  fulfillmentStatusCards as baseFulfillment,
+  topOrgs as baseTopOrgs,
+  dmAdminsPie as baseAdminsPie,
+  dmFulfillmentDonut as baseFulfillmentDonut,
+  dmMonthlyTrend as baseMonthlyTrend,
+  dmAlerts,
   DM_TREND_KEYS, DM_TREND_COLORS, dmStatusColors,
 } from "../../data/mockDm";
+import {
+  periodFactor, scaleKpis, scaleCards, scaleValueList, scaleMonthlyRows, scalePiePercents,
+} from "../../data/dashboardPeriod";
 
 /**
  * The status-card icons on this dashboard come from Figma as flat white PNGs,
@@ -81,36 +91,61 @@ function WrappedTick({ x, y, payload }) {
 }
 
 /** اتجاه نماذج البيان — pie/donut fallbacks aggregate the two series */
-const trendAsCategorical = DM_TREND_KEYS.map((k) => ({
-  name: k,
-  value: dmMonthlyTrend.reduce((s, d) => s + d[k], 0),
-  color: DM_TREND_COLORS[k],
-}));
+function trendAsCategorical(monthlyTrend) {
+  return DM_TREND_KEYS.map((k) => ({
+    name: k,
+    value: monthlyTrend.reduce((s, d) => s + d[k], 0),
+    color: DM_TREND_COLORS[k],
+  }));
+}
 
 /** لوحة تحكم صانع القرار — Figma 649:10179 */
 export default function Dashboard() {
+  const [period, setPeriod] = useState(PERIOD_OPTIONS[0]);
+  const dash = useMemo(() => {
+    const factor = periodFactor(period);
+    const dmFulfillmentDonut = scaleValueList(baseFulfillmentDonut, factor);
+    return {
+      kpis: scaleKpis(baseKpis, factor),
+      exchangeStatusCards: scaleCards(baseExchange, factor),
+      fulfillmentStatusCards: scaleCards(baseFulfillment, factor),
+      topOrgs: scaleValueList(baseTopOrgs, factor),
+      dmAdminsPie: scalePiePercents(baseAdminsPie, factor),
+      dmFulfillmentDonut,
+      dmFulfillmentDonutTotal: dmFulfillmentDonut.reduce((s, d) => s + d.value, 0),
+      dmMonthlyTrend: scaleMonthlyRows(baseMonthlyTrend, factor),
+    };
+  }, [period]);
+
+  const {
+    kpis,
+    exchangeStatusCards,
+    fulfillmentStatusCards,
+    topOrgs,
+    dmAdminsPie,
+    dmFulfillmentDonut,
+    dmFulfillmentDonutTotal,
+    dmMonthlyTrend,
+  } = dash;
+
   const topOrgsColored = topOrgs.map((o, i) => ({
     name: o.name,
     value: o.value,
     color: ["#1B75FF", "#0986ED", "#16A34A", "#FF8C08", "#9747FF"][i],
   }));
+  const trendCategorical = trendAsCategorical(dmMonthlyTrend);
 
   return (
     <Layout title="لوحة التحكم">
       <div className="page-shell space-y-8 xl:space-y-[50px]">
-        {/*
-          Not `PageToolbar` — that caps at SHELL.contentMax, and this dashboard
-          spans the full content area. `justify-end` puts the lone control on
-          the left in RTL, aligned with the sections below.
-        */}
         <div className="flex w-full items-center justify-end" style={{ minHeight: SHELL.navItemH }}>
-          <PeriodButton />
+          <PeriodButton label={period} onChange={setPeriod} />
         </div>
 
         <div className="w-full">
           <h2 className="text-[20px] font-bold text-[rgba(0,0,0,0.9)] mb-4 text-right">مؤشرات عامة</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-            {kpis.map((k) => <KpiCard key={k.label} k={k} icons={ICONS} fluid />)}
+            {kpis.map((k) => <KpiCard key={k.label + k.value} k={k} icons={ICONS} fluid />)}
           </div>
         </div>
 
@@ -129,7 +164,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* 665fr / 840fr keeps the Figma ratio while both cards stay fluid */}
         <div className="w-full grid grid-cols-1 lg:grid-cols-[665fr_840fr] gap-[30px]">
           <div className="min-w-0 flex">
             <ChartCard title="أعلى 5 جهات من حيث نسبة الألتزام" defaultType="hbar" height={CHART_H}>
@@ -153,10 +187,10 @@ export default function Dashboard() {
                 if (type === "pie" || type === "donut") {
                   return (
                     <PieOrDonutChart
-                      data={trendAsCategorical}
+                      data={trendCategorical}
                       donut={type === "donut"}
                       showLegend={type === "pie"}
-                      total={trendAsCategorical.reduce((s, d) => s + d.value, 0)}
+                      total={trendCategorical.reduce((s, d) => s + d.value, 0)}
                       valueSuffix=""
                     />
                   );
@@ -172,15 +206,14 @@ export default function Dashboard() {
                   );
                 }
                 if (type === "bar") {
-                  return <VerticalBarChart data={trendAsCategorical} colored />;
+                  return <VerticalBarChart data={trendCategorical} colored />;
                 }
-                return <HorizontalBarChart data={trendAsCategorical} domainMax={800} showLabels yAxisWidth={120} />;
+                return <HorizontalBarChart data={trendCategorical} domainMax={800} showLabels yAxisWidth={120} />;
               }}
             </ChartCard>
           </div>
         </div>
 
-        {/* 612fr / 458fr / 425fr keeps the Figma ratio; stacks below xl */}
         <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[612fr_458fr_425fr] gap-[20px]">
           <div className="min-w-0 flex">
             <ChartCard title="توزيع نماذج البيان حسب الإدارات" defaultType="pie" height={CHART_H}>

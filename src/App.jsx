@@ -4,15 +4,20 @@ import FormsList from "./pages/FormsList";
 import RequiredList from "./pages/RequiredList";
 import UsersList from "./pages/UsersList";
 import RequestDetail from "./pages/RequestDetail";
+import Settings from "./pages/Settings";
 import GaDashboard from "./pages/ga/Dashboard";
 import GaFormsList from "./pages/ga/FormsList";
+import GaCreateStatement from "./pages/ga/CreateStatement";
 import GaRequiredList from "./pages/ga/RequiredList";
 import GaUsersList from "./pages/ga/UsersList";
 import GaRequestDetail from "./pages/ga/RequestDetail";
+import GaSettings from "./pages/ga/Settings";
 import DmDashboard from "./pages/dm/Dashboard";
+import DmSettings from "./pages/dm/Settings";
 import EntDashboard from "./pages/ent/Dashboard";
 import EntRequiredList from "./pages/ent/RequiredList";
 import EntRequestDetail from "./pages/ent/RequestDetail";
+import EntSettings from "./pages/ent/Settings";
 import ItDashboard from "./pages/it/Dashboard";
 import AdminsList from "./pages/it/AdminsList";
 import EntitiesList from "./pages/it/EntitiesList";
@@ -27,6 +32,7 @@ import EntityDetail from "./pages/it/EntityDetail";
 import UserCreate from "./pages/it/UserCreate";
 import ItRequestDetail from "./pages/it/RequestDetail";
 import FormBuilder from "./pages/it/builder/FormBuilder";
+import ItSettings from "./pages/it/Settings";
 import Login from "./pages/Login";
 import VerifyCode from "./pages/VerifyCode";
 import LoadingPage from "./pages/Loading";
@@ -57,21 +63,25 @@ export default function App() {
             <Route path="/required" element={<RequiredList />} />
             <Route path="/required/:id" element={<RequestDetail mode="required" />} />
             <Route path="/users" element={<UsersList />} />
+            <Route path="/settings" element={<Settings />} />
           </Route>
 
           {/* general admin module */}
           <Route element={<RequireAuth allow={GENERAL_ADMIN} />}>
             <Route path="/ga" element={<GaDashboard />} />
             <Route path="/ga/forms" element={<GaFormsList />} />
+            <Route path="/ga/forms/new" element={<GaCreateStatement />} />
             <Route path="/ga/forms/:id" element={<GaRequestDetail mode="forms" />} />
             <Route path="/ga/required" element={<GaRequiredList />} />
             <Route path="/ga/required/:id" element={<GaRequestDetail mode="required" />} />
             <Route path="/ga/users" element={<GaUsersList />} />
+            <Route path="/ga/settings" element={<GaSettings />} />
           </Route>
 
           {/* decision maker module */}
           <Route element={<RequireAuth allow={DECISION_MAKER} />}>
             <Route path="/dm" element={<DmDashboard />} />
+            <Route path="/dm/settings" element={<DmSettings />} />
           </Route>
 
           {/* external entity module — موظف الجهة الخارجية */}
@@ -79,6 +89,7 @@ export default function App() {
             <Route path="/ent" element={<EntDashboard />} />
             <Route path="/ent/required" element={<EntRequiredList />} />
             <Route path="/ent/required/:id" element={<EntRequestDetail />} />
+            <Route path="/ent/settings" element={<EntSettings />} />
           </Route>
 
           {/* IT specialist module */}
@@ -93,10 +104,12 @@ export default function App() {
             <Route path="/it/bulletins" element={<BulletinsList />} />
             <Route path="/it/users" element={<ItUsersList />} />
             <Route path="/it/users/new" element={<UserCreate />} />
+            <Route path="/it/users/:id/edit" element={<UserCreate />} />
             <Route path="/it/forms/new" element={<FormBuilder />} />
             <Route path="/it/requests" element={<RequestsList />} />
             <Route path="/it/requests/:id" element={<ItRequestDetail />} />
             <Route path="/it/activity" element={<ActivityLog />} />
+            <Route path="/it/settings" element={<ItSettings />} />
           </Route>
         </Routes>
       </AuthProvider>

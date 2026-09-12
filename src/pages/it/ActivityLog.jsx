@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import ItListPage from "../../components/it/ItListPage";
 import { activityLog } from "../../data/mockIt";
+import { downloadCsv } from "./exportDownload";
 
 const ACTION_CHIP = {
   ربط: { bg: "rgba(52,152,219,0.1)", fg: "#0986ed" },
@@ -63,22 +64,11 @@ const COLUMNS = [
 ];
 
 function exportActivityCsv(rows) {
-  const headers = ["التاريخ والوقت", "المستخدم", "الدور", "نوع الإجراء", "الجهة / الإدارة المرتبطة", "التفاصيل"];
-  const lines = [
-    headers.join(","),
-    ...rows.map((r) =>
-      [r.datetime, r.user, r.userSubRole, r.actionType, r.org, r.details]
-        .map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`)
-        .join(",")
-    ),
-  ];
-  const blob = new Blob([`\uFEFF${lines.join("\n")}`], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "سجل_النشاط.csv";
-  a.click();
-  URL.revokeObjectURL(url);
+  downloadCsv(
+    "سجل_النشاط.csv",
+    ["التاريخ والوقت", "المستخدم", "الدور", "نوع الإجراء", "الجهة / الإدارة المرتبطة", "التفاصيل"],
+    rows.map((r) => [r.datetime, r.user, r.userSubRole, r.actionType, r.org, r.details]),
+  );
 }
 
 /** سجل النشاط — Figma 649:6968 + filter 1060:5077 */

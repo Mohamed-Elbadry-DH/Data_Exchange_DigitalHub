@@ -1,4 +1,4 @@
-import PieOrDonutChart from "./PieOrDonutChart";
+import PieOrDonutChart, { formatChartTotal } from "./PieOrDonutChart";
 import { StatusLineChart, SingleLineChart, VerticalBarChart, HorizontalBarChart } from "./series";
 
 export default function SwitchableChart({
@@ -24,13 +24,12 @@ export default function SwitchableChart({
     return <PieOrDonutChart data={rows} donut={false} showLegend valueSuffix={pieSuffix} />;
   }
   if (type === "donut") {
-    // rounded: decimal series (e.g. نسب الألتزام) otherwise surface float error
-    const sum = Math.round(rows.reduce((s, d) => s + Number(d.value || 0), 0));
+    const sum = formatChartTotal(rows.reduce((s, d) => s + Number(d.value || 0), 0));
     return (
       <PieOrDonutChart
         data={rows}
         donut
-        total={donutTotal ?? pieTotal ?? sum}
+        total={formatChartTotal(donutTotal ?? pieTotal ?? sum)}
         showLegend={false}
         valueSuffix={donutSuffix || pieSuffix}
       />

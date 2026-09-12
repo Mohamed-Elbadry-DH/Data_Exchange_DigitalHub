@@ -4,6 +4,19 @@ import Layout from "./ItLayout";
 import ItFilterModal from "./ItFilterModal";
 import ConfirmModal from "./ConfirmModal";
 
+function ActionIcon({ src, label, onClick }) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      className="size-5 shrink-0 overflow-clip hover:opacity-70 cursor-pointer"
+    >
+      <img src={src} alt="" className="size-full" />
+    </button>
+  );
+}
+
 export function ToolbarAction({ action }) {
   const isDownload = action.icon === "download";
   const isLink = action.icon === "link";
@@ -73,6 +86,9 @@ export default function ItListPage({
   onSearchChange,
   onRowClick,
   onEdit,
+  onDelete,
+  /** Optional per-row leading icon (إيقاف / تفعيل) — Figma 649:6456 */
+  leadingAction,
   showActions = true,
   showDelete = true,
   viewWhenStatus,
@@ -92,15 +108,30 @@ export default function ItListPage({
 
   const edit = onEdit || onRowClick;
 
-  /** Row-level «إجراءات»: تعديل on the right, حذف on the left (Figma 1057:2171). */
+  /** Row-level «إجراءات»: إيقاف · تعديل · حذف (Figma 649:6456 / 1057:2171). */
   const actionsColumn = {
     key: "__actions",
     label: "إجراءات",
     render: (r) => {
       const view = viewWhenStatus?.(r);
       const Icon = view ? Eye : SquarePen;
+      const lead = leadingAction?.(r);
       return (
         <div className="flex items-center justify-center gap-4" onClick={(e) => e.stopPropagation()}>
+          {lead && (
+            lead.src ? (
+              <ActionIcon src={lead.src} label={lead.label} onClick={lead.onClick} />
+            ) : (
+              <button
+                type="button"
+                aria-label={lead.label}
+                onClick={lead.onClick}
+                className="text-primary hover:opacity-70 cursor-pointer"
+              >
+                {lead.node}
+              </button>
+            )
+          )}
           <button
             type="button"
             aria-label={view ? "عرض" : "تعديل"}
@@ -132,7 +163,13 @@ export default function ItListPage({
       <div className="page-shell">
         <div className={`flex flex-wrap items-center mb-6 gap-4 ${listTitle ? "justify-between" : "justify-end"}`}>
           {listTitle && <h2 className="text-[18px] font-bold text-[#052c65] shrink-0">{listTitle}</h2>}
-          <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-[15px]" dir={searchBoxed ? "ltr" : undefined}>
+          {/* searchBoxed: dir=ltr + justify-start → filter/actions/search sit on the visual left (Figma) */}
+          <div
+            className={`flex min-w-0 flex-1 flex-wrap items-center gap-[15px] ${
+              searchBoxed ? "justify-start" : "justify-end"
+            }`}
+            dir={searchBoxed ? "ltr" : undefined}
+          >
             {searchBoxed && (
               <button
                 onClick={() => setFilterOpen(true)}
@@ -244,7 +281,9 @@ export default function ItListPage({
         open={pendingDelete !== null}
         message="هل أنت متأكد من حذف هذا العنصر؟"
         onConfirm={() => {
-          setRemovedIds((ids) => [...ids, pendingDelete.id]);
+          const row = pendingDelete;
+          setRemovedIds((ids) => [...ids, row.id]);
+          onDelete?.(row);
           setPendingDelete(null);
         }}
         onCancel={() => setPendingDelete(null)}

@@ -1,8 +1,10 @@
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   FileText, Building, FileSearch, FilePenLine, TriangleAlert, CircleCheckBig,
 } from "lucide-react";
 import Layout from "../../components/ent/EntLayout";
-import PeriodButton from "../../components/PeriodButton";
+import PeriodButton, { PERIOD_OPTIONS } from "../../components/PeriodButton";
 import StatusCard from "../../components/StatusCard";
 import { SHELL } from "../../constants/shell";
 import {
@@ -10,9 +12,15 @@ import {
   VerticalBarChart, HorizontalBarChart,
 } from "../../components/charts";
 import {
-  entStatusCards, entStatusDonut, entStatusDonutTotal, entTopAdmins,
-  entMonthlyTrend, entUrgentAlerts, ENT_TREND_KEYS, ENT_TREND_COLORS,
+  entStatusCards as baseStatusCards,
+  entStatusDonut as baseStatusDonut,
+  entTopAdmins as baseTopAdmins,
+  entMonthlyTrend as baseMonthlyTrend,
+  entUrgentAlerts, ENT_TREND_KEYS, ENT_TREND_COLORS,
 } from "../../data/mockEnt";
+import {
+  periodFactor, scaleCards, scaleValueList, scaleMonthlyRows, scalePiePercents,
+} from "../../data/dashboardPeriod";
 
 const ICONS = { FileText, Building, FileSearch, FilePenLine, TriangleAlert, CircleCheckBig };
 
@@ -23,11 +31,6 @@ function shortAdmin(name) {
   return name.replace("الادارة العامة لاحصاءات ", "");
 }
 
-const topAdminsShort = entTopAdmins.map((a, i) => ({
-  name: shortAdmin(a.name),
-  value: a.value,
-  color: ["#1B75FF", "#0986ED", "#16A34A", "#FF8C08", "#9747FF"][i],
-}));
 
 /** تنبيهات عاجلة — Figma 1702:7888 */
 function UrgentAlertsCard() {
@@ -35,9 +38,9 @@ function UrgentAlertsCard() {
     <div className="bg-white rounded-[20px] shadow-sm overflow-hidden flex flex-col h-full min-h-0">
       <div className="flex items-center justify-between px-5 pt-4 pb-3 shrink-0">
         <h3 className="text-[20px] font-bold text-[#052c65]">تنبيهات عاجلة</h3>
-        <button type="button" className="text-[#0986ed] text-[16px] font-bold cursor-pointer">
+        <Link to="/ent/required" className="text-[#0986ed] text-[16px] font-bold hover:underline">
           عرض كل
-        </button>
+        </Link>
       </div>
       <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-4">
         <ul className="flex flex-col">
@@ -75,11 +78,32 @@ function UrgentAlertsCard() {
 
 /** لوحة تحكم موظف الجهة الخارجية — Figma 1702:7443 */
 export default function Dashboard() {
+  const [period, setPeriod] = useState(PERIOD_OPTIONS[0]);
+  const dash = useMemo(() => {
+    const factor = periodFactor(period);
+    const entStatusDonut = scalePiePercents(baseStatusDonut, factor);
+    const entTopAdmins = scaleValueList(baseTopAdmins, factor);
+    return {
+      entStatusCards: scaleCards(baseStatusCards, factor),
+      entStatusDonut,
+      entStatusDonutTotal: entStatusDonut.reduce((s, d) => s + d.value, 0),
+      entTopAdmins,
+      entMonthlyTrend: scaleMonthlyRows(baseMonthlyTrend, factor),
+    };
+  }, [period]);
+
+  const { entStatusCards, entStatusDonut, entStatusDonutTotal, entTopAdmins, entMonthlyTrend } = dash;
+  const topAdminsShort = entTopAdmins.map((a, i) => ({
+    name: shortAdmin(a.name),
+    value: a.value,
+    color: ["#1B75FF", "#0986ED", "#16A34A", "#FF8C08", "#9747FF"][i],
+  }));
+
   return (
     <Layout title="لوحة التحكم">
       <div className="page-shell space-y-8 xl:space-y-[40px]">
         <div className="flex w-full items-center justify-end" style={{ minHeight: SHELL.navItemH }}>
-          <PeriodButton />
+          <PeriodButton label={period} onChange={setPeriod} />
         </div>
 
         <div className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-5">

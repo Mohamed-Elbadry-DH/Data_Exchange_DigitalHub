@@ -7,8 +7,13 @@ import Layout from "../components/Layout";
 import StatusBadge from "../components/StatusBadge";
 import SuccessModal from "../components/SuccessModal";
 import RequestEditModal from "../components/RequestEditModal";
-import { requestDetailById } from "../data/mock";
+import { getSupervisorRequestSeed } from "../data/mock";
 import { loadNotes, saveNotes } from "../domain/notes";
+import {
+  approveSupervisorRequest,
+  requestSupervisorModification,
+  resolveSupervisorDetail,
+} from "../domain/supervisorStatus";
 import { useAuth } from "../context/AuthContext";
 
 function InfoTile({ icon: Icon, label, value, sub }) {
@@ -217,6 +222,7 @@ function FulfillmentTab({ d }) {
 }
 
 function AttachmentsTab({ d }) {
+  const rows = d.attachments || [];
   return (
     <table className="w-full text-right text-[14px]">
       <thead>
@@ -230,19 +236,37 @@ function AttachmentsTab({ d }) {
         </tr>
       </thead>
       <tbody>
-        {d.attachments.map((a, i) => (
-          <tr key={i} className="border-b border-[#D8D8D8] text-[#404040]">
+        {rows.map((a, i) => (
+          <tr key={`${a.name}-${i}`} className="border-b border-[#D8D8D8] text-[#404040]">
             <td className="py-3.5 px-5 font-medium">{a.name}</td>
-            <td className="py-3.5 px-5 flex items-center gap-2">
-              {a.type === "Excel" ? <FileSpreadsheet size={16} className="text-success" /> : <FileIcon size={16} className="text-danger" />}
-              {a.type}
+            <td className="py-3.5 px-5">
+              <span className="inline-flex items-center gap-2">
+                {a.type === "Excel" ? <FileSpreadsheet size={16} className="text-success" /> : <FileIcon size={16} className="text-danger" />}
+                {a.type}
+              </span>
             </td>
             <td className="py-3.5 px-5">{a.date}</td>
             <td className="py-3.5 px-5">{a.size}</td>
             <td className="py-3.5 px-5">{a.by}</td>
-            <td className="py-3.5 px-5"><button className="text-primary"><Download size={17} /></button></td>
+            <td className="py-3.5 px-5">
+              <button
+                type="button"
+                aria-label={`تحميل ${a.name}`}
+                className="text-primary hover:opacity-70 cursor-pointer"
+                onClick={() => {
+                  /* mock download — no blob yet */
+                }}
+              >
+                <Download size={17} />
+              </button>
+            </td>
           </tr>
         ))}
+        {rows.length === 0 && (
+          <tr>
+            <td colSpan={6} className="py-8 text-center text-muted">لا توجد مرفقات</td>
+          </tr>
+        )}
       </tbody>
     </table>
   );
@@ -383,6 +407,7 @@ function NotesTab({ requestId, author = "أحمد محمد" }) {
 
 export default function RequestDetail({ mode = "forms" }) {
   const isRequired = mode === "required";
+  const lane = isRequired ? "required" : "forms";
   const tabs = isRequired
     ? [
         { key: "info", label: "بيانات نموذج البيان", width: 186 },
@@ -399,12 +424,20 @@ export default function RequestDetail({ mode = "forms" }) {
       ];
 
   const { id } = useParams();
-  const d = requestDetailById[id] || requestDetailById[1];
-
   const [tab, setTab] = useState("info");
   const [success, setSuccess] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editSent, setEditSent] = useState(false);
+  const [d, setD] = useState(() =>
+    resolveSupervisorDetail(getSupervisorRequestSeed(id, lane), lane, id),
+  );
+
+  React.useEffect(() => {
+    const next = getSupervisorRequestSeed(id, lane);
+    setD(resolveSupervisorDetail(next, lane, id));
+    setTab("info");
+  }, [id, lane]);
+
   const navigate = useNavigate();
   const { name } = useAuth();
 
@@ -412,6 +445,19 @@ export default function RequestDetail({ mode = "forms" }) {
   const backLabel = isRequired ? "البيانات المطلوبة" : "نماذج البيان";
   const showEditRequest = d.status !== "تعديل";
   const showApprove = d.status !== "تعديل" && d.status !== "معتمدة";
+
+  const handleApprove = () => {
+    approveSupervisorRequest(lane, id);
+    setD((prev) => ({ ...prev, status: "معتمدة" }));
+    setSuccess(true);
+  };
+
+  const handleEditSubmit = () => {
+    requestSupervisorModification(lane, id);
+    setD((prev) => ({ ...prev, status: "تعديل" }));
+    setEditOpen(false);
+    setEditSent(true);
+  };
 
   return (
     <Layout title={backLabel}>
@@ -496,7 +542,7 @@ export default function RequestDetail({ mode = "forms" }) {
             {showApprove && (
               <button
                 type="button"
-                onClick={() => setSuccess(true)}
+                onClick={handleApprove}
                 className="bg-success text-white rounded-lg px-8 py-3 text-[15px] font-semibold"
               >
                 {isRequired ? "اعتماد نهائي و إرساله" : "اعتماد و إرسال"}
@@ -509,7 +555,7 @@ export default function RequestDetail({ mode = "forms" }) {
       <RequestEditModal
         open={editOpen}
         onClose={() => setEditOpen(false)}
-        onSubmit={() => { setEditOpen(false); setEditSent(true); }}
+        onSubmit={handleEditSubmit}
       />
 
       <SuccessModal

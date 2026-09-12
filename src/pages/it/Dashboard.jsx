@@ -1,18 +1,20 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FileText, Users, Building2, Building } from "lucide-react";
+import { FileText, Users, Building2, Building, ScrollText } from "lucide-react";
 import Layout from "../../components/it/ItLayout";
 import StatusBadge from "../../components/it/StatusBadge";
 import PageToolbar from "../../components/PageToolbar";
-import PeriodButton from "../../components/PeriodButton";
+import PeriodButton, { PERIOD_OPTIONS } from "../../components/PeriodButton";
 import AlertsCard from "../../components/AlertsCard";
 import { SHELL } from "../../constants/shell";
 import { ChartCard, SwitchableChart, withSliceColors } from "../../components/charts";
 import {
-  itKpis, itAlerts, entityTypeDistribution, adminsBarSeries, pendingTasks,
+  itKpis as baseItKpis, itAlerts, entityTypeDistribution as baseEntityDist,
+  adminsBarSeries as baseAdminsBar, pendingTasks,
 } from "../../data/mockIt";
+import { periodFactor, scaleKpis, scaleValueList } from "../../data/dashboardPeriod";
 
-const ICONS = { FileText, Users, Building2, Building };
+const ICONS = { FileText, Users, Building2, Building, ScrollText };
 
 const QUICK_ACTIONS = [
   { label: "إنشاء جهة خارجية", to: "/it/entities?create=1" },
@@ -132,11 +134,18 @@ function KpiCard({ k }) {
 }
 
 function PendingTasksCard() {
+  const navigate = useNavigate();
   return (
     <div className="bg-white rounded-[20px] shadow-sm p-5 overflow-hidden flex-1 min-w-0 min-h-[336px]">
       <div className="flex items-center justify-between mb-5">
-        <h3 className="text-[20px] font-bold text-[#052c65]">الطلبات و المهام</h3>
-        <button type="button" className="text-[#0986ed] text-[16px] font-bold cursor-pointer">عرض كل</button>
+        <h3 className="text-[20px] font-bold text-[#052c65]">الطلبات و المهام المعلقة</h3>
+        <button
+          type="button"
+          onClick={() => navigate("/it/requests")}
+          className="text-[#0986ed] text-[16px] font-bold cursor-pointer"
+        >
+          عرض كل
+        </button>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-right border-collapse">
@@ -150,7 +159,11 @@ function PendingTasksCard() {
           </thead>
           <tbody>
             {pendingTasks.map((t) => (
-              <tr key={t.id} className="border-b border-[rgba(18,36,67,0.1)] text-[17px] text-[#052c65]/60">
+              <tr
+                key={t.id}
+                className="border-b border-[rgba(18,36,67,0.1)] text-[17px] text-[#052c65]/60 cursor-pointer hover:bg-[#f8f9fa]"
+                onClick={() => navigate("/it/requests")}
+              >
                 <td className="py-4 px-4 whitespace-nowrap">{t.title}</td>
                 <td className="py-4 px-4 whitespace-nowrap">{t.type}</td>
                 <td className="py-4 px-4"><StatusBadge status={t.status} /></td>
@@ -165,16 +178,27 @@ function PendingTasksCard() {
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate();
+  const [period, setPeriod] = useState(PERIOD_OPTIONS[0]);
+  const { itKpis, entityTypeDistribution, adminsBarSeries } = useMemo(() => {
+    const factor = periodFactor(period);
+    return {
+      itKpis: scaleKpis(baseItKpis, factor),
+      entityTypeDistribution: scaleValueList(baseEntityDist, factor),
+      adminsBarSeries: scaleValueList(baseAdminsBar, factor),
+    };
+  }, [period]);
+
   return (
     <Layout title="لوحة التحكم">
       <div className="page-shell space-y-8 xl:space-y-[50px]">
         <PageToolbar>
           <QuickActionsButton />
-          <PeriodButton />
+          <PeriodButton label={period} onChange={setPeriod} />
         </PageToolbar>
 
         <div className="grid w-full grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6 xl:gap-[44px]" dir="ltr">
-          {itKpis.map((k) => <KpiCard key={k.label} k={k} />)}
+          {itKpis.map((k) => <KpiCard key={k.label + k.value} k={k} />)}
         </div>
 
         <div className=" w-full flex flex-row-reverse flex-wrap gap-8 xl:gap-[50px]">
@@ -205,7 +229,9 @@ export default function Dashboard() {
         </div>
 
         <div className=" w-full flex flex-wrap gap-8 xl:gap-[50px]">
-          <div className="w-full lg:w-[588px] lg:shrink-0 min-w-0"><AlertsCard alerts={itAlerts} /></div>
+          <div className="w-full lg:w-[588px] lg:shrink-0 min-w-0">
+            <AlertsCard alerts={itAlerts} onViewAll={() => navigate("/it/requests")} />
+          </div>
           <PendingTasksCard />
         </div>
       </div>

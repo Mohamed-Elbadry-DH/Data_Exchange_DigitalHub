@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ItListPage from "../../components/it/ItListPage";
+import StatusBadge from "../../components/it/StatusBadge";
 import AdminCreateModal from "../../components/it/AdminCreateModal";
 import { generalAdmins } from "../../data/mockIt";
 import { ddmmyyyyToIso, sortRows, SORT_OPTIONS, useCreateModal } from "./listUtils";
@@ -9,6 +10,7 @@ const COLUMNS = [
   { key: "name", label: "اسم الإدارة", className: "text-right" },
   { key: "created", label: "تاريخ الإنشاء", dir: "ltr" },
   { key: "usersCount", label: "عدد المستخدمين" },
+  { key: "status", label: "الحالة", render: (r) => <StatusBadge status={r.status} /> },
   { key: "bulletinsCount", label: "عدد النشرات" },
   { key: "entitiesCount", label: "عدد الجهات المرتبطة" },
   { key: "formsCount", label: "عدد نماذج البيان" },

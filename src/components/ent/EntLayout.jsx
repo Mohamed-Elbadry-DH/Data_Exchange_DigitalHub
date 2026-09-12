@@ -3,8 +3,8 @@ import AppShell from "../AppShell";
 
 /**
  * موظف الجهة الخارجية — Figma 1702:7443.
- * The design's sidebar also lists «المستخدمين», but no screen was supplied for
- * it in this batch, so it is left out rather than shipped as a dead link.
+ * «المستخدمين» appears in the Figma sidebar but is intentionally out of this
+ * product flow — never add a /ent/users route or nav item.
  */
 const NAV = [
   { to: "/ent", label: "لوحة التحكم", icon: LayoutDashboard, end: true },

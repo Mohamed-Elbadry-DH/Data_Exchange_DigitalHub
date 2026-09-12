@@ -1,0 +1,61 @@
+---
+description: Locked responsive shell, page-shell, and modal-overlay conventions (2026-09-11)
+alwaysApply: true
+---
+
+# Responsive shell & page chrome (locked)
+
+Accepted in commit `9ed0938` (11 Sep 2026). Every **new page / modal** must follow this — do not invent per-page padding, max-width, or full-window overlays.
+
+## AppShell breakpoints
+Owned by `AppShell.jsx` + `useMediaQuery` — do not fork.
+
+| Viewport | Sidebar |
+|---|---|
+| ≥1280px | Expanded **329px** (Figma) |
+| 768–1279px | Icon rail **121px** (auto) |
+| &lt;768px | Overlay drawer, closed by default; hamburger in topbar |
+
+- Frame has **no** `min-width: 1100` — content reflows; never restore forced horizontal scroll.
+- AppShell sets `--app-sidebar-w` on `:root`. Do not override except via AppShell.
+
+## New pages — `.page-shell`
+Wrap main content in `.page-shell` (optionally `space-y-*` / `flex-1`).
+
+- Owns width (`max-width: 1535.5px`), horizontal padding, and vertical padding.
+- Pages add **only** their own vertical rhythm (`space-y-*`), never raw `p-8` / `px-8` / `max-w-[1535.5px]` on the page root.
+- Screens with a pinned footer: `.page-shell--flush` (padding-block 0).
+
+```jsx
+// ✅
+<div className="page-shell space-y-6">…</div>
+
+// ❌
+<div className="p-8 max-w-[1535.5px]">…</div>
+```
+
+## Modals — `.modal-overlay`
+Every dialog overlay uses class `modal-overlay` (+ `z-50` / `z-[100]` as peers).
+
+- Centres on the **content area**, not the full window — sidebar stays visible (`right: var(--app-sidebar-w)`).
+- Card: `w-full max-w-[…]`, not a fixed `w-[380px]` only.
+- Prefer `createPortal(…, document.body)` for IT/GA overlays that can be clipped by `overflow` ancestors.
+- Do **not** use `fixed inset-0` bare overlays for new modals.
+
+```jsx
+// ✅
+<div className="modal-overlay z-50" onClick={onClose}>
+  <div className="… w-full max-w-[400px]" onClick={(e) => e.stopPropagation()}>…</div>
+</div>
+
+// ❌
+<div className="fixed inset-0 z-50 … bg-black/40">…</div>
+```
+
+## Notifications
+- Topbar bell opens `NotificationsMenu`; data from `src/data/notifications.js`.
+- New notification items: add to that file with `tone`: `danger` | `warning` | `success` | `info`.
+- Do not rebuild a custom bell panel per module.
+
+## Shared chrome edits
+`AppShell`, `AppTopbar`, `.page-shell`, `.modal-overlay` are **cross-module**. Changing them affects every role — ask first unless the task is explicitly a shell fix. Prefer module pages + module-local components for feature work.

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft, UserRound, Link2, ShieldCheck } from "lucide-react";
 import Layout from "../../components/it/ItLayout";
 import SearchableMultiSelect from "../../components/it/SearchableMultiSelect";
@@ -9,6 +9,7 @@ import {
 import {
   tenancies, jobRoles, generalAdmins, externalEntities, bulletins, entityPermissions,
 } from "../../data/mockIt";
+import { getItUser, upsertItUser } from "../../domain/itUsersStore";
 
 const PERMISSION_OPTIONS = entityPermissions.map((p) => ({ id: p, name: p }));
 
@@ -30,15 +31,28 @@ function NestedSection({ title, icon: Icon, children }) {
 const FIELDS = "grid grid-cols-1 lg:grid-cols-3 gap-y-8 lg:gap-x-[120px]";
 
 /**
- * إنشاء مستخدم جديد — Figma 1054:1144.
+ * إنشاء / تعديل مستخدم — Figma 1054:1144.
  * Variants 1060:2621 / 1060:3042 only change «تبعية المستخدم» visibility of later sections.
  */
 export default function UserCreate() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({
-    phone: "", name: "", tenancy: tenancies[0], status: "",
-    password: "", email: "", jobRole: "", jobTitle: "",
-  });
+  const { id } = useParams();
+  const editing = id != null;
+  const existing = editing ? getItUser(id) : null;
+
+  const [form, setForm] = useState(() => ({
+    phone: existing?.phone ?? "",
+    name: existing?.name ?? "",
+    tenancy: existing?.affiliation && tenancies.includes(existing.affiliation)
+      ? existing.affiliation
+      : tenancies[0],
+    status: existing?.status ?? "",
+    password: "",
+    email: existing?.email ?? "",
+    jobRole: existing?.jobRole ?? "",
+    jobTitle: "",
+    org: existing?.org ?? "",
+  }));
   const [adminIds, setAdminIds] = useState([]);
   const [entityIds, setEntityIds] = useState([]);
   const [bulletinIds, setBulletinIds] = useState([]);
@@ -46,6 +60,10 @@ export default function UserCreate() {
 
   const set = (k) => (v) => setForm((f) => ({ ...f, [k]: v }));
   const back = () => navigate("/it/users");
+  const submit = () => {
+    upsertItUser(form, editing ? id : null);
+    navigate("/it/users");
+  };
 
   const isDecisionMaker = form.tenancy === "صانع القرار";
   const isEntity = form.tenancy === "الجهة الخارجية";
@@ -102,7 +120,9 @@ export default function UserCreate() {
           <div className="flex items-center gap-1 text-[20px]" dir="rtl">
             <Link to="/it/users" className="text-[#adb5bd] font-medium hover:text-primary">المستخدمين</Link>
             <ChevronLeft size={30} className="text-[#052c65] shrink-0" />
-            <span className="text-[#052c65] font-semibold">إنشاء مستخدم جديد</span>
+            <span className="text-[#052c65] font-semibold">
+              {editing ? "تعديل مستخدم" : "إنشاء مستخدم جديد"}
+            </span>
           </div>
 
           <div className="bg-white rounded-[20px] p-8 flex flex-col gap-[33px]">
@@ -209,7 +229,12 @@ export default function UserCreate() {
 
         <div className="sticky bottom-0 z-10 h-[87px] bg-[#f9f9f9] border-t border-[#eaeaeb] px-4 sm:px-6 xl:px-8">
           <div className="h-full w-full flex items-center">
-            <FormActions className="w-full" onCancel={back} onSubmit={back} submitLabel="إنشاء" />
+            <FormActions
+              className="w-full"
+              onCancel={back}
+              onSubmit={submit}
+              submitLabel={editing ? "حفظ" : "إنشاء"}
+            />
           </div>
         </div>
       </div>

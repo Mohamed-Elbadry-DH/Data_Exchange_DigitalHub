@@ -45,13 +45,13 @@ export const statusBadge = {
   متأخرة: { bg: "#FCE4E4", fg: "#DC2626" },
 };
 
-/** مؤشرات عامة — دورة النصف الأول من عام 2026 */
+/** مؤشرات عامة — Figma 895:2509 (LTR card order, all 43 in design) */
 export const itKpis = [
+  { label: "الإدارات", value: 43, icon: "Building" },
+  { label: "الجهات المرتبطة", value: 43, icon: "Building2" },
+  { label: "النشرات", value: 43, icon: "ScrollText" },
+  { label: "المستخدمين", value: 43, icon: "Users" },
   { label: "نماذج البيان النشطة", value: 43, icon: "FileText" },
-  { label: "المستخدمين", value: 60, icon: "Users" },
-  { label: "النشرات", value: 18, icon: "Users" },
-  { label: "الجهات المرتبطة", value: 24, icon: "Building2" },
-  { label: "الإدارات", value: 12, icon: "Building" },
 ];
 
 /** التنبيهات */

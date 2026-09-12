@@ -1,10 +1,15 @@
 import { useMemo, useState } from "react";
-import { SlidersHorizontal, Search, Trash2, SquarePen, Pause, Play, Plus } from "lucide-react";
+import { Search, SlidersHorizontal, Trash2, SquarePen, Pause, Play, Plus } from "lucide-react";
 import Layout from "../components/Layout";
 import FilterModal from "../components/FilterModal";
 import UserFormModal from "../components/UserFormModal";
 import ConfirmModal from "../components/ConfirmModal";
-import { usersRows as initialUsersRows } from "../data/mock";
+import {
+  loadUsers,
+  removeUser,
+  toggleUserActive,
+  upsertUser,
+} from "../domain/usersStore";
 
 function StatusPill({ status }) {
   const active = status === "نشط";
@@ -18,12 +23,8 @@ function StatusPill({ status }) {
   );
 }
 
-function todayIso() {
-  return new Date().toISOString().slice(0, 10);
-}
-
 export default function UsersList() {
-  const [users, setUsers] = useState(initialUsersRows);
+  const [users, setUsers] = useState(() => loadUsers());
   const [filterOpen, setFilterOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
@@ -54,34 +55,25 @@ export default function UsersList() {
   };
 
   const toggleActive = (id) => {
-    setUsers((list) =>
-      list.map((u) =>
-        u.id === id
-          ? u.status === "نشط"
-            ? { ...u, status: "غير نشط", stopped: todayIso() }
-            : { ...u, status: "نشط", stopped: "-" }
-          : u
-      )
-    );
+    setUsers(toggleUserActive(id));
   };
 
   const confirmDelete = () => {
-    setUsers((list) => list.filter((u) => u.id !== deletingId));
+    setUsers(removeUser(deletingId));
     setDeletingId(null);
   };
 
-  const openAdd = () => { setEditingUser(null); setFormOpen(true); };
-  const openEdit = (u) => { setEditingUser(u); setFormOpen(true); };
+  const openAdd = () => {
+    setEditingUser(null);
+    setFormOpen(true);
+  };
+  const openEdit = (u) => {
+    setEditingUser(u);
+    setFormOpen(true);
+  };
 
   const submitForm = (form) => {
-    if (editingUser) {
-      setUsers((list) => list.map((u) => (u.id === editingUser.id ? { ...u, ...form } : u)));
-    } else {
-      setUsers((list) => [
-        ...list,
-        { id: Math.max(0, ...list.map((u) => u.id)) + 1, ...form, joined: todayIso(), stopped: "-", status: "نشط" },
-      ]);
-    }
+    setUsers(upsertUser(form, editingUser?.id ?? null));
     setFormOpen(false);
   };
 
@@ -142,9 +134,18 @@ export default function UsersList() {
                   <td className="py-4 px-6"><StatusPill status={u.status} /></td>
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-3 text-muted">
-                      <button onClick={() => setDeletingId(u.id)} className="hover:text-danger"><Trash2 size={16} /></button>
-                      <button onClick={() => openEdit(u)} className="hover:text-primary"><SquarePen size={16} /></button>
-                      <button onClick={() => toggleActive(u.id)} className="hover:text-warning">
+                      <button type="button" onClick={() => setDeletingId(u.id)} className="hover:text-danger" aria-label="حذف المستخدم">
+                        <Trash2 size={16} />
+                      </button>
+                      <button type="button" onClick={() => openEdit(u)} className="hover:text-primary" aria-label="تعديل المستخدم">
+                        <SquarePen size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toggleActive(u.id)}
+                        className="hover:text-warning"
+                        aria-label={u.status === "نشط" ? "إيقاف المستخدم" : "تفعيل المستخدم"}
+                      >
                         {u.status === "نشط" ? <Pause size={16} /> : <Play size={16} />}
                       </button>
                     </div>

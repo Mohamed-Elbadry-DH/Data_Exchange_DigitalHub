@@ -10,9 +10,14 @@ import SuccessModal from "../../components/SuccessModal";
 import RequestEditModal from "../../components/RequestEditModal";
 import { getGaRequestSeed } from "../../data/mockGa";
 import { loadNotes, saveNotes } from "../../domain/notes";
-import { STAGES, stageById, stageIndex, hasReachedStage, isRequiredStage, isFormsStage } from "../../domain/workflow";
+import {
+  STAGES, FORMS_STAGES, stageById, stageIndex, hasReachedStage, isRequiredStage, isFormsStage,
+  ownsStage,
+} from "../../domain/workflow";
+import { ROLES } from "../../domain/roles";
 import {
   resolveRequest, advanceRequest, markModification, resubmitAfterModification, resetRequestToStart,
+  saveRequestState,
 } from "../../domain/requestState";
 import { useAuth } from "../../context/AuthContext";
 
@@ -92,13 +97,13 @@ function StageNode({ index, done, waiting }) {
 
 const STEP_LINE_GAP = 8;
 
-function StageStepper({ stageId, status }) {
-  const stages = STAGES;
-  const current = Math.max(0, stageIndex(stageId));
+function StageStepper({ stageId, status, stages = STAGES }) {
+  const current = Math.max(0, stages.findIndex((s) => s.id === stageId));
   const isClosed = stageId === "close";
   const formApproved =
     (status === "معتمد" || status === "معتمدة") && isFormsStage(stageId);
   const colCount = stages.length;
+  const formsLane = stages.length === FORMS_STAGES.length;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-[#D8D8D8] px-4 sm:px-8 py-8">
@@ -116,7 +121,7 @@ function StageStepper({ stageId, status }) {
             const lineDone =
               isClosed
               || i < current
-              || (formApproved && i < 3);
+              || (formApproved && (formsLane ? i < stages.length : i < 3));
             return (
               <div
                 key={i}
@@ -139,7 +144,7 @@ function StageStepper({ stageId, status }) {
             const done =
               isClosed
               || i < current
-              || (formApproved && i <= 2);
+              || (formApproved && (formsLane ? i <= stages.length - 1 : i <= 2));
             const waiting = !isClosed && !formApproved && i === current;
             return (
               <div key={s.id} className="flex flex-col items-center gap-3 min-w-0 px-1">
@@ -204,7 +209,19 @@ function getLeafCount(table) {
   return table.columns?.length || 0;
 }
 
-function DataMatrixTable({ table, showTotals = false }) {
+function parseCellInput(raw, format = "number") {
+  const text = String(raw ?? "").trim();
+  if (text === "" || text === "-") return "-";
+  const normalized = text.replace(/%/g, "").replace(/,/g, "");
+  const num = Number(normalized);
+  if (Number.isNaN(num)) return text;
+  if (format === "percent1" || format === "decimal1") {
+    return Math.round(num * 10) / 10;
+  }
+  return Math.round(num);
+}
+
+function DataMatrixTable({ table, showTotals = false, editable = false, onChange }) {
   if (!table?.rows?.length) return null;
 
   const formats = table.formats || [];
@@ -214,15 +231,35 @@ function DataMatrixTable({ table, showTotals = false }) {
   const totals = showTotals
     ? Array.from({ length: leafCount }, (_, i) => {
         if (!summable[i]) return null;
-        return table.rows.reduce((sum, row) => sum + (Number(row.values[i]) || 0), 0);
+        return table.rows.reduce((sum, row) => {
+          const n = Number(row.values[i]);
+          return sum + (Number.isFinite(n) ? n : 0);
+        }, 0);
       })
     : null;
 
   const th = "border border-[#D8D8D8] px-3 py-2 font-bold text-[rgba(0,0,0,0.9)] bg-[#DDEBF4]";
   const thMuted = "border border-[#D8D8D8] px-3 py-2 text-muted font-semibold bg-[#DDEBF4]";
 
+  const setCell = (rowIndex, colIndex, raw) => {
+    if (!onChange) return;
+    const nextRows = table.rows.map((row, ri) => {
+      if (ri !== rowIndex) return row;
+      const values = row.values.map((v, ci) =>
+        (ci === colIndex ? parseCellInput(raw, formats[colIndex]) : v),
+      );
+      return { ...row, values };
+    });
+    onChange({ ...table, rows: nextRows });
+  };
+
   return (
-    <div className="overflow-auto">
+    <div className="overflow-auto space-y-3">
+      {editable && (
+        <p className="text-[13px] text-muted text-right">
+          يمكنك تعديل القيم في الخلايا ثم تُحفظ تلقائياً.
+        </p>
+      )}
       <table className="w-full text-center text-[13px] border-collapse">
         <thead>
           {table.nestedGroups ? (
@@ -296,14 +333,27 @@ function DataMatrixTable({ table, showTotals = false }) {
           )}
         </thead>
         <tbody>
-          {table.rows.map((row) => (
+          {table.rows.map((row, rowIndex) => (
             <tr key={row.label} className="text-[#404040]">
               <td className="border border-[#D8D8D8] px-4 py-3 font-semibold bg-[#DDEBF4] text-right">
                 {row.label}
               </td>
               {row.values.map((v, i) => (
-                <td key={i} className="border border-[#D8D8D8] px-4 py-3">
-                  {formatCell(v, formats[i])}
+                <td key={i} className="border border-[#D8D8D8] px-2 py-2">
+                  {editable ? (
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      dir="ltr"
+                      aria-label={`${row.label} عمود ${i + 1}`}
+                      className="w-full min-w-[4.5rem] rounded-md border border-transparent bg-white/80 px-2 py-1.5 text-center text-[13px] text-[#404040] outline-none focus:border-primary focus:bg-white"
+                      value={v === "-" || v === null || v === undefined ? "" : String(v)}
+                      placeholder="-"
+                      onChange={(e) => setCell(rowIndex, i, e.target.value)}
+                    />
+                  ) : (
+                    formatCell(v, formats[i])
+                  )}
                 </td>
               ))}
             </tr>
@@ -338,22 +388,63 @@ function blankTable(table) {
   };
 }
 
-function FormDataTab({ d, mode = "blank" }) {
+function FormDataTab({ d, mode = "blank", editable = false, onChange }) {
   if (mode === "empty") {
     return <EmptyTabMessage text="لا توجد جداول للعرض في هذه المرحلة" />;
   }
-  // نماذج البيان = هيكل فارغ بدون أرقام؛ البيانات تظهر في استيفاء البيانات
-  return <DataMatrixTable table={blankTable(d.formTable)} showTotals={false} />;
+  if (!d.formTable) return <EmptyTabMessage text="لا توجد جداول للعرض في هذه المرحلة" />;
+  const table = mode === "blank" && !d.formTableEdited
+    ? blankTable(d.formTable)
+    : d.formTable;
+  return (
+    <DataMatrixTable
+      table={table}
+      showTotals={false}
+      editable={editable}
+      onChange={onChange}
+    />
+  );
 }
 
-function FulfillmentTab({ d, mode = "filled" }) {
-  if (mode === "empty") {
+function FulfillmentTab({ d, mode = "filled", editable = false, onChange }) {
+  if (!d.fulfillmentTable) {
     return <EmptyTabMessage text="لا يوجد بيانات" />;
   }
-  if (mode === "blank") {
-    return <DataMatrixTable table={blankTable(d.fulfillmentTable)} showTotals={false} />;
+  if (mode === "empty") {
+    if (!editable) return <EmptyTabMessage text="لا يوجد بيانات" />;
+    const table = d.fulfillmentTableEdited
+      ? d.fulfillmentTable
+      : blankTable(d.fulfillmentTable);
+    return (
+      <DataMatrixTable
+        table={table}
+        showTotals={false}
+        editable
+        onChange={onChange}
+      />
+    );
   }
-  return <DataMatrixTable table={d.fulfillmentTable} showTotals />;
+  if (mode === "blank") {
+    const table = d.fulfillmentTableEdited
+      ? d.fulfillmentTable
+      : blankTable(d.fulfillmentTable);
+    return (
+      <DataMatrixTable
+        table={table}
+        showTotals={false}
+        editable={editable}
+        onChange={onChange}
+      />
+    );
+  }
+  return (
+    <DataMatrixTable
+      table={d.fulfillmentTable}
+      showTotals
+      editable={editable}
+      onChange={onChange}
+    />
+  );
 }
 
 function InfoTab({ d, variant }) {
@@ -372,7 +463,7 @@ function InfoTab({ d, variant }) {
   );
 }
 
-function EmptyTabMessage({ text = "لا توجد بيانات للعرض في هذه المرحلة" }) {
+function EmptyTabMessage({ text = "لا يوجد نموذج بيان للعرض" }) {
   return (
     <div className="rounded-xl border border-dashed border-[#D8D8D8] py-16 text-center text-muted text-[15px]">
       {text}
@@ -380,36 +471,76 @@ function EmptyTabMessage({ text = "لا توجد بيانات للعرض في ه
   );
 }
 
+function downloadAttachment(a) {
+  const ext = a.type === "Excel" ? "xlsx" : a.type === "PDF" ? "pdf" : "txt";
+  const body =
+    a.type === "Excel"
+      ? `اسم الملف,النوع,الحجم,تاريخ الرفع,رفع بواسطة\n${a.name},${a.type},${a.size},${a.date},${a.by}\n`
+      : `مرفق تجريبي — ${a.name}\nالنوع: ${a.type}\nالحجم: ${a.size}\nتاريخ الرفع: ${a.date}\nرفع بواسطة: ${a.by}\n`;
+  const blob = new Blob([body], {
+    type: a.type === "Excel" ? "text/csv;charset=utf-8" : "application/pdf",
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${a.name}.${a.type === "Excel" ? "csv" : ext === "pdf" ? "txt" : ext}`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
 function AttachmentsTab({ d, empty = false }) {
-  if (empty) return <EmptyTabMessage text="لا توجد مرفقات في هذه المرحلة" />;
+  if (empty) return <EmptyTabMessage text="لا يوجد نموذج بيان للعرض" />;
+  const rows = d.attachments || [];
   return (
-    <table className="w-full text-right text-[14px]">
-      <thead>
-        <tr className="bg-navy text-white">
-          <th className="py-3 px-5 font-semibold">اسم الملف</th>
-          <th className="py-3 px-5 font-semibold">نوع الملف</th>
-          <th className="py-3 px-5 font-semibold">تاريخ الرفع</th>
-          <th className="py-3 px-5 font-semibold">الحجم</th>
-          <th className="py-3 px-5 font-semibold">رفع بواسطة</th>
-          <th className="py-3 px-5 font-semibold">إجراءات</th>
-        </tr>
-      </thead>
-      <tbody>
-        {d.attachments.map((a, i) => (
-          <tr key={i} className="border-b border-[#D8D8D8] text-[#404040]">
-            <td className="py-3.5 px-5 font-medium">{a.name}</td>
-            <td className="py-3.5 px-5 flex items-center gap-2">
-              {a.type === "Excel" ? <FileSpreadsheet size={16} className="text-success" /> : <FileIcon size={16} className="text-danger" />}
-              {a.type}
-            </td>
-            <td className="py-3.5 px-5">{a.date}</td>
-            <td className="py-3.5 px-5">{a.size}</td>
-            <td className="py-3.5 px-5">{a.by}</td>
-            <td className="py-3.5 px-5"><button className="text-primary"><Download size={17} /></button></td>
+    <div className="overflow-x-auto rounded-2xl border border-[#D8D8D8]">
+      <table className="w-full min-w-[820px] text-right text-[14px] border-collapse">
+        <thead>
+          <tr className="bg-navy text-white">
+            <th className="py-3 px-5 font-semibold whitespace-nowrap">اسم الملف</th>
+            <th className="py-3 px-5 font-semibold whitespace-nowrap">نوع الملف</th>
+            <th className="py-3 px-5 font-semibold whitespace-nowrap">تاريخ الرفع</th>
+            <th className="py-3 px-5 font-semibold whitespace-nowrap">الحجم</th>
+            <th className="py-3 px-5 font-semibold whitespace-nowrap">رفع بواسطة</th>
+            <th className="py-3 px-5 font-semibold whitespace-nowrap">إجراءات</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {rows.map((a, i) => (
+            <tr key={`${a.name}-${i}`} className="border-b border-[#D8D8D8] text-[#404040] last:border-b-0">
+              <td className="py-3.5 px-5 font-medium text-[#052c65]">{a.name}</td>
+              <td className="py-3.5 px-5">
+                <span className="inline-flex items-center gap-2">
+                  {a.type === "Excel"
+                    ? <FileSpreadsheet size={16} className="text-success" />
+                    : <FileIcon size={16} className="text-danger" />}
+                  {a.type}
+                </span>
+              </td>
+              <td className="py-3.5 px-5 whitespace-nowrap" dir="ltr">{a.date}</td>
+              <td className="py-3.5 px-5 whitespace-nowrap" dir="ltr">{a.size}</td>
+              <td className="py-3.5 px-5 whitespace-nowrap">{a.by}</td>
+              <td className="py-3.5 px-5">
+                <button
+                  type="button"
+                  aria-label={`تحميل ${a.name}`}
+                  className="text-primary hover:opacity-70 cursor-pointer"
+                  onClick={() => downloadAttachment(a)}
+                >
+                  <Download size={17} />
+                </button>
+              </td>
+            </tr>
+          ))}
+          {rows.length === 0 && (
+            <tr>
+              <td colSpan={6} className="py-8 text-center text-muted">لا يوجد نموذج بيان للعرض</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -561,7 +692,7 @@ export default function RequestDetail({ mode = "forms" }) {
   const [editOpen, setEditOpen] = useState(false);
   const [editSent, setEditSent] = useState(false);
   const navigate = useNavigate();
-  const { name } = useAuth();
+  const { name, role } = useAuth();
 
   useEffect(() => {
     const nextSeed = getGaRequestSeed(id);
@@ -576,7 +707,15 @@ export default function RequestDetail({ mode = "forms" }) {
   const backLabel = isRequired ? "البيانات المطلوبة" : "نماذج البيان";
   const stageId = live.stageId || "create";
   const stage = stageById(stageId) || STAGES[0];
-  const stageNumber = Math.max(1, stageIndex(stageId) + 1);
+  const isStageOwner = ownsStage(role, stageId);
+  // Mock walkthrough: الإدارة العامة may simulate other roles' stage actions.
+  const isGaSimulator = role === ROLES.GENERAL_ADMIN;
+  const canAct = isStageOwner || isGaSimulator;
+  // Figma forms lane shows «المرحلة N من 3»; required / full lifecycle uses 7.
+  const stageTotal = !isRequired && isFormsStage(stageId) ? FORMS_STAGES.length : STAGES.length;
+  const stageNumber = !isRequired && isFormsStage(stageId)
+    ? Math.max(1, FORMS_STAGES.findIndex((s) => s.id === stageId) + 1)
+    : Math.max(1, stageIndex(stageId) + 1);
   const needsModification = live.status === "مطلوب تعديل" || live.status === "تعديل";
   const showFulfillmentTab = hasReachedStage(stageId, "fulfill");
   // من نماذج البيان بعد الاستيفاء: عرض فقط — الاستكمال من البيانات المطلوبة
@@ -611,6 +750,27 @@ export default function RequestDetail({ mode = "forms" }) {
         ? "filled"
         : "blank";
 
+  const matrixDetail = {
+    ...seed,
+    formTable: live.formTable || seed.formTable,
+    fulfillmentTable: live.fulfillmentTable || seed.fulfillmentTable,
+    formTableEdited: Boolean(live.formTableEdited),
+    fulfillmentTableEdited: Boolean(live.fulfillmentTableEdited),
+  };
+
+  const canEditForm = canAct && !formsHandoff && formMode === "blank";
+  const canEditFulfillment = canAct && !formsHandoff && showFulfillmentTab
+    && (stageId === "fulfill" || stageId === "review-data" || needsModification);
+
+  const saveFormTable = (formTable) => {
+    saveRequestState(id, { formTable, formTableEdited: true });
+    setLive((prev) => ({ ...prev, formTable, formTableEdited: true }));
+  };
+  const saveFulfillmentTable = (fulfillmentTable) => {
+    saveRequestState(id, { fulfillmentTable, fulfillmentTableEdited: true });
+    setLive((prev) => ({ ...prev, fulfillmentTable, fulfillmentTableEdited: true }));
+  };
+
   const tabs = useMemo(() => {
     const base = [
       { key: "info", label: "بيانات نموذج البيان" },
@@ -639,6 +799,9 @@ export default function RequestDetail({ mode = "forms" }) {
       return { showEdit: false, primaryLabel: null, primaryMessage: "", kind: null };
     }
     if (isTerminal) {
+      return { showEdit: false, primaryLabel: null, primaryMessage: "", kind: null };
+    }
+    if (!canAct) {
       return { showEdit: false, primaryLabel: null, primaryMessage: "", kind: null };
     }
     if (needsModification) {
@@ -765,7 +928,7 @@ export default function RequestDetail({ mode = "forms" }) {
             icon={FileText}
             label="المرحلة الحالية"
             value={stage.label}
-            sub={`المرحلة ${stageNumber} من ${STAGES.length}`}
+            sub={`المرحلة ${stageNumber} من ${stageTotal}`}
           />
           <InfoTile
             icon={Monitor}
@@ -787,7 +950,11 @@ export default function RequestDetail({ mode = "forms" }) {
           />
         </div>
 
-        <StageStepper stageId={stageId} status={live.status} />
+        <StageStepper
+          stageId={stageId}
+          status={live.status}
+          stages={!isRequired && isFormsStage(stageId) ? FORMS_STAGES : STAGES}
+        />
 
         {formsHandoff && (
           <div className="rounded-xl border border-[#D8D8D8] bg-[#F8F9FA] px-5 py-4 text-[14px] text-[#404040] text-right">
@@ -801,6 +968,18 @@ export default function RequestDetail({ mode = "forms" }) {
               البيانات المطلوبة
             </button>
             .
+          </div>
+        )}
+
+        {!formsHandoff && !isTerminal && !canAct && (
+          <div className="rounded-xl border border-[#FF8C08]/40 bg-[#FFF8F0] px-5 py-4 text-[14px] text-[#404040] text-right">
+            هذه المرحلة تخص «{stage.owner}». الإجراءات ستظهر عند تسجيل الدخول بهذا الدور.
+          </div>
+        )}
+
+        {!formsHandoff && !isTerminal && canAct && !isStageOwner && isGaSimulator && (
+          <div className="rounded-xl border border-[#0986ED]/30 bg-[rgba(9,134,237,0.06)] px-5 py-4 text-[14px] text-[#404040] text-right">
+            محاكاة دور «{stage.owner}» — في التدفق الحقيقي يظهر هذا الإجراء لصاحب المرحلة فقط.
           </div>
         )}
 
@@ -829,9 +1008,21 @@ export default function RequestDetail({ mode = "forms" }) {
           </div>
           <div className="p-6">
             {tab === "info" && <InfoTab d={seed} variant={infoVariant} />}
-            {tab === "form" && <FormDataTab d={seed} mode={formMode} />}
+            {tab === "form" && (
+              <FormDataTab
+                d={matrixDetail}
+                mode={formMode}
+                editable={canEditForm}
+                onChange={saveFormTable}
+              />
+            )}
             {tab === "fulfillment" && showFulfillmentTab && (
-              <FulfillmentTab d={seed} mode={fulfillmentMode} />
+              <FulfillmentTab
+                d={matrixDetail}
+                mode={fulfillmentMode}
+                editable={canEditFulfillment}
+                onChange={saveFulfillmentTable}
+              />
             )}
             {tab === "attachments" && (
               <AttachmentsTab d={seed} empty={isInProgressCreate} />
@@ -869,20 +1060,22 @@ export default function RequestDetail({ mode = "forms" }) {
           </div>
         )}
 
-        <div className="flex justify-start pb-8">
-          <button
-            type="button"
-            onClick={() => {
-              resetRequestToStart(id, seed);
-              navigate(`/ga/forms/${id}`);
-              refresh();
-              setTab("info");
-            }}
-            className="border border-[#D8D8D8] bg-white text-[#404040] rounded-lg px-6 py-2.5 text-[14px] font-medium hover:border-primary hover:text-primary cursor-pointer"
-          >
-            إعادة التجربة من البداية
-          </button>
-        </div>
+        {import.meta.env.DEV && (
+          <div className="flex justify-start pb-8">
+            <button
+              type="button"
+              onClick={() => {
+                resetRequestToStart(id, seed);
+                navigate(`/ga/forms/${id}`);
+                refresh();
+                setTab("info");
+              }}
+              className="border border-[#D8D8D8] bg-white text-[#404040] rounded-lg px-6 py-2.5 text-[14px] font-medium hover:border-primary hover:text-primary cursor-pointer"
+            >
+              إعادة التجربة من البداية
+            </button>
+          </div>
+        )}
       </div>
 
       <RequestEditModal

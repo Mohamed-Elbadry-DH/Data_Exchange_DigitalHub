@@ -1,10 +1,25 @@
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { FileSpreadsheet } from "lucide-react";
+import { Plus } from "lucide-react";
 import ItDetailPage, { DetailTable } from "../../components/it/ItDetailPage";
 import StatusBadge from "../../components/it/StatusBadge";
 import {
-  externalEntities, generalAdmins, itUsers, detailForms, detailStatusChips, detailUserChips,
+  externalEntities, generalAdmins, detailForms, detailStatusChips, detailUserChips,
 } from "../../data/mockIt";
+import {
+  loadItUsers,
+  removeItUser,
+  toggleItUserActive,
+} from "../../domain/itUsersStore";
+import { downloadCsv } from "./exportDownload";
+
+function exportEntityFormsCsv(rows) {
+  downloadCsv(
+    "نماذج_البيان.csv",
+    ["رقم الطلب", "عنوان نموذج البيان", "الإدارة", "الدورية", "الحالة", "تاريخ التسليم", "التأخير"],
+    rows.map((r) => [r.id, r.title, r.admin, r.periodicity, r.status, r.delivered, r.delay]),
+  );
+}
 
 const FORM_COLUMNS = [
   { key: "id", label: "رقم الطلب", dir: "ltr" },
@@ -36,6 +51,8 @@ const USER_COLUMNS = [
 export default function EntityDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [users, setUsers] = useState(() => loadItUsers());
+  const refreshUsers = (next) => setUsers(next);
   const entity = externalEntities.find((e) => String(e.id) === String(id)) || externalEntities[0];
   const owningAdmin = generalAdmins.find((a) => a.name === entity.admin);
 
@@ -54,13 +71,27 @@ export default function EntityDetail() {
         { label: "عدد نماذج البيان", value: entity.formsCount },
       ]}
       actions={(
-        <button
-          type="button"
-          className="flex items-center gap-2 bg-white border border-gray-200 text-[#052C65] text-[14px] font-semibold rounded-[12px] py-2.5 px-4 shadow-sm cursor-pointer whitespace-nowrap"
-        >
-          <FileSpreadsheet size={16} />
-          تصدير Excel
-        </button>
+        /* Actions sit on the left of the header; LTR order = إنشاء then تصدير (Figma 1060:4073) */
+        <div className="flex flex-wrap items-center gap-3" dir="ltr">
+          <button
+            type="button"
+            onClick={() => navigate("/it/forms/new")}
+            className="flex items-center justify-center gap-2 bg-[#052c65] h-[46px] rounded-[10px] text-white text-[16px] font-semibold shrink-0 cursor-pointer whitespace-nowrap px-4"
+          >
+            <span>إنشاء البيان جديد</span>
+            <Plus size={24} strokeWidth={2} />
+          </button>
+          <button
+            type="button"
+            onClick={() => exportEntityFormsCsv(detailForms)}
+            className="flex items-center justify-center gap-2 bg-[#052c65] h-[46px] min-w-[163px] rounded-[10px] text-white text-[16px] font-semibold shrink-0 cursor-pointer px-4"
+          >
+            <span>تصدير Excel</span>
+            <span className="size-6 shrink-0 overflow-clip">
+              <img src="/it/icon-download.svg" alt="" className="size-full" />
+            </span>
+          </button>
+        </div>
       )}
       tabs={[
         {
@@ -101,11 +132,26 @@ export default function EntityDetail() {
           content: (
             <DetailTable
               columns={USER_COLUMNS}
-              rows={itUsers}
+              rows={users}
               showActions
               searchable
               searchKeys={["name", "phone"]}
               searchPlaceholder="بحث عن مستخدم"
+              onEdit={(r) => navigate(`/it/users/${r.id}/edit`)}
+              onDelete={(r) => refreshUsers(removeItUser(r.id))}
+              leadingAction={(r) =>
+                r.status === "نشط"
+                  ? {
+                      src: "/it/icon-circle-pause.svg",
+                      label: "إيقاف",
+                      onClick: () => refreshUsers(toggleItUserActive(r.id)),
+                    }
+                  : {
+                      src: "/it/icon-circle-play.svg",
+                      label: "تفعيل",
+                      onClick: () => refreshUsers(toggleItUserActive(r.id)),
+                    }
+              }
             />
           ),
         },

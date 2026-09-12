@@ -6,3 +6,10 @@ export const DEFAULT_HOME = "/";
 export function homePathForRole(role) {
   return demoUsers.find((u) => u.role === role)?.home ?? DEFAULT_HOME;
 }
+
+/** Settings route for the signed-in role's module */
+export function settingsPathForRole(role) {
+  const home = homePathForRole(role);
+  if (!home || home === "/") return "/settings";
+  return `${home.replace(/\/$/, "")}/settings`;
+}

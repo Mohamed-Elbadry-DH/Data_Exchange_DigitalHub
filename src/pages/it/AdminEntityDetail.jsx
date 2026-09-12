@@ -4,6 +4,7 @@ import StatusBadge from "../../components/it/StatusBadge";
 import {
   generalAdmins, externalEntities, detailForms, detailStatusChips,
 } from "../../data/mockIt";
+import { downloadCsv } from "./exportDownload";
 
 const FORM_COLUMNS = [
   { key: "id", label: "رقم الطلب", dir: "ltr", className: "text-right" },
@@ -23,20 +24,11 @@ const FORM_COLUMNS = [
 ];
 
 function exportFormsCsv(rows) {
-  const headers = ["رقم الطلب", "عنوان نموذج البيان", "الدورية", "الحالة", "تاريخ التسليم", "التأخير"];
-  const lines = [
-    headers.join(","),
-    ...rows.map((r) => [r.id, r.title, r.periodicity, r.status, r.delivered, r.delay]
-      .map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`)
-      .join(",")),
-  ];
-  const blob = new Blob([`\uFEFF${lines.join("\n")}`], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "نماذج_البيان.csv";
-  a.click();
-  URL.revokeObjectURL(url);
+  downloadCsv(
+    "نماذج_البيان.csv",
+    ["رقم الطلب", "عنوان نموذج البيان", "الدورية", "الحالة", "تاريخ التسليم", "التأخير"],
+    rows.map((r) => [r.id, r.title, r.periodicity, r.status, r.delivered, r.delay]),
+  );
 }
 
 /** جهة مرتبطة من داخل إدارة عامة — Figma 645:4699 */

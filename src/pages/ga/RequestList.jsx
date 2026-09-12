@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { SlidersHorizontal, Search } from "lucide-react";
 import Layout from "../../components/ga/GaLayout";
 import StatusBadge from "../../components/ga/StatusBadge";
-import FilterModal from "../../components/FilterModal";
+import ItFilterModal from "../../components/it/ItFilterModal";
 import { stageById } from "../../domain/workflow";
 
 function ddmmyyyyToIso(s) {
@@ -15,14 +15,20 @@ function stageLabelOf(row) {
   return row.stageLabel || stageById(row.stageId)?.label || "—";
 }
 
+/** قوائم نماذج البيان / البيانات المطلوبة — أعمدة وفلاتر Figma 1094:1007 */
 export default function RequestList({ title, listTitle, rows, detailPath }) {
   const [filterOpen, setFilterOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [stage, setStage] = useState("");
   const [status, setStatus] = useState("");
   const [directedTo, setDirectedTo] = useState("");
   const [createdDate, setCreatedDate] = useState("");
   const navigate = useNavigate();
 
+  const stageOptions = useMemo(
+    () => [...new Set(rows.map((r) => stageLabelOf(r)).filter((l) => l && l !== "—"))],
+    [rows],
+  );
   const statusOptions = useMemo(() => [...new Set(rows.map((r) => r.status))], [rows]);
   const directedOptions = useMemo(
     () => [...new Set(rows.map((r) => r.currentEntity || r.org).filter(Boolean))],
@@ -31,6 +37,7 @@ export default function RequestList({ title, listTitle, rows, detailPath }) {
 
   const filteredRows = rows.filter((r) => {
     if (search.trim() && !r.title.includes(search.trim())) return false;
+    if (stage && stageLabelOf(r) !== stage) return false;
     if (status && r.status !== status) return false;
     if (directedTo && (r.currentEntity || r.org) !== directedTo) return false;
     if (createdDate && ddmmyyyyToIso(r.created) !== createdDate) return false;
@@ -38,6 +45,7 @@ export default function RequestList({ title, listTitle, rows, detailPath }) {
   });
 
   const clearFilters = () => {
+    setStage("");
     setStatus("");
     setDirectedTo("");
     setCreatedDate("");
@@ -47,24 +55,30 @@ export default function RequestList({ title, listTitle, rows, detailPath }) {
   return (
     <Layout title={title}>
       <div className="page-shell">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-[18px] font-bold text-[rgba(0,0,0,0.9)]">{listTitle}</h2>
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Search size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted" />
+        {/* Toolbar: title right + actions on visual left (dir=ltr justify-start) */}
+        <div className="flex flex-wrap items-center mb-6 gap-4 justify-between">
+          <h2 className="text-[18px] font-bold text-[rgba(0,0,0,0.9)] shrink-0">{listTitle}</h2>
+          <div
+            className="flex min-w-0 flex-1 flex-wrap items-center justify-start gap-[15px]"
+            dir="ltr"
+          >
+            <button
+              type="button"
+              onClick={() => setFilterOpen(true)}
+              aria-label="تصفية"
+              className="size-10 rounded-[13.333px] bg-[rgba(5,44,101,0.1)] flex items-center justify-center text-[#052c65] hover:opacity-80 shrink-0 cursor-pointer"
+            >
+              <SlidersHorizontal size={22} />
+            </button>
+            <div className="relative min-w-0 flex-1 basis-[220px] sm:flex-none sm:basis-auto">
+              <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="بحث عن البيان"
-                className="border border-gray-200 rounded-full pr-9 pl-4 py-2 text-[13px] w-64 text-right placeholder:text-gray-400"
+                className="h-[46px] w-full sm:w-[315px] rounded-[10px] bg-[#f0f0f0] border border-[rgba(5,44,101,0.16)] pr-9 pl-4 text-[14px] text-right placeholder:text-black/30 outline-none focus:border-primary"
               />
             </div>
-            <button
-              onClick={() => setFilterOpen(true)}
-              className="w-10 h-10 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-[#404040] hover:border-primary hover:text-primary"
-            >
-              <SlidersHorizontal size={18} />
-            </button>
           </div>
         </div>
 
@@ -115,22 +129,17 @@ export default function RequestList({ title, listTitle, rows, detailPath }) {
         </div>
       </div>
 
-      <FilterModal
+      {/* Figma 1094:1007 / 1094:669 — المرحلة ثم الحالة ثم موجه إلى ثم التاريخ */}
+      <ItFilterModal
         open={filterOpen}
         onClose={() => setFilterOpen(false)}
         onClear={clearFilters}
-        statusOptions={statusOptions}
-        statusValue={status}
-        onStatusChange={setStatus}
-        secondField={{
-          label: "موجه إلى",
-          value: directedTo,
-          onChange: setDirectedTo,
-          options: directedOptions,
-        }}
-        dateLabel="تاريخ الإنشاء"
-        dateValue={createdDate}
-        onDateChange={setCreatedDate}
+        fields={[
+          { label: "المرحلة", value: stage, onChange: setStage, options: stageOptions },
+          { label: "الحالة", value: status, onChange: setStatus, options: statusOptions },
+          { label: "موجه إلى", value: directedTo, onChange: setDirectedTo, options: directedOptions },
+          { label: "تاريخ الإنشاء", type: "date", value: createdDate, onChange: setCreatedDate },
+        ]}
       />
     </Layout>
   );
