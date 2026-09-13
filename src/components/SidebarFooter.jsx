@@ -25,7 +25,12 @@ export default function SidebarFooter({ collapsed }) {
   };
 
   return (
-    <div className={`flex flex-col pb-4 ${collapsed ? "items-center" : ""}`}>
+    /* Figma 1169:5540 — Divider (2px) above الإعدادات / تسجيل الخروج */
+    <div
+      className={`flex flex-col border-t border-white/10 pt-4 pb-4 ${
+        collapsed ? "items-center" : ""
+      }`}
+    >
       <button
         type="button"
         onClick={openSettings}
