@@ -19,9 +19,28 @@ function SummaryRow({ label, value, empty }) {
   );
 }
 
-function SummaryCard({ meta, structure }) {
+function structureSummary(structure, workbookJson, cellValues) {
+  if (workbookJson?.sheet) {
+    const { usedRange, name } = workbookJson.sheet;
+    const rows = usedRange.endRow - usedRange.startRow + 1;
+    const cols = usedRange.endColumn - usedRange.startColumn + 1;
+    const filled = cellValues ? Object.keys(cellValues).length : 0;
+    return {
+      value: `Excel · ${name} · ${rows}×${cols} · ${filled} قيمة مُدخلة`,
+      empty: false,
+      source: "excel",
+    };
+  }
   const c = structureCounts(structure);
-  const structureValue = c.columns === 0 ? "لم يتم إضافة أعمدة" : `${c.columns} أعمدة`;
+  return {
+    value: c.columns === 0 ? "لم يتم إضافة أعمدة" : `${c.columns} أعمدة`,
+    empty: c.columns === 0,
+    source: "manual",
+  };
+}
+
+function SummaryCard({ meta, structure, workbookJson, cellValues }) {
+  const structureInfo = structureSummary(structure, workbookJson, cellValues);
   return (
     <section className="bg-white border border-[#d8d8d8] rounded-[16px] p-5 flex flex-col gap-5 min-h-0">
       <div className="flex items-center gap-3 justify-end" dir="rtl">
@@ -33,31 +52,44 @@ function SummaryCard({ meta, structure }) {
         <SummaryRow label="الجهة المسؤولة" value={meta.entity || UNSET} empty={!meta.entity} />
         <SummaryRow label="السنة" value={meta.year || UNSET} empty={!meta.year} />
         <SummaryRow label="موعد الاستحقاق" value={meta.dueDate || UNSET} empty={!meta.dueDate} />
-        <SummaryRow label="هيكل الجدول" value={structureValue} empty={c.columns === 0} />
+        <SummaryRow
+          label="مصدر الهيكل"
+          value={structureInfo.source === "excel" ? "ملف Excel" : "محرر يدوي"}
+          empty={false}
+        />
+        <SummaryRow label="هيكل الجدول" value={structureInfo.value} empty={structureInfo.empty} />
       </div>
     </section>
   );
 }
 
-function ExportOptions({ meta, structure }) {
+function ExportOptions({ meta, structure, workbookJson, cellValues }) {
   const row =
     "w-full h-[46px] bg-[#f8f9fa] border border-[#d8d8d8] rounded-[12px] flex items-center px-4 gap-3 cursor-pointer hover:border-[#0986ed]";
   const c = structureCounts(structure);
+  const info = structureSummary(structure, workbookJson, cellValues);
 
   const exportExcel = () => {
-    downloadCsv(
-      "ملخص_نموذج_البيان.csv",
-      ["الحقل", "القيمة"],
-      [
-        ["اسم البيان", meta.title || UNSET],
-        ["الجهة المسؤولة", meta.entity || UNSET],
-        ["السنة", meta.year || UNSET],
-        ["موعد الاستحقاق", meta.dueDate || UNSET],
+    const rows = [
+      ["اسم البيان", meta.title || UNSET],
+      ["الجهة المسؤولة", meta.entity || UNSET],
+      ["السنة", meta.year || UNSET],
+      ["موعد الاستحقاق", meta.dueDate || UNSET],
+      ["مصدر الهيكل", info.source === "excel" ? "Excel" : "يدوي"],
+      ["هيكل الجدول", info.value],
+    ];
+    if (info.source === "excel" && cellValues) {
+      for (const [ref, val] of Object.entries(cellValues)) {
+        rows.push([ref, val]);
+      }
+    } else if (info.source !== "excel") {
+      rows.push(
         ["عدد الأعمدة", c.columns],
         ["عدد المجموعات", c.groups],
         ["عدد الصفوف", c.rows],
-      ],
-    );
+      );
+    }
+    downloadCsv("ملخص_نموذج_البيان.csv", ["الحقل", "القيمة"], rows);
   };
 
   const exportPdf = () => {
@@ -68,7 +100,8 @@ function ExportOptions({ meta, structure }) {
       `الجهة المسؤولة: ${meta.entity || UNSET}`,
       `السنة: ${meta.year || UNSET}`,
       `موعد الاستحقاق: ${meta.dueDate || UNSET}`,
-      `هيكل الجدول: ${c.columns} أعمدة · ${c.groups} مجموعات · ${c.rows} صفوف`,
+      `مصدر الهيكل: ${info.source === "excel" ? "ملف Excel" : "محرر يدوي"}`,
+      `هيكل الجدول: ${info.value}`,
       "",
       "(ملف نصي مؤقت — استبدال بـ PDF عند ربط التصدير الحقيقي)",
     ].join("\n");
@@ -136,7 +169,7 @@ function ApprovalPath({ statuses }) {
 }
 
 /** Step 3 — مراجعة و إرسال (Figma 645:3331) */
-export default function StepReview({ meta, structure }) {
+export default function StepReview({ meta, structure, workbookJson = null, cellValues = null }) {
   const { DONE, ACTIVE, WAITING } = FORM_BUILD_STATUS;
   const statuses = [DONE, ACTIVE, WAITING, WAITING];
 
@@ -148,10 +181,20 @@ export default function StepReview({ meta, structure }) {
       </div>
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 items-start" dir="rtl">
         <div className="flex flex-col gap-5 min-w-0">
-          <SummaryCard meta={meta} structure={structure} />
+          <SummaryCard
+            meta={meta}
+            structure={structure}
+            workbookJson={workbookJson}
+            cellValues={cellValues}
+          />
           <ApprovalPath statuses={statuses} />
         </div>
-        <ExportOptions meta={meta} structure={structure} />
+        <ExportOptions
+          meta={meta}
+          structure={structure}
+          workbookJson={workbookJson}
+          cellValues={cellValues}
+        />
       </div>
     </div>
   );
