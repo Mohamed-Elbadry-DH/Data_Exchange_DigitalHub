@@ -9,6 +9,7 @@ import {
   formatNumericDisplay,
   parseNumericInput,
 } from "./excel/interaction/parseNumericInput.js";
+import { resolveCellValue } from "./excel/calculation/calculationState.js";
 
 /** Minimum row height in preview (matches typical form rows ~23pt). */
 const MIN_ROW_PX = 31;
@@ -22,6 +23,9 @@ export default function ExcelSheetRenderer({
   mode = "view",
   editableIndex = null,
   values = {},
+  calculatedValues = {},
+  calculationErrors = {},
+  calculationStatus = "idle",
   onValueChange,
   showEditableAffordances = false,
 }) {
@@ -96,14 +100,24 @@ export default function ExcelSheetRenderer({
       style.gridColumn = gridColumn;
       style.gridRow = gridRow;
 
+      const resolved = resolveCellValue({
+        cellRef: ref,
+        cell,
+        cellValues: values,
+        calculatedValues,
+        calculationErrors,
+        calculationStatus,
+      });
+
       nodes.push(
         <div
           key={key}
           className={`excel-cell min-w-0 min-h-0 overflow-hidden box-border${
             editMeta && showEditableAffordances ? " excel-cell--editable" : ""
-          }`}
+          }${resolved.kind === "error" ? " excel-cell--calc-error" : ""}`}
           style={style}
           data-cell={ref}
+          title={resolved.error?.message || undefined}
         >
           {editMeta ? (
             <NumericCellInput
@@ -121,8 +135,17 @@ export default function ExcelSheetRenderer({
               ariaLabel={ref}
             />
           ) : (
-            <span className="flex items-center w-full h-full min-h-0 px-1 leading-normal">
-              {cell?.value != null && cell.value !== "" ? String(cell.value) : "\u00a0"}
+            <span
+              className={`flex items-center w-full h-full min-h-0 px-1 leading-normal${
+                resolved.kind === "error"
+                  ? " text-[#dc2626]"
+                  : resolved.kind === "calculated" || resolved.kind === "cached"
+                    ? " font-semibold"
+                    : ""
+              }`}
+              data-calc-kind={resolved.kind}
+            >
+              {formatResolvedDisplay(resolved)}
             </span>
           )}
         </div>,
@@ -149,6 +172,14 @@ export default function ExcelSheetRenderer({
       </div>
     </div>
   );
+}
+
+function formatResolvedDisplay(resolved) {
+  if (resolved.value == null || resolved.value === "") return "\u00a0";
+  if (typeof resolved.value === "number") {
+    return Number.isFinite(resolved.value) ? String(resolved.value) : "\u00a0";
+  }
+  return String(resolved.value);
 }
 
 function NumericCellInput({

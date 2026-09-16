@@ -3,6 +3,10 @@ import {
   createDefaultExcelInteractionSchema,
   resolveCellInteraction,
 } from "./interactionSchema.js";
+import {
+  analyzeWorkbookFormulas,
+  isNumericCellValue,
+} from "../calculation/formulaPrecedents.js";
 
 /**
  * Runtime editable cell index — NOT stored inside WorkbookJSON.
@@ -33,6 +37,7 @@ export function isAutoEditableNumberCell({
   coveredSet,
   hiddenRows,
   hiddenCols,
+  formulaPrecedentRefs,
 }) {
   const schema = interactionSchema || createDefaultExcelInteractionSchema();
   if (!schema.autoInput?.enabled || !schema.autoInput?.emptyCells) return false;
@@ -52,12 +57,19 @@ export function isAutoEditableNumberCell({
   if (mergeAnchorSet?.has(key)) return false;
 
   if (cell?.formula) return false;
-  if (!isTrueEmptyCell(cell)) return false;
 
   const ref = cellRefFromCoords(row, column);
   if ((schema.excludedCells || []).includes(ref)) return false;
 
-  return true;
+  // Empty cells — always editable under auto policy
+  if (isTrueEmptyCell(cell)) return true;
+
+  // Numeric cells referenced by formulas — editable so live recalc works
+  if (formulaPrecedentRefs?.has(ref) && isNumericCellValue(cell?.value)) {
+    return true;
+  }
+
+  return false;
 }
 
 /**
@@ -90,6 +102,7 @@ export function buildEditableCellIndex(workbook, interactionSchema) {
   const schema = interactionSchema || createDefaultExcelInteractionSchema();
   const { startRow, endRow, startColumn, endColumn } = workbook.sheet.usedRange;
   const { mergeAnchorSet, coveredSet } = buildMergeSets(workbook.merges);
+  const { precedentRefs } = analyzeWorkbookFormulas(workbook);
 
   const cellByKey = new Map();
   for (const cell of workbook.cells || []) {
@@ -103,7 +116,6 @@ export function buildEditableCellIndex(workbook, interactionSchema) {
     (workbook.columns || []).filter((c) => c.hidden).map((c) => c.index),
   );
 
-  // Auto-eligible empties
   for (let r = startRow; r <= endRow; r += 1) {
     for (let c = startColumn; c <= endColumn; c += 1) {
       const key = `${r}:${c}`;
@@ -121,6 +133,7 @@ export function buildEditableCellIndex(workbook, interactionSchema) {
         coveredSet,
         hiddenRows,
         hiddenCols,
+        formulaPrecedentRefs: precedentRefs,
       });
 
       const resolved = resolveCellInteraction(ref, schema, autoEligible);
@@ -135,7 +148,6 @@ export function buildEditableCellIndex(workbook, interactionSchema) {
     }
   }
 
-  // Overrides that force edit on non-empty cells
   for (const ov of schema.cellOverrides || []) {
     if (ov.editable === false) {
       index.delete(ov.cell);
@@ -154,6 +166,29 @@ export function buildEditableCellIndex(workbook, interactionSchema) {
   }
 
   return index;
+}
+
+/**
+ * Seed cellValues for editable numeric precedents so inputs show Excel defaults.
+ */
+export function seedEditableCellValues(workbook, editableIndex) {
+  const seeded = {};
+  if (!workbook?.cells || !editableIndex?.size) return seeded;
+  const cellByRef = new Map();
+  for (const cell of workbook.cells) {
+    cellByRef.set(cellRefFromCoords(cell.row, cell.column), cell);
+  }
+  for (const [ref] of editableIndex) {
+    const cell = cellByRef.get(ref);
+    if (!cell || cell.formula) continue;
+    if (!isNumericCellValue(cell.value)) continue;
+    const n =
+      typeof cell.value === "number"
+        ? cell.value
+        : Number(String(cell.value).replace(/,/g, ""));
+    if (Number.isFinite(n)) seeded[ref] = n;
+  }
+  return seeded;
 }
 
 function parseCellRef(ref) {

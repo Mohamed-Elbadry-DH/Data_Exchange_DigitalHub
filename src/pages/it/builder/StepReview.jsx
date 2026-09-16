@@ -45,7 +45,7 @@ function SummaryCard({ meta, structure, workbookJson, cellValues }) {
     <section className="bg-white border border-[#d8d8d8] rounded-[16px] p-5 flex flex-col gap-5 min-h-0">
       <div className="flex items-center gap-3 justify-end" dir="rtl">
         <CircleAlert size={18} className="text-[#0986ed] shrink-0" />
-        <h3 className="text-[18px] font-bold text-[#052c65]">ملخص التحقق</h3>
+        <h3 className="text-[22px] font-bold text-[#052c65]">ملخص التحقق</h3>
       </div>
       <div className="flex flex-col gap-4">
         <SummaryRow label="اسم البيان" value={meta.title || UNSET} empty={!meta.title} />
@@ -112,7 +112,7 @@ function ExportOptions({ meta, structure, workbookJson, cellValues }) {
     <section className="bg-white border border-[#d8d8d8] rounded-[16px] p-5 flex flex-col gap-5 min-h-0">
       <div className="flex items-center gap-3 justify-end" dir="rtl">
         <Download size={18} className="text-[#052c65] shrink-0" />
-        <h3 className="text-[18px] font-bold text-[#052c65]">خيارات التصدير</h3>
+        <h3 className="text-[22px] font-bold text-[#052c65]">خيارات التصدير</h3>
       </div>
       <div className="flex flex-col gap-4" dir="rtl">
         <button type="button" className={row} onClick={exportExcel}>
@@ -141,7 +141,7 @@ function ApprovalPath({ statuses }) {
     <section className="bg-white border border-[#d8d8d8] rounded-[16px] p-5">
       <div className="flex items-center gap-3 justify-end mb-5" dir="rtl">
         <History size={18} className="text-[#052c65] shrink-0" />
-        <h3 className="text-[18px] font-bold text-[#052c65]">مسار الاعتماد</h3>
+        <h3 className="text-[22px] font-bold text-[#052c65]">مسار الاعتماد</h3>
       </div>
       <ol className="flex flex-col" dir="rtl">
         {FORM_BUILD_STEPS.map((s, i) => {
@@ -169,15 +169,32 @@ function ApprovalPath({ statuses }) {
 }
 
 /** Step 3 — مراجعة و إرسال (Figma 645:3331) */
-export default function StepReview({ meta, structure, workbookJson = null, cellValues = null }) {
+export default function StepReview({
+  meta,
+  structure,
+  workbookJson = null,
+  cellValues = null,
+  calculatedValues = null,
+  calculationErrors = null,
+  calculationMeta = null,
+}) {
   const { DONE, ACTIVE, WAITING } = FORM_BUILD_STATUS;
   const statuses = [DONE, ACTIVE, WAITING, WAITING];
+  const calcCount = calculatedValues ? Object.keys(calculatedValues).length : 0;
+  const errCount = calculationErrors ? Object.keys(calculationErrors).length : 0;
 
   return (
     <div className="space-y-5">
       <div className="text-right">
-        <h2 className="text-[18px] font-bold text-[#052c65]">مراجعة وإرسال</h2>
-        <p className="text-[14px] font-medium text-[#adb5bd] mt-1">راجع البيانات قبل الإرسال للاعتماد</p>
+        <h2 className="text-[22px] font-bold text-[#052c65]">مراجعة وإرسال</h2>
+        <p className="text-[14px] font-medium text-[#adb5bd] mt-1">
+          راجع البيانات قبل الإرسال للاعتماد
+          {calculationMeta?.engineVersion
+            ? ` · ${calculationMeta.engine} ${calculationMeta.engineVersion}`
+            : ""}
+          {calcCount ? ` · ${calcCount} نتيجة محسوبة` : ""}
+          {errCount ? ` · ${errCount} خطأ حساب` : ""}
+        </p>
       </div>
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 items-start" dir="rtl">
         <div className="flex flex-col gap-5 min-w-0">

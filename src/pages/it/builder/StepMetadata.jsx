@@ -9,8 +9,8 @@ const SCOPES = ["جمهورية مصر العربية", "محافظة", "إقل�
 const PERIOD_DETAILS = ["الربع الأول", "الربع الثاني", "الربع الثالث", "الربع الرابع", "النصف الأول", "النصف الثاني"];
 const YEARS = ["2020/2021", "2021/2022", "2022/2023", "2023/2024", "2024/2025", "2025/2026", "2026/2027"];
 
-/** Section titles aligned to IT detail (~18) — inputs stay compact 14px. */
-const TITLE = "text-[18px] font-semibold leading-normal text-[#052c65] text-right";
+/** Section titles aligned to IT RequestDetail (`text-[22px] font-bold`). */
+const TITLE = "text-[22px] font-bold leading-normal text-[#052c65] text-right";
 const CARD = "border border-[#d8d8d8] shadow-none px-5 sm:px-6 pt-5 pb-6";
 const GOLD = "text-[14px] font-bold leading-normal text-[#c89637] text-right";
 
@@ -41,7 +41,7 @@ export default function StepMetadata({ meta, onChange }) {
   return (
     <div className="space-y-6">
       <div className="text-right">
-        <h2 className="text-[18px] font-bold leading-normal text-[#052c65]">البيانات الوصفية لنموذج البيان</h2>
+        <h2 className="text-[22px] font-bold leading-normal text-[#052c65]">البيانات الوصفية لنموذج البيان</h2>
         <p className="text-[14px] font-medium leading-normal text-[#adb5bd] mt-1">أدخل المعلومات الأساسية للقالب الجديد</p>
       </div>
 
@@ -158,7 +158,7 @@ export default function StepMetadata({ meta, onChange }) {
           </MetaField>
 
           <div className="flex flex-col gap-[22px] w-full">
-            <label className="text-[16.634px] font-bold leading-normal text-[#1f254b] text-right">
+            <label className="text-[14px] font-bold leading-normal text-[#1f254b] text-right">
               فترة تجميع البيان<span className="text-[#dc2626]"> *</span>
             </label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5" dir="rtl">

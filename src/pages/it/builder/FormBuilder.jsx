@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import Layout from "../../../components/it/ItLayout";
@@ -14,7 +14,14 @@ import FieldConfirmPanel from "./FieldConfirmPanel";
 import { parseWorkbook } from "./excel/ingestion/parseWorkbook.js";
 import { inferFields } from "./excel/fields/inferFields.js";
 import { createDefaultExcelInteractionSchema } from "./excel/interaction/interactionSchema.js";
-import { buildEditableCellIndex } from "./excel/interaction/editableCellIndex.js";
+import { buildEditableCellIndex, seedEditableCellValues } from "./excel/interaction/editableCellIndex.js";
+import { analyzeWorkbookFormulas } from "./excel/calculation/formulaPrecedents.js";
+import {
+  applyCalculationPayload,
+  createCalculationEngine,
+  createWorkbookId,
+} from "./excel/calculation/calculationEngine.js";
+import { normalizeInputValue } from "./excel/calculation/inputNormalize.js";
 import {
   emptyMeta, emptyStructure, validationRows, completionPercent, isStructureComplete,
 } from "./formBuilderState";
@@ -23,15 +30,21 @@ import {
 const BTN =
   "text-[16px] font-semibold rounded-[10px] h-[46px] min-w-[140px] px-6 cursor-pointer";
 
+const CALC_DEBOUNCE_MS = 150;
+
 /**
  * إنشاء نموذج البيان — three-step template builder
- * Excel path: parse → Auto Input Policy → numeric inputs on empty cells immediately.
+ * Excel path: parse → Auto Input Policy → numeric inputs + live formula recalculation.
  */
 export default function FormBuilder() {
   const navigate = useNavigate();
   const fileRef = useRef(null);
   /** Original File kept outside React state (ref only). */
   const excelFileRef = useRef(null);
+  const calcEngineRef = useRef(null);
+  const calcDebounceRef = useRef(null);
+  const pendingCalcValuesRef = useRef({});
+  const handleCalcMessageRef = useRef(null);
 
   const [step, setStep] = useState(0);
   /** null | "chooser" | "manual" | "excel" — only meaningful on step 1 */
@@ -46,6 +59,12 @@ export default function FormBuilder() {
   const [selectedSuggestionIds, setSelectedSuggestionIds] = useState(() => new Set());
   /** Sparse map: cellRef → number | string (interim typing) */
   const [cellValues, setCellValues] = useState({});
+  const [calculatedValues, setCalculatedValues] = useState({});
+  const [calculationErrors, setCalculationErrors] = useState({});
+  const [calculationStatus, setCalculationStatus] = useState("idle");
+  const [calculationMeta, setCalculationMeta] = useState(null);
+  const [formulaCount, setFormulaCount] = useState(0);
+  const [calculationErrorDetail, setCalculationErrorDetail] = useState("");
 
   const [meta, setMeta] = useState(emptyMeta);
   const [structure, setStructure] = useState(emptyStructure);
@@ -58,6 +77,14 @@ export default function FormBuilder() {
   const inChooser = onStructureStep && (structurePhase === null || structurePhase === "chooser");
   const inManual = onStructureStep && structurePhase === "manual";
   const inExcel = onStructureStep && structurePhase === "excel";
+
+  useEffect(() => {
+    return () => {
+      if (calcDebounceRef.current) clearTimeout(calcDebounceRef.current);
+      calcEngineRef.current?.destroy();
+      calcEngineRef.current = null;
+    };
+  }, []);
 
   const goToStep = (n) => {
     setStep(n);
@@ -97,7 +124,29 @@ export default function FormBuilder() {
     fileRef.current?.click();
   };
 
-  const resetExcelState = () => {
+  const tearDownCalculation = async () => {
+    if (calcDebounceRef.current) {
+      clearTimeout(calcDebounceRef.current);
+      calcDebounceRef.current = null;
+    }
+    pendingCalcValuesRef.current = {};
+    const engine = calcEngineRef.current;
+    calcEngineRef.current = null;
+    if (engine) {
+      try {
+        await engine.destroy();
+      } catch {
+        /* ignore */
+      }
+    }
+    setCalculatedValues({});
+    setCalculationErrors({});
+    setCalculationMeta(null);
+    setCalculationStatus("idle");
+  };
+
+  const resetExcelState = async () => {
+    await tearDownCalculation();
     setWorkbookJson(null);
     setInteractionSchema(null);
     setEditableIndex(new Map());
@@ -105,17 +154,92 @@ export default function FormBuilder() {
     setSelectedSuggestionIds(new Set());
     setCellValues({});
     setValidationErrors([]);
+    setFormulaCount(0);
+    setCalculationErrorDetail("");
+  };
+
+  const handleCalcMessage = (msg) => {
+    const { type, payload } = msg || {};
+    if (type === "READY") {
+      setCalculatedValues(payload?.changedValues || {});
+      setCalculationErrors(payload?.errors || {});
+      setCalculationMeta(payload?.meta || null);
+      setCalculationErrorDetail("");
+      setCalculationStatus("ready");
+      // Flush UI debounce queue now that engine is ready
+      if (calcDebounceRef.current) {
+        clearTimeout(calcDebounceRef.current);
+        calcDebounceRef.current = null;
+      }
+      queueMicrotask(() => flushPendingCalc());
+      return;
+    }
+    if (type === "CALCULATION_RESULT") {
+      if (payload?.queued) return;
+      setCalculatedValues((prevValues) => {
+        const applied = applyCalculationPayload(payload, {
+          calculatedValues: prevValues,
+          calculationErrors: {},
+        });
+        return applied.calculatedValues;
+      });
+      setCalculationErrors((prevErrors) => {
+        const applied = applyCalculationPayload(payload, {
+          calculatedValues: {},
+          calculationErrors: prevErrors,
+        });
+        return applied.calculationErrors;
+      });
+      setCalculationErrorDetail("");
+      setCalculationStatus("ready");
+      return;
+    }
+    if (type === "CALCULATION_ERROR" || type === "ENGINE_ERROR") {
+      const detail = payload?.error?.detail || payload?.error?.message || "";
+      // Ignore transient "not ready" noise
+      if (/not ready|Stale or missing/i.test(String(detail))) return;
+      setCalculationErrorDetail(String(detail || payload?.error?.code || "CALCULATION_ERROR"));
+      setCalculationStatus("error");
+    }
+  };
+  handleCalcMessageRef.current = handleCalcMessage;
+
+  const startCalculationEngine = async (workbook) => {
+    await tearDownCalculation();
+    setCalculationStatus("initializing");
+    setCalculationErrorDetail("");
+    const workbookId = createWorkbookId();
+    const engine = createCalculationEngine({
+      onMessage: (msg) => handleCalcMessageRef.current?.(msg),
+    });
+    calcEngineRef.current = engine;
+    try {
+      const msg = await engine.initialize(workbook, { workbookId });
+      if (msg?.type === "ENGINE_ERROR") {
+        setCalculationErrorDetail(
+          String(msg.payload?.error?.detail || msg.payload?.error?.code || "ENGINE_ERROR"),
+        );
+        setCalculationStatus("error");
+      }
+    } catch (e) {
+      setCalculationErrorDetail(String(e?.message || e));
+      setCalculationStatus("error");
+    }
   };
 
   const applyWorkbook = (workbook) => {
     const schema = createDefaultExcelInteractionSchema();
     const index = buildEditableCellIndex(workbook, schema);
+    const seeded = seedEditableCellValues(workbook, index);
+    const { formulaCount: nFormulas } = analyzeWorkbookFormulas(workbook);
     setWorkbookJson(workbook);
     setInteractionSchema(schema);
     setEditableIndex(index);
     setSuggestions(inferFields(workbook));
     setSelectedSuggestionIds(new Set());
-    setCellValues({});
+    setCellValues(seeded);
+    setFormulaCount(nFormulas);
+    void startCalculationEngine(workbook);
   };
 
   const onExcelPicked = async (e) => {
@@ -126,7 +250,7 @@ export default function FormBuilder() {
     excelFileRef.current = file;
     setExcelFileName(file.name);
     setStructurePhase("excel");
-    resetExcelState();
+    await resetExcelState();
     setParsingStatus("parsing");
 
     const result = await parseWorkbook(file);
@@ -140,27 +264,60 @@ export default function FormBuilder() {
     setParsingStatus("ready");
   };
 
+  const flushPendingCalc = () => {
+    const engine = calcEngineRef.current;
+    const batch = pendingCalcValuesRef.current;
+    if (!engine || !Object.keys(batch).length) return;
+    // Keep queue until engine is ready — setValues itself also queues.
+    if (!engine.isReady) {
+      return;
+    }
+    pendingCalcValuesRef.current = {};
+    setCalculationStatus((s) => (s === "initializing" ? s : "calculating"));
+    void engine.setValues(batch);
+  };
+
+  const scheduleCalcUpdate = (cellRef, value) => {
+    pendingCalcValuesRef.current[cellRef] = normalizeInputValue(value);
+    if (calcDebounceRef.current) clearTimeout(calcDebounceRef.current);
+    calcDebounceRef.current = setTimeout(() => {
+      calcDebounceRef.current = null;
+      flushPendingCalc();
+    }, CALC_DEBOUNCE_MS);
+  };
+
   const handleCellValueChange = (cellRef, numOrNull, display) => {
     setCellValues((prev) => {
       const next = { ...prev };
       if (display === "" || (numOrNull === null && display === "")) {
         delete next[cellRef];
+        scheduleCalcUpdate(cellRef, null);
         return next;
       }
       if (numOrNull !== undefined && numOrNull !== null) {
         next[cellRef] = numOrNull;
+        scheduleCalcUpdate(cellRef, numOrNull);
       } else {
-        // Interim invalid / in-progress typing — keep display string
         next[cellRef] = display;
       }
       return next;
     });
   };
 
-  /** Clear entered values only — empty cells stay editable. */
-  const clearValues = () => setCellValues({});
+  const clearValues = () => {
+    setCellValues((prev) => {
+      const blanks = {};
+      for (const ref of Object.keys(prev)) blanks[ref] = null;
+      pendingCalcValuesRef.current = { ...pendingCalcValuesRef.current, ...blanks };
+      if (calcDebounceRef.current) clearTimeout(calcDebounceRef.current);
+      calcDebounceRef.current = setTimeout(() => {
+        calcDebounceRef.current = null;
+        flushPendingCalc();
+      }, CALC_DEBOUNCE_MS);
+      return {};
+    });
+  };
 
-  /** Reset overrides/config back to default auto-input policy. */
   const resetFieldConfiguration = () => {
     if (!workbookJson) return;
     const schema = createDefaultExcelInteractionSchema();
@@ -178,9 +335,6 @@ export default function FormBuilder() {
     });
   };
 
-  /**
-   * Apply selected suggestions as cellOverrides (type hints) — does not gate editability.
-   */
   const applySuggestionConfig = () => {
     if (!workbookJson || !interactionSchema) return;
     const chosen = suggestions.filter((s) => selectedSuggestionIds.has(s.id));
@@ -218,11 +372,11 @@ export default function FormBuilder() {
               inManual ? "gap-10 pb-0 overflow-hidden" : "gap-10 pb-8"
             }`}
           >
-            <div className="flex items-center gap-1 text-[16px] shrink-0" dir="rtl">
-              <Link to="/it/requests" className="text-[#adb5bd] font-medium hover:text-primary">
+            <div className="flex items-center gap-2 text-[15px] text-muted shrink-0" dir="rtl">
+              <Link to="/it/requests" className="hover:text-primary">
                 الطلبات
               </Link>
-              <ChevronLeft size={20} className="text-[#052c65] shrink-0" />
+              <ChevronLeft size={16} className="text-[#adb5bd] shrink-0" />
               <span className="text-[#052c65] font-semibold">إنشاء نموذج البيان</span>
             </div>
 
@@ -247,6 +401,12 @@ export default function FormBuilder() {
                   workbookJson={workbookJson}
                   editableIndex={editableIndex}
                   cellValues={cellValues}
+                  calculatedValues={calculatedValues}
+                  calculationErrors={calculationErrors}
+                  calculationStatus={calculationStatus}
+                  calculationMeta={calculationMeta}
+                  calculationErrorDetail={calculationErrorDetail}
+                  formulaCount={formulaCount}
                   suggestions={suggestions}
                   selectedSuggestionIds={selectedSuggestionIds}
                   onReplace={chooseExcel}
@@ -264,6 +424,9 @@ export default function FormBuilder() {
                   structure={structure}
                   workbookJson={workbookJson}
                   cellValues={cellValues}
+                  calculatedValues={calculatedValues}
+                  calculationErrors={calculationErrors}
+                  calculationMeta={calculationMeta}
                 />
               )}
             </div>
@@ -340,6 +503,12 @@ function ExcelStructureStep({
   workbookJson,
   editableIndex,
   cellValues,
+  calculatedValues,
+  calculationErrors,
+  calculationStatus,
+  calculationMeta,
+  calculationErrorDetail = "",
+  formulaCount = 0,
   suggestions,
   selectedSuggestionIds,
   onReplace,
@@ -350,6 +519,8 @@ function ExcelStructureStep({
   onValueChange,
 }) {
   const editableCount = editableIndex?.size ?? 0;
+  const showCalcBusy =
+    calculationStatus === "initializing" || calculationStatus === "calculating";
 
   return (
     <div className="flex flex-col gap-5" dir="rtl">
@@ -357,11 +528,30 @@ function ExcelStructureStep({
         <div className="flex items-center gap-3 min-w-0">
           <img src="/it/file-xls.png" alt="" className="size-10 object-contain shrink-0" />
           <div className="min-w-0 text-right">
-            <h2 className="text-[18px] font-bold text-[#052c65]">معاينة ملف Excel</h2>
+            <h2 className="text-[22px] font-bold text-[#052c65]">معاينة ملف Excel</h2>
             <p className="text-[14px] font-medium text-[#adb5bd] truncate">{excelFileName}</p>
             {parsingStatus === "ready" && (
               <p className="text-[13px] text-[#0986ed] mt-0.5">
                 {editableCount} خانة جاهزة لإدخال الأرقام
+                {formulaCount > 0
+                  ? ` · ${formulaCount} معادلة نشطة`
+                  : " · لا توجد معادلات في الملف"}
+              </p>
+            )}
+            {parsingStatus === "ready" && formulaCount === 0 && (
+              <p className="text-[12px] text-[#c89637] mt-0.5">
+                لإظهار الحسابات الحية ارفع ملف Excel يحتوي صيغًا مثل =B8+C8 أو =SUM(B8:B12)
+              </p>
+            )}
+            {showCalcBusy && (
+              <p className="text-[12px] text-[#7f8999] mt-0.5" aria-live="polite">
+                ● جاري تحديث الحسابات...
+              </p>
+            )}
+            {calculationStatus === "error" && (
+              <p className="text-[12px] text-[#dc2626] mt-0.5" title={calculationErrorDetail}>
+                تعذّر تحديث بعض الحسابات
+                {calculationErrorDetail ? ` — ${calculationErrorDetail}` : ""}
               </p>
             )}
           </div>
@@ -427,9 +617,18 @@ function ExcelStructureStep({
             mode="edit"
             editableIndex={editableIndex}
             values={cellValues}
+            calculatedValues={calculatedValues}
+            calculationErrors={calculationErrors}
+            calculationStatus={calculationStatus}
             onValueChange={onValueChange}
             showEditableAffordances
           />
+          {calculationMeta?.formulaProfile && (
+            <p className="text-[11px] text-[#adb5bd] text-left" dir="ltr">
+              calc {calculationMeta.engine} {calculationMeta.engineVersion} ·{" "}
+              {calculationMeta.formulaProfile}
+            </p>
+          )}
           <FieldConfirmPanel
             suggestions={suggestions}
             selectedIds={selectedSuggestionIds}

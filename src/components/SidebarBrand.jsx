@@ -28,7 +28,7 @@ export default function SidebarBrand({ collapsed, onCollapse, onExpand }) {
     <div
       style={{ height: SHELL.headerHeight }}
       className={`flex items-center border-b border-white/10 transition-all duration-300 ${
-        collapsed ? "justify-between px-3" : "justify-between px-5"
+        collapsed ? "justify-center px-3" : "justify-between px-5"
       }`}
     >
       {!collapsed ? (
@@ -59,8 +59,13 @@ export default function SidebarBrand({ collapsed, onCollapse, onExpand }) {
           />
         </>
       ) : (
-        <>
-          {/* Same slot order as expanded: brand (start/right) · toggle (end/left) */}
+        <button
+          type="button"
+          onClick={typeof onExpand === "function" ? onExpand : undefined}
+          className="flex items-center justify-center rounded p-1 transition-opacity hover:opacity-90 cursor-pointer"
+          aria-label="توسيع القائمة الجانبية"
+          title="توسيع القائمة الجانبية"
+        >
           <img
             src="/logo-mark.svg"
             alt=""
@@ -70,12 +75,7 @@ export default function SidebarBrand({ collapsed, onCollapse, onExpand }) {
             className="shrink-0 object-contain"
             aria-hidden="true"
           />
-          <PanelToggle
-            onClick={onExpand}
-            label="توسيع القائمة الجانبية"
-            title="توسيع القائمة الجانبية"
-          />
-        </>
+        </button>
       )}
     </div>
   );

@@ -5,6 +5,7 @@ import { normalizeExcelJsStyle, mergeStyles } from "./normalizeStyles.js";
 import { resolveSharedBorders } from "./resolveSharedBorders.js";
 import { parseA1Range } from "../ingestion/ooxmlReader.js";
 import { validateWorkbookLimits } from "../ingestion/workbookValidation.js";
+import { normalizeFormula } from "../calculation/formulaNormalize.js";
 
 /**
  * Merge ExcelJS snapshot + OOXML enrichment → WorkbookJSON v1.
@@ -104,7 +105,7 @@ export function normalizeWorkbook({ snapshot, enrichment, fileName }) {
       column: raw.column,
       value: raw.text != null && raw.text !== "" ? raw.text : formatValue(raw.value),
       numberFormat: raw.numFmt || "General",
-      formula: raw.formula || null,
+      formula: normalizeFormula(raw.formula),
       style,
     });
   }

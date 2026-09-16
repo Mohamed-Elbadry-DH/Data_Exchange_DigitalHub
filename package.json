@@ -8,10 +8,13 @@
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "fixtures:excel": "node scripts/generate-excel-fixtures.mjs"
+    "fixtures:excel": "node scripts/generate-excel-fixtures.mjs",
+    "fixtures:formulas": "node scripts/generate-formula-fixtures.mjs",
+    "test:calc": "node scripts/test-calculation-p0.mjs"
   },
   "dependencies": {
     "exceljs": "^4.4.0",
+    "hyperformula": "^3.4.0",
     "jszip": "^3.10.2",
     "lucide-react": "^1.31.0",
     "react": "^19.2.8",

@@ -5,7 +5,7 @@
 export default function StepStructureMode({ onChooseManual, onChooseExcel, excelFileName }) {
   return (
     <div className="flex flex-col items-center gap-8 py-4" dir="rtl">
-      <h2 className="text-[18px] font-bold text-[#052c65] text-center w-full">
+      <h2 className="text-[22px] font-bold text-[#052c65] text-center w-full">
         اختر الطريقة المناسبة
       </h2>
 

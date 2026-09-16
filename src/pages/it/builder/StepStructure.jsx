@@ -334,7 +334,7 @@ export default function StepStructure({ structure, onChange }) {
     <div className="flex flex-1 min-h-0 h-full overflow-hidden" dir="ltr">
       <aside className="w-[320px] shrink-0 bg-[#dbe9f9] border-x border-[#d8d8d8] rounded-tr-[10px] flex flex-col min-h-0 h-full overflow-hidden">
         <div className="px-8 pt-6 shrink-0">
-          <h3 className="text-[18px] font-semibold text-[#052c65] text-right">أدوات بناء الهيكل</h3>
+          <h3 className="text-[22px] font-bold text-[#052c65] text-right">أدوات بناء الهيكل</h3>
         </div>
         <div className="px-[29px] py-6 border-b border-[#eaeaeb] shrink-0">
           <div className="flex flex-col gap-[27px] w-[262px] mx-auto">
@@ -345,7 +345,7 @@ export default function StepStructure({ structure, onChange }) {
         </div>
 
         <div className="px-6 py-5 flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain">
-          <h3 className="text-[18px] font-semibold text-[#052c65] text-right mb-4">هيكل الأعمدة والمجموعات</h3>
+          <h3 className="text-[22px] font-bold text-[#052c65] text-right mb-4">هيكل الأعمدة والمجموعات</h3>
 
           {!hasAnything ? (
             <div className="flex flex-col items-center gap-4 text-center pt-6 w-[240px] mx-auto">
