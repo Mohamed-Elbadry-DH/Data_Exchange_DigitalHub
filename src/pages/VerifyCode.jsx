@@ -107,8 +107,8 @@ export default function VerifyCode() {
         <button
           type="submit"
           disabled={loading || typing}
-          style={{ height: AUTH.buttonH, borderRadius: `${AUTH.buttonRadius}px`, background: "#0747A5" }}
-          className="flex w-full items-center justify-center gap-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-95 disabled:opacity-70"
+          style={{ height: AUTH.buttonH, borderRadius: `${AUTH.buttonRadius}px` }}
+          className="flex w-full items-center justify-center gap-2 bg-[#0747A5] text-[20px] font-bold text-[#F8F9FA] transition-[background-color,transform] duration-[400ms] ease-out hover:bg-[#052C65] hover:translate-y-[0.543px] disabled:opacity-70"
         >
           {loading && <Spinner size={14} />}
           تأكيد الرمز

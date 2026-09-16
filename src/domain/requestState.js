@@ -4,6 +4,7 @@ import {
 import { ROLES } from "./roles";
 
 const STORAGE_KEY = "mped-ga-request-state-v5";
+const CREATED_KEY = "mped-ga-created-requests-v1";
 
 /** Default presentation when a request enters / sits on a stage */
 export const STAGE_DEFAULTS = {
@@ -98,16 +99,118 @@ export function mergeRequestCatalog(formsRows = [], requiredRows = []) {
   return [...map.values()];
 }
 
-/** قائمة نماذج البيان — كل صفوف النماذج تبقى ظاهرة (حتى بعد الاستيفاء) */
+/** قائمة نماذج البيان — صفوف البذور + الطلبات المُنشأة محلياً */
 export function resolveFormsList(formsRows = []) {
-  return resolveRequestList(formsRows);
+  return resolveRequestList([...formsRows, ...loadCreatedRequests()]);
 }
 
 /** قائمة البيانات المطلوبة — نفس الطلب (نفس المعرّف) عند الاستيفاء فما بعده */
 export function resolveRequiredList(formsRows = [], requiredRows = []) {
-  return resolveRequestList(mergeRequestCatalog(formsRows, requiredRows)).filter((r) =>
-    isRequiredStage(r.stageId || "create"),
-  );
+  return resolveRequestList(
+    mergeRequestCatalog([...formsRows, ...loadCreatedRequests()], requiredRows),
+  ).filter((r) => isRequiredStage(r.stageId || "create"));
+}
+
+function readCreated() {
+  try {
+    return JSON.parse(localStorage.getItem(CREATED_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function writeCreated(rows) {
+  localStorage.setItem(CREATED_KEY, JSON.stringify(rows));
+}
+
+/** طلبات أُنشئت من مودال «إنشاء طلب نموذج بيان» (mock persist). */
+export function loadCreatedRequests() {
+  return readCreated();
+}
+
+/**
+ * Create a new GA forms-lane request from the dashboard modal.
+ * Persists a list row + live stage state, returns the new id.
+ */
+export function createGaRequest(form = {}) {
+  const defaults = STAGE_DEFAULTS.create;
+  const existing = readCreated();
+  const seedIds = [1, 2, 3, 4, 5, 6, 101, 102, 103, 104, 105, 106];
+  const maxExisting = Math.max(900, ...seedIds, ...existing.map((r) => Number(r.id) || 0));
+  const id = maxExisting + 1;
+  const today = new Date();
+  const created = today.toLocaleDateString("en-GB");
+  const dueDate = form.dueDate
+    ? form.dueDate.includes("-")
+      ? form.dueDate.split("-").reverse().join("/")
+      : form.dueDate
+    : created;
+
+  const title = (form.title || "").trim() || "طلب نموذج بيان جديد";
+  const info = {
+    "عنوان نموذج البيان": title,
+    "الإدارة المسؤولة": form.department || "",
+    "النشرة": form.bulletin || "",
+    "الجهة المسؤولة": form.entity || "",
+    "النطاق الجغرافي": form.geoScope || "",
+    "وصف البيان": form.description || "",
+    "المنهجية": form.methodology || "",
+  };
+  const yearInfo = {
+    "نوع السنة": form.yearType || "ميلادية",
+    "السنة": form.year || "",
+    "الدورية": form.periodicity || "",
+    "تفصيل الدورية": form.periodicityDetail || "",
+    "فترة تجميع البيان (من - إلى)": [form.collectFrom, form.collectTo].filter(Boolean).join(" - ") || "",
+    "تاريخ الاستحقاق": dueDate,
+    "فترة السماح (أيام)": form.graceDays ? `${form.graceDays} أيام` : "",
+  };
+  const attachments = form.uploadName
+    ? [{
+        name: String(form.uploadName).replace(/\.[^.]+$/, "") || form.uploadName,
+        type: /\.pdf$/i.test(form.uploadName) ? "PDF" : "Excel",
+        size: "—",
+        date: created,
+        by: form.assignTo || defaults.officer,
+      }]
+    : [];
+
+  const row = {
+    id,
+    title,
+    org: form.entity || form.department || defaults.currentEntity,
+    officer: form.assignTo || defaults.officer,
+    created,
+    due: dueDate,
+    status: defaults.status,
+    stageId: "create",
+    currentEntity: defaults.currentEntity,
+    officerRole: defaults.officerRole,
+    entity: form.entity || "",
+    bulletin: form.bulletin || "",
+    description: form.description || "",
+    uploadName: form.uploadName || "",
+    info,
+    yearInfo,
+    attachments,
+  };
+
+  writeCreated([row, ...existing]);
+  saveRequestState(id, {
+    stageId: "create",
+    status: defaults.status,
+    currentEntity: defaults.currentEntity,
+    officer: row.officer,
+    officerRole: defaults.officerRole,
+    title: row.title,
+    org: row.org,
+    due: row.due,
+    info,
+    yearInfo,
+    attachments,
+    uploadName: row.uploadName,
+  });
+  return row;
 }
 
 /**

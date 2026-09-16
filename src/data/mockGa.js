@@ -10,9 +10,18 @@
  * stays single-sourced (`./mock` and `src/domain/*`), otherwise the two modules
  * end up disagreeing about the same request.
  */
+import { loadCreatedRequests } from "../domain/requestState";
 import { requestDetailById as sharedRequestDetailById } from "./mock";
 
 export * from "./mock";
+
+/** مؤشرات عامة — Figma 649:10179: نماذج / إدارات / جهات / مستخدمين */
+export const kpis = [
+  { label: "نماذج البيان", value: 316, delta: "+3%", up: true, icon: "FileText", color: "#0986ED" },
+  { label: "الإدارات العامة", value: 30, delta: "+3%", up: true, icon: "Landmark", color: "#34609A" },
+  { label: "الجهات الخارجية", value: 40, delta: "-3%", up: false, icon: "Building2", color: "#C89637" },
+  { label: "المستخدمين", value: 60, delta: "+3%", up: true, icon: "Users", color: "#1B75FF" },
+];
 
 /** Palette shared by the general admin indicator cards and charts */
 export const gaStatusColors = {
@@ -24,25 +33,8 @@ export const gaStatusColors = {
   معتمدة: "#16A34A",
 };
 
-/** مؤشرات تبادل نماذج البيان */
-export const exchangeStatusCards = [
-  { label: "لم تبدأ بعد", value: 91, delta: "+3%", up: true, icon: "FileText", color: "#0147B2" },
-  { label: "قيد التنفيذ", value: 139, delta: "+3%", up: true, icon: "RefreshCw", color: "#FFC107" },
-  { label: "تعديل", value: 74, delta: "+3%", up: true, icon: "FilePenLine", color: "#FF8C08" },
-  { label: "قيد المراجعة", value: 61, delta: "+3%", up: true, icon: "FileSearch", color: "#9747FF" },
-  { label: "المتأخرة", value: 37, delta: "-3%", up: false, icon: "TriangleAlert", color: "#DC2626" },
-  { label: "معتمدة", value: 102, delta: "+3%", up: true, icon: "CircleCheckBig", color: "#16A34A" },
-];
-
-/** مؤشرات استيفاء البيانات */
-export const fulfillmentStatusCards = [
-  { label: "لم تبدأ بعد", value: 84, delta: "+3%", up: true, icon: "FileText", color: "#0147B2" },
-  { label: "قيد التنفيذ", value: 112, delta: "+3%", up: true, icon: "RefreshCw", color: "#FFC107" },
-  { label: "تعديل", value: 68, delta: "+3%", up: true, icon: "FilePenLine", color: "#FF8C08" },
-  { label: "قيد المراجعة", value: 53, delta: "+3%", up: true, icon: "FileSearch", color: "#9747FF" },
-  { label: "المتأخرة", value: 29, delta: "-3%", up: false, icon: "TriangleAlert", color: "#DC2626" },
-  { label: "معتمدة", value: 76, delta: "+3%", up: true, icon: "CircleCheckBig", color: "#16A34A" },
-];
+/** مؤشرات تبادل نماذج البيان / استيفاء البيانات — shared with the decision maker module */
+export { exchangeStatusCards, fulfillmentStatusCards } from "./indicators";
 
 /** توزيع نماذج البيان حسب الحالة — نسب مئوية */
 export const gaStatusPie = [
@@ -285,22 +277,67 @@ export const requestDetailById = Object.fromEntries(
 /**
  * Seed used by GA detail pages: merges list-row presentation (stage/status/…)
  * with shared detail content (tables/attachments). Works for ids that exist
- * only in forms/required lists (e.g. 101+).
+ * only in forms/required lists (e.g. 101+) and locally created requests.
+ *
+ * Matrix for الدرجات العلمية (Figma 1179:812) lives on shared detail id 6
+ * (`graduatesTable`: مصري/وافد × دبلوم/ماجستير/دكتوراه). New creates and
+ * education-titled rows prefer that template.
  */
 export function getGaRequestSeed(id) {
   const key = String(id);
-  const listRow = detailListSeed.find((r) => String(r.id) === key);
+  const created = loadCreatedRequests().find((r) => String(r.id) === key);
+  const listRow = detailListSeed.find((r) => String(r.id) === key) || created;
   const enriched = requestDetailById[key] || requestDetailById[id];
-  const template = enriched || requestDetailById["1"] || requestDetailById[1];
+  const title = listRow?.title || enriched?.title || "";
+  const preferGraduates =
+    Boolean(created) ||
+    title.includes("تعليم") ||
+    title.includes("درجات") ||
+    title.includes("خريج");
+  const graduates = requestDetailById["6"] || requestDetailById[6];
+  const template =
+    enriched ||
+    (preferGraduates ? graduates : null) ||
+    requestDetailById["1"] ||
+    requestDetailById[1];
+
+  const attachments =
+    (template?.attachments && template.attachments.length > 0)
+      ? template.attachments
+      : [
+          {
+            name: "بيانات_الحاصلين_على_الدرجات_الربع_الثاني",
+            type: "Excel",
+            size: "245 KB",
+            date: "30/06/2026",
+            by: "محمد علي",
+          },
+          {
+            name: "دليل تعبئة البيان",
+            type: "PDF",
+            size: "1.2 MB",
+            date: "30/06/2026",
+            by: "محمد علي",
+          },
+        ];
+
   return {
     ...template,
     ...(listRow || {}),
     id: listRow?.id ?? (Number.isFinite(Number(id)) ? Number(id) : id),
     title: listRow?.title ?? template?.title,
-    info: template?.info,
-    yearInfo: template?.yearInfo,
-    formTable: template?.formTable,
-    fulfillmentTable: template?.fulfillmentTable,
-    attachments: template?.attachments || [],
+    info: created?.info
+      || (preferGraduates && !enriched
+        ? {
+            ...(graduates?.info || {}),
+            "عنوان نموذج البيان": listRow?.title || graduates?.info?.["عنوان نموذج البيان"],
+          }
+        : template?.info),
+    yearInfo: created?.yearInfo || template?.yearInfo,
+    formTable: preferGraduates && !enriched ? graduates?.formTable : template?.formTable,
+    fulfillmentTable: preferGraduates && !enriched ? graduates?.fulfillmentTable : template?.fulfillmentTable,
+    attachments: (created?.attachments?.length
+      ? created.attachments
+      : attachments),
   };
 }

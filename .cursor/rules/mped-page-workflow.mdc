@@ -7,8 +7,8 @@ alwaysApply: true
 
 ## Before coding a new screen
 0. **All work happens in the general admin module** (`src/pages/ga/*`, `src/components/ga/*`, `mockGa.js`). The supervisor module is frozen — see the FROZEN section in the baseline rule. Copy a shared component into `src/components/ga/` rather than editing it.
-1. Reuse `Layout` / `GaLayout` (title or in-page breadcrumb like RequestDetail).
-2. Mirror spacing/typography from the closest accepted page (Dashboard / RequestList / RequestDetail / UsersList).
+1. Reuse the module `Layout` (`GaLayout` / `ItLayout` / …) via `AppShell` (title or in-page breadcrumb like RequestDetail).
+2. Wrap content in **`.page-shell`** — see `mped-responsive-shell` rule. Mirror spacing/typography from the closest accepted page.
 3. Put **presentation** data in the module's mock file; keep Arabic field labels. Business data both modules act on (requests, notes, users, stages) belongs in `src/domain/` — see the baseline rule's integration section.
 4. Wire route in `src/App.jsx` and nav only if product asks.
 
@@ -17,23 +17,24 @@ alwaysApply: true
 |------|---------------|----------|
 | الإعدادات | Sidebar button, no route | New page + handler; same sidebar item styles |
 | تسجيل الخروج | Done — calls `signOut()` then `/login` | Keep as is |
-| Notifications | Bell UI only | Panel/dropdown; reuse topbar chrome |
+| Notifications | Done — `NotificationsMenu` + `src/data/notifications.js` | Extend mock list; keep topbar chrome |
 | Dashboard period | Static button | Dropdown; keep button chrome |
 | Required detail ids 6–10 | Titles ≠ `requestDetailById` | Add matching detail entries / tables |
 | Create request / edit matrix | Display-only | New flows; keep `#DDEBF4` matrix look |
-| الإدارة العامة module | Isolated clone live at `/ga`, still identical to supervisor | Reshape per `الإدارة العامة.pdf`: 3 indicator groups + إنشاء طلب بيان, create-statement-form page, 7-stage stepper, attachments table, الدرجات العلمية matrix, PDF list columns/filters — edit `src/pages/ga/**` only |
+| الإدارة العامة module | Live at `/ga` with GA dashboard KPIs, `/ga/forms/new` create page, 7-stage detail, attachments, graduates matrix, list filters | Visual QA vs Figma `649:10179` / `1094` / `1179`; edit `src/pages/ga/**` only |
 | Auth | Simulated login/OTP/loading shipped for مشرف الإدارة العامة + الإدارة العامة | Build the remaining 4 role flows next; abstract to real API later |
 | API | Mock only | Abstract later; don't break mock UX |
 
 ## Pattern checklist for every new page
 - [ ] RTL + Cairo; `text-right` for Arabic blocks
+- [ ] Root content uses **`.page-shell`** (not raw `p-8` / page-level `max-w-[1535.5px]`)
 - [ ] White cards `rounded-2xl` / radius 20 where peers use it; border `#D8D8D8` when bordered
 - [ ] Primary actions: `bg-navy` or `bg-primary` consistent with siblings
 - [ ] Status via `StatusBadge` + `statusBadge` map
 - [ ] Lists: reuse `RequestList` / FilterModal patterns when applicable
-- [ ] Modals: match `RequestEditModal` / `SuccessModal` / `ConfirmModal` chrome
+- [ ] Modals: **`.modal-overlay`** + peer chrome (`ConfirmModal` / `SuccessModal` / IT `ItModal`); card `w-full max-w-[…]`
 - [ ] Charts (if any): same ChartCard selector + 5-type switching
-- [ ] Do not shrink sidebar, chart card height, or selector frame without explicit ask
+- [ ] Do not reintroduce frame `min-width: 1100`, shrink sidebar breakpoints, chart card height, or selector frame without explicit ask
 
 ## Dual request modes
 - `mode="forms"` vs `mode="required"` — required adds **استيفاء البيانات** tab; messages differ on approve.

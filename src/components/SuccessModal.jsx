@@ -1,7 +1,7 @@
-export default function SuccessModal({ open, message, onClose }) {
+export default function SuccessModal({ open, message, subtitle, onClose }) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
+    <div className="modal-overlay z-50" onClick={onClose}>
       <div className="bg-page rounded-2xl px-16 py-12 flex flex-col items-center gap-6" onClick={(e) => e.stopPropagation()}>
         <img
           src="/success-check.png"
@@ -12,6 +12,9 @@ export default function SuccessModal({ open, message, onClose }) {
           draggable={false}
         />
         <div className="text-navy-deep font-bold text-[20px] text-center">{message}</div>
+        {subtitle && (
+          <p className="text-[15px] text-muted text-center max-w-[360px] -mt-2 leading-7">{subtitle}</p>
+        )}
       </div>
     </div>
   );
