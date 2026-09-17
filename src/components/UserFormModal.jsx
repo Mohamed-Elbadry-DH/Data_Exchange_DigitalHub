@@ -1,16 +1,20 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 
-const ROLES = ["مشرف إدارة", "موظف إدارة", "مشرف الإدارة العامة"];
+const DEFAULT_ROLES = ["مشرف إدارة", "موظف إدارة", "مشرف الإدارة العامة"];
 
-const emptyForm = { name: "", email: "", phone: "", role: ROLES[0] };
+const emptyForm = (roles) => ({ name: "", email: "", phone: "", role: roles[0] });
 
-export default function UserFormModal({ open, onClose, onSubmit, initial }) {
-  const [form, setForm] = useState(emptyForm);
+export default function UserFormModal({ open, onClose, onSubmit, initial, roleOptions }) {
+  const roles = roleOptions?.length ? roleOptions : DEFAULT_ROLES;
+  const [form, setForm] = useState(() => emptyForm(roles));
+  const rolesKey = roles.join("|");
 
   useEffect(() => {
-    if (open) setForm(initial ? { ...emptyForm, ...initial } : emptyForm);
-  }, [open, initial]);
+    if (open) setForm(initial ? { ...emptyForm(roles), ...initial } : emptyForm(roles));
+    // rolesKey stabilizes identity when parent passes a constant or DEFAULT_ROLES
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, initial, rolesKey]);
 
   if (!open) return null;
 
@@ -45,7 +49,7 @@ export default function UserFormModal({ open, onClose, onSubmit, initial }) {
           <div>
             <div className="text-[14px] font-semibold text-[rgba(0,0,0,0.9)] mb-2 text-right">الدور الوظيفي</div>
             <select value={form.role} onChange={set("role")} className="w-full border border-gray-200 rounded-lg py-2.5 px-3 text-[14px] text-right appearance-none">
-              {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
+              {roles.map((r) => <option key={r} value={r}>{r}</option>)}
             </select>
           </div>
         </div>

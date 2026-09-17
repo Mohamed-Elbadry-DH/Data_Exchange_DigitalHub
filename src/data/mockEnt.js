@@ -152,12 +152,13 @@ export const entRequestDetail = {
     /** عدد البيانات المطلوب إدخالها للتحقق قبل الإرسال (Figma 914:3960) */
     requiredCount: 6,
   },
-  /** مرفقات — Figma 1706:9783 */
+  /** مرفقات — Figma 1706:9914 */
   attachments: [
     {
       id: 1,
       name: "بيانات_الحاصلين_على_الدرجات_الربع_الثاني",
       type: "Excel",
+      directedTo: "مشرف الجهة الخارجية",
       uploadedAt: "30/06/2026",
       size: "245 KB",
       by: "محمد علي",
@@ -166,6 +167,7 @@ export const entRequestDetail = {
       id: 2,
       name: "دليل تعبئة البيان",
       type: "PDF",
+      directedTo: "موظف الإدارة العامة",
       uploadedAt: "30/06/2026",
       size: "1.2 MB",
       by: "محمد علي",

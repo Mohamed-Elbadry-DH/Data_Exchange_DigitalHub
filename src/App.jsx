@@ -9,7 +9,6 @@ import GaDashboard from "./pages/ga/Dashboard";
 import GaFormsList from "./pages/ga/FormsList";
 import GaCreateStatement from "./pages/ga/CreateStatement";
 import GaRequiredList from "./pages/ga/RequiredList";
-import GaUsersList from "./pages/ga/UsersList";
 import GaRequestDetail from "./pages/ga/RequestDetail";
 import GaSettings from "./pages/ga/Settings";
 import DmDashboard from "./pages/dm/Dashboard";
@@ -18,6 +17,11 @@ import EntDashboard from "./pages/ent/Dashboard";
 import EntRequiredList from "./pages/ent/RequiredList";
 import EntRequestDetail from "./pages/ent/RequestDetail";
 import EntSettings from "./pages/ent/Settings";
+import EsDashboard from "./pages/es/Dashboard";
+import EsRequiredList from "./pages/es/RequiredList";
+import EsRequestDetail from "./pages/es/RequestDetail";
+import EsUsersList from "./pages/es/UsersList";
+import EsSettings from "./pages/es/Settings";
 import ItDashboard from "./pages/it/Dashboard";
 import AdminsList from "./pages/it/AdminsList";
 import EntitiesList from "./pages/it/EntitiesList";
@@ -45,6 +49,7 @@ const GENERAL_ADMIN = ["الإدارة العامة"];
 const IT_SPECIALIST = [ROLES.IT_SPECIALIST];
 const DECISION_MAKER = [ROLES.DECISION_MAKER];
 const ENTITY = [ROLES.ENTITY];
+const ENTITY_SUPERVISOR = [ROLES.ENTITY_SUPERVISOR];
 
 export default function App() {
   return (
@@ -74,7 +79,6 @@ export default function App() {
             <Route path="/ga/forms/:id" element={<GaRequestDetail mode="forms" />} />
             <Route path="/ga/required" element={<GaRequiredList />} />
             <Route path="/ga/required/:id" element={<GaRequestDetail mode="required" />} />
-            <Route path="/ga/users" element={<GaUsersList />} />
             <Route path="/ga/settings" element={<GaSettings />} />
           </Route>
 
@@ -90,6 +94,15 @@ export default function App() {
             <Route path="/ent/required" element={<EntRequiredList />} />
             <Route path="/ent/required/:id" element={<EntRequestDetail />} />
             <Route path="/ent/settings" element={<EntSettings />} />
+          </Route>
+
+          {/* entity supervisor module — مشرف الجهة الخارجية */}
+          <Route element={<RequireAuth allow={ENTITY_SUPERVISOR} />}>
+            <Route path="/es" element={<EsDashboard />} />
+            <Route path="/es/required" element={<EsRequiredList />} />
+            <Route path="/es/required/:id" element={<EsRequestDetail />} />
+            <Route path="/es/users" element={<EsUsersList />} />
+            <Route path="/es/settings" element={<EsSettings />} />
           </Route>
 
           {/* IT specialist module */}

@@ -11,7 +11,9 @@ import RequestEditModal from "../../components/RequestEditModal";
 import { getGaRequestSeed } from "../../data/mockGa";
 import { loadNotes, saveNotes } from "../../domain/notes";
 import {
-  STAGES, FORMS_STAGES, stageById, stageIndex, hasReachedStage, isRequiredStage, isFormsStage,
+  STAGES, FORMS_STEPPER, REQUIRED_STEPPER,
+  isFormsApprovedStatus, isFormsEntitySentStatus,
+  stageById, hasReachedStage, isRequiredStage, isFormsStage,
   ownsStage,
 } from "../../domain/workflow";
 import { ROLES } from "../../domain/roles";
@@ -21,8 +23,13 @@ import {
 } from "../../domain/requestState";
 import { useAuth } from "../../context/AuthContext";
 
+/** InfoTile status icon — maps request status → Figma color */
 function statusTileVisual(status) {
-  if (status === "معتمد" || status === "معتمدة") {
+  // Forms sent — Figma 2334:1579: navy check + «إرسال للجهة»
+  if (status === "إرسال للجهة" || status === "تم إرساله للجهة") {
+    return { icon: CircleCheckBig, iconBg: "#052c65", iconClass: "text-white" };
+  }
+  if (status === "معتمد" || status === "معتمدة" || status === "تم الإرسال") {
     return { icon: CircleCheckBig, iconBg: "#16A34A", iconClass: "text-white" };
   }
   if (
@@ -36,23 +43,36 @@ function statusTileVisual(status) {
   if (status === "مطلوب تعديل" || status === "تعديل") {
     return { icon: FileText, iconBg: "#FF8C08", iconClass: "text-white" };
   }
-  // قيد التنفيذ / default
-  return { icon: LoaderCircle, iconBg: "#FFC107", iconClass: "text-white" };
+  // قيد التنفيذ / default — Figma 1173:1780
+  return { icon: LoaderCircle, iconBg: "#F59E0B", iconClass: "text-white" };
 }
 
-function InfoTile({ icon: Icon, label, value, sub, iconBg = "#2563EB4D", iconClass = "text-[#2563EB]" }) {
+/** Forms-lane sent-to-entity — Figma 2334:1579. */
+function displayStatus(status, stageId) {
+  if (isFormsStage(stageId) && isFormsEntitySentStatus(status)) return "إرسال للجهة";
+  return status;
+}
+
+function InfoTile({
+  icon: Icon,
+  label,
+  value,
+  sub,
+  iconBg = "rgba(9,134,237,0.3)",
+  iconClass = "text-[#0986ED]",
+}) {
   return (
-    <div className="bg-white rounded-2xl p-5 flex-1 flex items-center gap-4 shadow-sm min-w-[220px]">
+    <div className="bg-white rounded-[20px] px-4 py-3.5 flex-1 flex items-center gap-3 min-w-[200px] h-[110px]">
       <div
-        className="w-[60px] h-[60px] rounded-[15px] flex items-center justify-center shrink-0"
+        className="w-[52px] h-[52px] rounded-[12px] flex items-center justify-center shrink-0"
         style={{ background: iconBg }}
       >
-        <Icon size={36} className={iconClass} strokeWidth={2} />
+        <Icon size={28} className={iconClass} strokeWidth={2} />
       </div>
-      <div className="text-right min-w-0">
-        <div className="text-[13px] text-muted">{label}</div>
-        <div className="text-[15px] font-bold text-[rgba(0,0,0,0.9)]">{value}</div>
-        {sub && <div className="text-[12px] text-muted mt-0.5">{sub}</div>}
+      <div className="text-right min-w-0 flex flex-col gap-0.5">
+        <div className="text-[14px] font-semibold text-[rgba(5,44,101,0.7)] leading-none">{label}</div>
+        <div className="text-[16px] font-bold text-[#052c65] leading-snug">{value}</div>
+        {sub && <div className="text-[12px] font-medium text-[rgba(5,44,101,0.7)] leading-snug">{sub}</div>}
       </div>
     </div>
   );
@@ -62,10 +82,10 @@ function StageNode({ index, done, waiting }) {
   if (done) {
     return (
       <div
-        className="w-[50px] h-[50px] rounded-full bg-[#16A34A] flex items-center justify-center shrink-0"
+        className="w-[60px] h-[60px] rounded-full bg-[#16A34A] flex items-center justify-center shrink-0"
         aria-label={`مكتمل: المرحلة ${index + 1}`}
       >
-        <Check size={24} className="text-white" strokeWidth={3} />
+        <Check size={28} className="text-white" strokeWidth={3} />
       </div>
     );
   }
@@ -73,44 +93,66 @@ function StageNode({ index, done, waiting }) {
   if (waiting) {
     return (
       <svg
-        width="50"
-        height="50"
-        viewBox="0 0 50 50"
+        width="60"
+        height="60"
+        viewBox="0 0 60 60"
         className="shrink-0"
         aria-label={`قيد الانتظار: المرحلة ${index + 1}`}
       >
-        <circle cx="25" cy="25" r="24" fill="#F59E0B33" stroke="#F59E0B" strokeWidth="1" strokeDasharray="2 2" />
-        <circle cx="25" cy="25" r="7" fill="#F59E0B" />
+        <circle cx="30" cy="30" r="29" fill="#F59E0B33" stroke="#F59E0B" strokeWidth="1.2" strokeDasharray="2.5 2.5" />
+        <circle cx="30" cy="30" r="8.5" fill="#F59E0B" />
       </svg>
     );
   }
 
   return (
-    <div
-      className="w-[50px] h-[50px] rounded-full bg-[#F1F3F5] border border-[#DEE2E6] flex items-center justify-center text-[#052C65] text-[16px] font-semibold shrink-0"
+    <svg
+      width="60"
+      height="60"
+      viewBox="0 0 60 60"
+      className="shrink-0"
       aria-label={`قادم: المرحلة ${index + 1}`}
     >
-      {index + 1}
-    </div>
+      <circle cx="30" cy="30" r="29" fill="#F1F3F5" stroke="#DEE2E6" strokeWidth="1.2" strokeDasharray="2.5 2.5" />
+      <text
+        x="30"
+        y="30"
+        textAnchor="middle"
+        dominantBaseline="central"
+        fill="#052C65"
+        fontSize="21.6"
+        fontWeight="700"
+        fontFamily="Cairo, sans-serif"
+      >
+        {index + 1}
+      </text>
+    </svg>
   );
 }
 
 const STEP_LINE_GAP = 8;
 
 function StageStepper({ stageId, status, stages = STAGES }) {
-  const current = Math.max(0, stages.findIndex((s) => s.id === stageId));
+  const realStages = stages.filter((s) => s.id !== "ready-to-send");
+  const current = Math.max(0, realStages.findIndex((s) => s.id === stageId));
   const isClosed = stageId === "close";
-  const formApproved =
-    (status === "معتمد" || status === "معتمدة") && isFormsStage(stageId);
+  const formsLane = stages.some((s) => s.id === "ready-to-send");
+  // معتمد (Figma 1182:1529): steps 1–3 green, step 4 still «جاهز للإرسال».
+  // تم إرساله للجهة (Figma 2334:1687): all four green, label «تم الإرسال».
+  const formSent = formsLane && isFormsEntitySentStatus(status) && isFormsStage(stageId);
+  const formApprovedOnly =
+    formsLane
+    && isFormsStage(stageId)
+    && isFormsApprovedStatus(status)
+    && !isFormsEntitySentStatus(status);
+  const formsLaneComplete = formsLane && isRequiredStage(stageId);
   const colCount = stages.length;
-  const formsLane = stages.length === FORMS_STAGES.length;
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-[#D8D8D8] px-4 sm:px-8 py-8">
+    <div className="bg-white rounded-[20px] px-4 sm:px-8 py-6 min-h-[148px] flex items-center">
       <div className="relative w-full" dir="rtl">
-        {/* خطوط الربط — تمتد بين مراكز الدوائر مع فجوة بسيطة عن كل دائرة */}
         <div
-          className="pointer-events-none absolute top-[25px] flex items-center"
+          className="pointer-events-none absolute top-[30px] flex items-center"
           style={{
             left: `calc(100% / ${colCount * 2} + ${STEP_LINE_GAP}px)`,
             right: `calc(100% / ${colCount * 2} + ${STEP_LINE_GAP}px)`,
@@ -118,10 +160,13 @@ function StageStepper({ stageId, status, stages = STAGES }) {
           aria-hidden="true"
         >
           {stages.slice(0, -1).map((_, i) => {
+            // Last connector (approve → ready) turns green only after send.
             const lineDone =
               isClosed
-              || i < current
-              || (formApproved && (formsLane ? i < stages.length : i < 3));
+              || formsLaneComplete
+              || formSent
+              || (formApprovedOnly && i < realStages.length - 1)
+              || (!formApprovedOnly && !formSent && i < current);
             return (
               <div
                 key={i}
@@ -141,20 +186,39 @@ function StageStepper({ stageId, status, stages = STAGES }) {
           style={{ gridTemplateColumns: `repeat(${colCount}, minmax(0, 1fr))` }}
         >
           {stages.map((s, i) => {
-            const done =
-              isClosed
-              || i < current
-              || (formApproved && (formsLane ? i <= stages.length - 1 : i <= 2));
-            const waiting = !isClosed && !formApproved && i === current;
+            let done;
+            let waiting;
+            if (s.id === "ready-to-send") {
+              done = formSent || formsLaneComplete || isClosed;
+              waiting = false;
+            } else {
+              const realIndex = realStages.findIndex((x) => x.id === s.id);
+              done =
+                isClosed
+                || formsLaneComplete
+                || formSent
+                || formApprovedOnly
+                || realIndex < current;
+              waiting =
+                !isClosed
+                && !formsLaneComplete
+                && !formApprovedOnly
+                && !formSent
+                && realIndex === current;
+            }
+            const label =
+              s.id === "ready-to-send" && done
+                ? (s.doneLabel || "تم الإرسال")
+                : s.label;
             return (
-              <div key={s.id} className="flex flex-col items-center gap-3 min-w-0 px-1">
+              <div key={s.id} className="flex flex-col items-center gap-2.5 min-w-0 px-1">
                 <StageNode index={i} done={done} waiting={waiting} />
                 <div
-                  className={`w-full text-[12px] sm:text-[13px] text-center leading-5 ${
-                    done || waiting ? "text-[#052C65] font-bold" : "text-[#ADB5BD] font-medium"
+                  className={`w-full text-[16px] sm:text-[18px] text-center leading-normal tracking-[0.18px] font-bold ${
+                    done || waiting ? "text-[#052C65]" : "text-[#ADB5BD]"
                   }`}
                 >
-                  {s.label}
+                  {label}
                 </div>
               </div>
             );
@@ -168,16 +232,16 @@ function StageStepper({ stageId, status, stages = STAGES }) {
 function KVTable({ data }) {
   const entries = Object.entries(data);
   return (
-    <div className="relative rounded-xl overflow-hidden border border-[#D8D8D8] bg-white h-full min-h-[385px]">
+    <div className="relative rounded-[16px] overflow-hidden border border-[#D8D8D8] bg-white h-full min-h-[320px]">
       <div className="pointer-events-none absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2 bg-[#D8D8D8]" aria-hidden="true" />
       <table className="w-full text-right text-[14px] border-collapse table-fixed">
         <tbody>
           {entries.map(([k, v], i) => (
             <tr key={k} className={i !== entries.length - 1 ? "border-b border-[#D8D8D8]" : ""}>
-              <td className="py-3.5 px-5 w-1/2 font-semibold text-[rgba(0,0,0,0.9)] align-middle">
+              <td className="py-3 px-4 w-1/2 font-normal text-[rgba(5,44,101,0.57)] align-middle">
                 {k}
               </td>
-              <td className="py-3.5 px-5 w-1/2 text-[#404040] leading-relaxed align-middle">
+              <td className="py-3 px-4 w-1/2 font-semibold text-[#052c65] leading-relaxed align-middle">
                 {v}
               </td>
             </tr>
@@ -386,24 +450,6 @@ function blankTable(table) {
       values: Array.from({ length: leafCount }, () => "-"),
     })),
   };
-}
-
-function FormDataTab({ d, mode = "blank", editable = false, onChange }) {
-  if (mode === "empty") {
-    return <EmptyTabMessage text="لا توجد جداول للعرض في هذه المرحلة" />;
-  }
-  if (!d.formTable) return <EmptyTabMessage text="لا توجد جداول للعرض في هذه المرحلة" />;
-  const table = mode === "blank" && !d.formTableEdited
-    ? blankTable(d.formTable)
-    : d.formTable;
-  return (
-    <DataMatrixTable
-      table={table}
-      showTotals={false}
-      editable={editable}
-      onChange={onChange}
-    />
-  );
 }
 
 function FulfillmentTab({ d, mode = "filled", editable = false, onChange }) {
@@ -711,11 +757,23 @@ export default function RequestDetail({ mode = "forms" }) {
   // Mock walkthrough: الإدارة العامة may simulate other roles' stage actions.
   const isGaSimulator = role === ROLES.GENERAL_ADMIN;
   const canAct = isStageOwner || isGaSimulator;
-  // Figma forms lane shows «المرحلة N من 3»; required / full lifecycle uses 7.
-  const stageTotal = !isRequired && isFormsStage(stageId) ? FORMS_STAGES.length : STAGES.length;
-  const stageNumber = !isRequired && isFormsStage(stageId)
-    ? Math.max(1, FORMS_STAGES.findIndex((s) => s.id === stageId) + 1)
-    : Math.max(1, stageIndex(stageId) + 1);
+  // Figma: forms stepper = 4 (+جاهز للإرسال); required stepper = 4.
+  const stepperStages = isRequired || isRequiredStage(stageId)
+    ? REQUIRED_STEPPER
+    : FORMS_STEPPER;
+  const stageTotal = stepperStages.length;
+  const stageNumber = Math.max(
+    1,
+    stepperStages.findIndex((s) => s.id === stageId) + 1,
+  );
+  const stageDisplayLabel =
+    isFormsEntitySentStatus(live.status) && isFormsStage(stageId)
+      ? "جاهز للإرسال"
+      : (stepperStages.find((s) => s.id === stageId)?.label || stage.label);
+  const stageNumberDisplay =
+    isFormsEntitySentStatus(live.status) && isFormsStage(stageId)
+      ? stageTotal
+      : stageNumber;
   const needsModification = live.status === "مطلوب تعديل" || live.status === "تعديل";
   const showFulfillmentTab = hasReachedStage(stageId, "fulfill");
   // من نماذج البيان بعد الاستيفاء: عرض فقط — الاستكمال من البيانات المطلوبة
@@ -737,11 +795,6 @@ export default function RequestDetail({ mode = "forms" }) {
   // قيد التنفيذ في الإنشاء فقط: بيانات KV ظاهرة؛ باقي التبويبات فارغة
   const isInProgressCreate = stageId === "create";
   const infoVariant = "kv";
-  const formMode = isInProgressCreate
-    ? "empty"
-    : hasReachedStage(stageId, "review-form")
-      ? "blank"
-      : "empty";
   // مرحلة الاستيفاء: لا بيانات؛ بعد اكتمالها (مراجعة البيانات+) بالقيم
   const fulfillmentMode =
     stageId === "fulfill"
@@ -752,20 +805,13 @@ export default function RequestDetail({ mode = "forms" }) {
 
   const matrixDetail = {
     ...seed,
-    formTable: live.formTable || seed.formTable,
     fulfillmentTable: live.fulfillmentTable || seed.fulfillmentTable,
-    formTableEdited: Boolean(live.formTableEdited),
     fulfillmentTableEdited: Boolean(live.fulfillmentTableEdited),
   };
 
-  const canEditForm = canAct && !formsHandoff && formMode === "blank";
   const canEditFulfillment = canAct && !formsHandoff && showFulfillmentTab
     && (stageId === "fulfill" || stageId === "review-data" || needsModification);
 
-  const saveFormTable = (formTable) => {
-    saveRequestState(id, { formTable, formTableEdited: true });
-    setLive((prev) => ({ ...prev, formTable, formTableEdited: true }));
-  };
   const saveFulfillmentTable = (fulfillmentTable) => {
     saveRequestState(id, { fulfillmentTable, fulfillmentTableEdited: true });
     setLive((prev) => ({ ...prev, fulfillmentTable, fulfillmentTableEdited: true }));
@@ -774,7 +820,6 @@ export default function RequestDetail({ mode = "forms" }) {
   const tabs = useMemo(() => {
     const base = [
       { key: "info", label: "بيانات نموذج البيان" },
-      { key: "form", label: "نموذج البيان" },
     ];
     if (showFulfillmentTab) {
       base.push({ key: "fulfillment", label: "استيفاء البيانات" });
@@ -792,7 +837,7 @@ export default function RequestDetail({ mode = "forms" }) {
 
   const isTerminal =
     stageId === "close"
-    || ((live.status === "معتمد" || live.status === "معتمدة") && isFormsStage(stageId));
+    || (isFormsApprovedStatus(live.status) && isFormsStage(stageId));
 
   const actions = (() => {
     if (formsHandoff) {
@@ -896,39 +941,42 @@ export default function RequestDetail({ mode = "forms" }) {
     }
   };
 
+  const statusShown = displayStatus(live.status, stageId);
+  const statusVisual = statusTileVisual(statusShown);
+
   return (
     <Layout title={backLabel}>
       <div className="page-shell space-y-5">
         <div>
-          <nav className="inline-flex items-center gap-1 h-[41px] text-right" aria-label="مسار التنقل">
+          <nav className="inline-flex items-center gap-1 h-[36px] text-right" aria-label="مسار التنقل">
             <button
               type="button"
               onClick={() => navigate(backTo)}
-              className="font-[Cairo] font-medium text-[20px] leading-none text-[#ADB5BD] hover:opacity-80"
+              className="font-[Cairo] font-medium text-[16px] leading-none text-[#ADB5BD] hover:opacity-80"
             >
               {backLabel}
             </button>
-            <span className="inline-flex items-center justify-center w-[30px] h-[30px] shrink-0" aria-hidden="true">
-              <img src="/navigate-next.svg" alt="" width={30} height={30} className="rotate-180" />
+            <span className="inline-flex items-center justify-center w-[24px] h-[24px] shrink-0" aria-hidden="true">
+              <img src="/navigate-next.svg" alt="" width={24} height={24} className="rotate-180" />
             </span>
-            <span className="font-[Cairo] font-semibold text-[22px] leading-none text-[#052C65]">
+            <span className="font-[Cairo] font-semibold text-[18px] leading-none text-[#052C65]">
               تفاصيل الطلب
             </span>
           </nav>
-          <div className="mt-5 flex items-center justify-start gap-3 flex-wrap">
-            <h2 className="font-[Cairo] font-bold text-[27px] leading-none text-[#052C65] text-right">
+          <div className="mt-4 flex items-center justify-start gap-3 flex-wrap">
+            <h2 className="font-[Cairo] font-bold text-[22px] leading-none text-[#052C65] text-right">
               {live.title || seed.title}
             </h2>
-            <StatusBadge status={live.status} />
+            <StatusBadge status={statusShown} />
           </div>
         </div>
 
-        <div className="flex gap-5 flex-wrap">
+        <div className="flex gap-4 lg:gap-10 flex-wrap">
           <InfoTile
             icon={FileText}
             label="المرحلة الحالية"
-            value={stage.label}
-            sub={`المرحلة ${stageNumber} من ${stageTotal}`}
+            value={stageDisplayLabel}
+            sub={`المرحلة ${stageNumberDisplay} من ${stageTotal}`}
           />
           <InfoTile
             icon={Monitor}
@@ -942,18 +990,18 @@ export default function RequestDetail({ mode = "forms" }) {
             sub={live.officerRole}
           />
           <InfoTile
-            icon={statusTileVisual(live.status).icon}
+            icon={statusVisual.icon}
             label="الحالة"
-            value={live.status}
-            iconBg={statusTileVisual(live.status).iconBg}
-            iconClass={statusTileVisual(live.status).iconClass}
+            value={statusShown}
+            iconBg={statusVisual.iconBg}
+            iconClass={statusVisual.iconClass}
           />
         </div>
 
         <StageStepper
           stageId={stageId}
           status={live.status}
-          stages={!isRequired && isFormsStage(stageId) ? FORMS_STAGES : STAGES}
+          stages={stepperStages}
         />
 
         {formsHandoff && (
@@ -983,9 +1031,9 @@ export default function RequestDetail({ mode = "forms" }) {
           </div>
         )}
 
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-[#D8D8D8]">
+        <div className="bg-white rounded-[20px] shadow-sm overflow-hidden">
           <div
-            className="grid border-b border-[#D8D8D8] px-6 pt-[14px]"
+            className="grid border-b border-[#EAEAEB] px-2 sm:px-4"
             style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
           >
             {tabs.map((t) => {
@@ -995,7 +1043,7 @@ export default function RequestDetail({ mode = "forms" }) {
                   key={t.key}
                   type="button"
                   onClick={() => setTab(t.key)}
-                  className={`h-[47px] w-full font-[Cairo] font-medium text-[18px] sm:text-[20px] leading-none whitespace-nowrap flex items-center justify-center border-b-[3px] transition-colors ${
+                  className={`h-[48px] sm:h-[56px] w-full font-[Cairo] font-medium text-[15px] sm:text-[17px] leading-none whitespace-nowrap flex items-center justify-center border-b-2 transition-colors ${
                     active
                       ? "text-[#052C65] border-[#0986ED]"
                       : "text-[#7F8999] border-transparent hover:text-[#052C65]"
@@ -1008,14 +1056,6 @@ export default function RequestDetail({ mode = "forms" }) {
           </div>
           <div className="p-6">
             {tab === "info" && <InfoTab d={seed} variant={infoVariant} />}
-            {tab === "form" && (
-              <FormDataTab
-                d={matrixDetail}
-                mode={formMode}
-                editable={canEditForm}
-                onChange={saveFormTable}
-              />
-            )}
             {tab === "fulfillment" && showFulfillmentTab && (
               <FulfillmentTab
                 d={matrixDetail}

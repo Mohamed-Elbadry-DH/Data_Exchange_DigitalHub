@@ -21,6 +21,43 @@ export const FORMS_STAGES = STAGES.slice(0, 3);
 /** مراحل دورة البيانات المطلوبة — تبدأ باستيفاء البيانات */
 export const REQUIRED_STAGES = STAGES.slice(3);
 
+/**
+ * Stepper المعروض في تفاصيل /ga/forms:
+ * الثلاث مراحل + خطوة ختامية للعرض فقط.
+ * معتمد (1182:1529): «جاهز للإرسال» رمادي · تم الإرسال (2334:1687): أخضر «تم الإرسال».
+ */
+export const FORMS_STEPPER = [
+  ...FORMS_STAGES,
+  { id: "ready-to-send", label: "جاهز للإرسال", doneLabel: "تم الإرسال" },
+];
+
+/** Forms-lane terminal: approved and/or sent to entity (stepper complete). */
+export const isFormsApprovedStatus = (status) =>
+  status === "معتمد"
+  || status === "معتمدة"
+  || status === "إرسال للجهة"
+  || status === "تم الإرسال"
+  || status === "تم إرساله للجهة";
+
+/** Sent-to-entity only — Figma list «تم إرساله للجهة» / InfoTile «إرسال للجهة». */
+export const isFormsEntitySentStatus = (status) =>
+  status === "إرسال للجهة"
+  || status === "تم الإرسال"
+  || status === "تم إرساله للجهة";
+
+/** @deprecated use isFormsApprovedStatus */
+export const isFormsSentStatus = isFormsApprovedStatus;
+
+/**
+ * Stepper المعروض في تفاصيل /ga/required (Figma 1183:1955) —
+ * نفس REQUIRED_STAGES بعناوين مطابقة للتصميم.
+ */
+export const REQUIRED_STEPPER = REQUIRED_STAGES.map((s) => {
+  if (s.id === "final-approval") return { ...s, label: "اعتماد نهائي" };
+  if (s.id === "close") return { ...s, label: "غلق الطلب" };
+  return s;
+});
+
 export const stageIndex = (stageId) => STAGES.findIndex((s) => s.id === stageId);
 
 export const stageById = (stageId) => STAGES.find((s) => s.id === stageId);

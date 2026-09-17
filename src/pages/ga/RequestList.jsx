@@ -4,7 +4,7 @@ import { SlidersHorizontal, Search } from "lucide-react";
 import Layout from "../../components/ga/GaLayout";
 import StatusBadge from "../../components/ga/StatusBadge";
 import ItFilterModal from "../../components/it/ItFilterModal";
-import { stageById } from "../../domain/workflow";
+import { stageById, isFormsEntitySentStatus } from "../../domain/workflow";
 
 function ddmmyyyyToIso(s) {
   const [d, m, y] = (s || "").split("/");
@@ -13,6 +13,12 @@ function ddmmyyyyToIso(s) {
 
 function stageLabelOf(row) {
   return row.stageLabel || stageById(row.stageId)?.label || "—";
+}
+
+/** Forms list status label — Figma 1094:847 */
+function listStatusLabel(status) {
+  if (isFormsEntitySentStatus(status)) return "تم إرساله للجهة";
+  return status;
 }
 
 /** قوائم نماذج البيان / البيانات المطلوبة — أعمدة وفلاتر Figma 1094:1007 */
@@ -29,7 +35,10 @@ export default function RequestList({ title, listTitle, rows, detailPath }) {
     () => [...new Set(rows.map((r) => stageLabelOf(r)).filter((l) => l && l !== "—"))],
     [rows],
   );
-  const statusOptions = useMemo(() => [...new Set(rows.map((r) => r.status))], [rows]);
+  const statusOptions = useMemo(
+    () => [...new Set(rows.map((r) => listStatusLabel(r.status)))],
+    [rows],
+  );
   const directedOptions = useMemo(
     () => [...new Set(rows.map((r) => r.currentEntity || r.org).filter(Boolean))],
     [rows],
@@ -38,7 +47,7 @@ export default function RequestList({ title, listTitle, rows, detailPath }) {
   const filteredRows = rows.filter((r) => {
     if (search.trim() && !r.title.includes(search.trim())) return false;
     if (stage && stageLabelOf(r) !== stage) return false;
-    if (status && r.status !== status) return false;
+    if (status && listStatusLabel(r.status) !== status) return false;
     if (directedTo && (r.currentEntity || r.org) !== directedTo) return false;
     if (createdDate && ddmmyyyyToIso(r.created) !== createdDate) return false;
     return true;
@@ -82,41 +91,45 @@ export default function RequestList({ title, listTitle, rows, detailPath }) {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl overflow-x-auto shadow-sm border border-[#D8D8D8]">
+        <div className="bg-white rounded-[17px] overflow-x-auto shadow-sm border border-[rgba(18,36,67,0.1)]">
           <table className="w-full min-w-[980px] text-center border-collapse">
             <thead>
-              <tr className="bg-navy text-white text-[14px]">
-                <th className="py-3.5 px-4 font-semibold whitespace-nowrap">عنوان نموذج بيان</th>
-                <th className="py-3.5 px-4 font-semibold whitespace-nowrap">المرحلة</th>
-                <th className="py-3.5 px-4 font-semibold whitespace-nowrap">موجه إلى</th>
-                <th className="py-3.5 px-4 font-semibold whitespace-nowrap">المسؤول</th>
-                <th className="py-3.5 px-4 font-semibold whitespace-nowrap">حالة الطلب</th>
-                <th className="py-3.5 px-4 font-semibold whitespace-nowrap">تاريخ الإنشاء</th>
-                <th className="py-3.5 px-4 font-semibold whitespace-nowrap">موعد الانتهاء</th>
+              <tr className="bg-[#052c65] text-[#F8F9FA] text-[14px] sm:text-[15px]">
+                <th className="py-3.5 px-4 font-semibold whitespace-nowrap tracking-[0.16px]">عنوان نموذج بيان</th>
+                <th className="py-3.5 px-4 font-semibold whitespace-nowrap tracking-[0.16px]">المرحلة</th>
+                <th className="py-3.5 px-4 font-semibold whitespace-nowrap tracking-[0.16px]">موجه إلى</th>
+                <th className="py-3.5 px-4 font-semibold whitespace-nowrap tracking-[0.16px]">المسؤول</th>
+                <th className="py-3.5 px-4 font-semibold whitespace-nowrap tracking-[0.16px]">حالة الطلب</th>
+                <th className="py-3.5 px-4 font-semibold whitespace-nowrap tracking-[0.16px]">تاريخ الإنشاء</th>
+                <th className="py-3.5 px-4 font-semibold whitespace-nowrap tracking-[0.16px]">موعد الانتهاء</th>
               </tr>
             </thead>
             <tbody>
-              {filteredRows.map((r, i) => (
+              {filteredRows.map((r, i) => {
+                const statusLabel = listStatusLabel(r.status);
+                const isLast = i === filteredRows.length - 1;
+                return (
                 <tr
                   key={r.id}
                   onClick={() => navigate(`${detailPath}/${r.id}`)}
-                  className={`cursor-pointer hover:bg-page transition-colors text-[14px] text-[#404040] ${
-                    i !== filteredRows.length - 1 ? "border-b border-[#E9ECEF]" : ""
+                  className={`cursor-pointer hover:bg-page transition-colors text-[15px] sm:text-[16px] text-[#052c65]/60 ${
+                    !isLast ? "border-b border-[rgba(18,36,67,0.1)]" : ""
                   }`}
                 >
-                  <td className="py-4 px-4 font-semibold text-[#1B75FF] text-center whitespace-nowrap">
+                  <td className="py-4 px-4 font-medium text-center whitespace-nowrap">
                     {r.title}
                   </td>
-                  <td className="py-4 px-4 whitespace-nowrap">{stageLabelOf(r)}</td>
-                  <td className="py-4 px-4 whitespace-nowrap">{r.currentEntity || r.org}</td>
-                  <td className="py-4 px-4 whitespace-nowrap">{r.officer}</td>
+                  <td className="py-4 px-4 font-medium whitespace-nowrap">{stageLabelOf(r)}</td>
+                  <td className="py-4 px-4 font-medium whitespace-nowrap">{r.currentEntity || r.org}</td>
+                  <td className="py-4 px-4 font-medium whitespace-nowrap">{r.officer}</td>
                   <td className="py-4 px-4">
-                    <StatusBadge status={r.status} />
+                    <StatusBadge status={r.status} label={statusLabel} />
                   </td>
-                  <td className="py-4 px-4 whitespace-nowrap" dir="ltr">{r.created}</td>
-                  <td className="py-4 px-4 whitespace-nowrap" dir="ltr">{r.due}</td>
+                  <td className="py-4 px-4 font-semibold whitespace-nowrap" dir="ltr">{r.created}</td>
+                  <td className="py-4 px-4 font-semibold whitespace-nowrap" dir="ltr">{r.due}</td>
                 </tr>
-              ))}
+                );
+              })}
               {filteredRows.length === 0 && (
                 <tr>
                   <td colSpan={7} className="py-8 text-center text-muted text-[14px]">

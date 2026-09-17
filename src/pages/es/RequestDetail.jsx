@@ -1,16 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
-  ChevronLeft, FilePlus, Monitor, User, Clock, Plus, Trash2,
+  ChevronLeft, Monitor, User, Clock, FileClock, Plus, Trash2,
 } from "lucide-react";
-import Layout from "../../components/ent/EntLayout";
-import StatusBadge from "../../components/ent/StatusBadge";
+import Layout from "../../components/es/EsLayout";
+import StatusBadge, { statusTileChrome } from "../../components/es/StatusBadge";
 import SuccessModal from "../../components/SuccessModal";
-import DataIncompleteModal from "../../components/ent/DataIncompleteModal";
 import ItFilterModal from "../../components/it/ItFilterModal";
 import { useAuth } from "../../context/AuthContext";
 import { loadNotes, saveNotes } from "../../domain/notes";
-import { entRequestDetail, entRequiredRows } from "../../data/mockEnt";
+import { esRequestDetail, esRequiredRows } from "../../data/mockEs";
 import { ddmmyyyyToIso } from "../it/listUtils";
 
 const TABS = [
@@ -29,16 +28,19 @@ function InfoTile({ icon: Icon, label, value, sub, iconBg, iconColor }) {
       >
         <Icon size={28} style={{ color: iconColor }} strokeWidth={2} />
       </div>
-      <div className="text-right min-w-0 pt-1">
-        <div className="text-[16px] font-semibold text-[rgba(5,44,101,0.7)]">{label}</div>
-        <div className="text-[18px] font-bold text-[#052c65] mt-1 leading-snug">{value}</div>
-        {sub && <div className="text-[13px] text-[rgba(5,44,101,0.7)] mt-1">{sub}</div>}
+      <div className="min-w-0 flex-1 pt-1 flex flex-col gap-1 text-right items-start">
+        <div className="w-full text-[16px] font-semibold text-[rgba(5,44,101,0.7)] text-right">{label}</div>
+        {typeof value === "string" || typeof value === "number" ? (
+          <div className="w-full text-[18px] font-bold text-[#052c65] leading-snug text-right">{value}</div>
+        ) : (
+          <div className="w-full text-right">{value}</div>
+        )}
+        {sub && <div className="w-full text-[13px] text-[rgba(5,44,101,0.7)] text-right">{sub}</div>}
       </div>
     </div>
   );
 }
 
-/** جدول مفاتيح/قيم بإطار — عمودان كما في Figma 1706:8969 */
 function PairTable({ rows }) {
   return (
     <div className="border border-[#d8d8d8] rounded-[16px] overflow-hidden flex-1 min-w-0">
@@ -60,8 +62,8 @@ function PairTable({ rows }) {
   );
 }
 
-/** مصفوفة استيفاء البيانات — أعمدة مجمّعة قابلة للتعبئة (Figma 1706:9394) */
-function FulfillmentMatrix({ matrix, values, onChange, onBulkChange }) {
+/** مصفوفة استيفاء — قراءة فقط لمراجعة المشرف (Figma 1689:4099) */
+function FulfillmentMatrix({ matrix, values }) {
   const leafCols = matrix.groups.flatMap((g) => g.columns.map((c) => `${g.label}·${c}`));
   const th = "border border-[#d8d8d8] bg-[#f3f6fd] text-[#052c65] font-semibold text-[13px] py-2.5 px-2 text-center whitespace-nowrap";
   const td = "border border-[#d8d8d8] p-0 text-center";
@@ -70,7 +72,11 @@ function FulfillmentMatrix({ matrix, values, onChange, onBulkChange }) {
     const headers = ["م", matrix.rowHeader, ...leafCols.map((c) => c.replace("·", " / "))];
     const lines = [
       headers.join(","),
-      ...matrix.rows.map((row, i) => [i + 1, row.name, ...leafCols.map(() => "")].join(",")),
+      ...matrix.rows.map((row, i) => [
+        i + 1,
+        row.name,
+        ...leafCols.map((col) => values[`${row.id}|${col}`] ?? ""),
+      ].join(",")),
     ];
     const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
@@ -83,38 +89,9 @@ function FulfillmentMatrix({ matrix, values, onChange, onBulkChange }) {
     URL.revokeObjectURL(url);
   };
 
-  const uploadData = () => {
-    // Mock: fill first requiredCount empty cells so the user can submit after upload.
-    const next = { ...values };
-    let filled = 0;
-    for (const row of matrix.rows) {
-      for (const col of leafCols) {
-        const key = `${row.id}|${col}`;
-        if (!String(next[key] ?? "").trim()) {
-          next[key] = String(10 + filled);
-          filled += 1;
-          if (filled >= matrix.requiredCount) break;
-        }
-      }
-      if (filled >= matrix.requiredCount) break;
-    }
-    onBulkChange?.(next);
-  };
-
   return (
     <div className="space-y-4">
-      {/* Toolbar — Figma 2326:808 / 1706:9394: left-aligned in LTR slot */}
       <div className="flex flex-wrap items-center gap-[21px]" dir="ltr">
-        <button
-          type="button"
-          onClick={uploadData}
-          className="h-[43px] w-[149px] rounded-[10px] bg-[#052c65] text-white text-[16px] font-semibold inline-flex items-center justify-center gap-[15px] cursor-pointer hover:opacity-90"
-        >
-          <span>رفع البيانات</span>
-          <span className="relative size-6 shrink-0 overflow-hidden" aria-hidden>
-            <img src="/ent/plus-white.svg" alt="" className="absolute inset-0 size-full max-w-none" />
-          </span>
-        </button>
         <button
           type="button"
           onClick={downloadTemplate}
@@ -151,15 +128,8 @@ function FulfillmentMatrix({ matrix, values, onChange, onBulkChange }) {
                 {leafCols.map((col) => {
                   const key = `${row.id}|${col}`;
                   return (
-                    <td key={col} className={td}>
-                      <input
-                        inputMode="numeric"
-                        value={values[key] ?? ""}
-                        onChange={(e) => onChange(key, e.target.value.replace(/[^\d]/g, ""))}
-                        aria-label={`${row.name} — ${col.replace("·", " ")}`}
-                        className="w-full h-[42px] text-center text-[13px] text-[#052c65] outline-none focus:bg-[rgba(9,134,237,0.06)]"
-                        dir="ltr"
-                      />
+                    <td key={col} className={`${td} py-2.5 text-[#052c65]`} dir="ltr">
+                      {values[key] ?? "—"}
                     </td>
                   );
                 })}
@@ -188,21 +158,17 @@ function FulfillmentMatrix({ matrix, values, onChange, onBulkChange }) {
   );
 }
 
-const DIRECTED_TO_OPTIONS = ["مشرف الجهة الخارجية", "موظف الإدارة العامة"];
-
-/** المرفقات — جدول + رفع + تصفية (Figma 1706:9914 / 1707:12725) */
-function AttachmentsTab({ seed, uploader }) {
+/** المرفقات — عرض للمراجعة */
+function AttachmentsTab({ seed }) {
   const [files, setFiles] = useState(seed);
   const [filterOpen, setFilterOpen] = useState(false);
   const [type, setType] = useState("");
-  const [directedTo, setDirectedTo] = useState("");
   const [by, setBy] = useState("");
   const [uploadedAt, setUploadedAt] = useState("");
 
   useEffect(() => {
     setFiles(seed);
     setType("");
-    setDirectedTo("");
     setBy("");
     setUploadedAt("");
   }, [seed]);
@@ -212,39 +178,16 @@ function AttachmentsTab({ seed, uploader }) {
 
   const filtered = files.filter((f) => {
     if (type && f.type !== type) return false;
-    if (directedTo && f.directedTo !== directedTo) return false;
     if (by && f.by !== by) return false;
     if (uploadedAt && ddmmyyyyToIso(f.uploadedAt) !== uploadedAt) return false;
     return true;
   });
-
-  const setFileDirectedTo = (id, value) => {
-    setFiles((prev) => prev.map((f) => (f.id === id ? { ...f, directedTo: value } : f)));
-  };
-
-  const upload = () => {
-    const now = new Date();
-    const uploaded = now.toLocaleDateString("en-GB");
-    setFiles((prev) => [
-      {
-        id: Date.now(),
-        name: `مرفق_جديد_${prev.length + 1}`,
-        type: "Excel",
-        directedTo: DIRECTED_TO_OPTIONS[0],
-        uploadedAt: uploaded,
-        size: "120 KB",
-        by: uploader || "أحمد محمد",
-      },
-      ...prev,
-    ]);
-  };
 
   const cell = "py-4 px-3 text-[17px] font-semibold tracking-[0.17px] text-[#052c65]/60 whitespace-nowrap";
   const head = "py-3.5 px-3 text-[16px] font-semibold tracking-[0.16px] text-white whitespace-nowrap";
 
   return (
     <div className="space-y-4">
-      {/* Toolbar left-aligned — Figma 1707:12725 */}
       <div className="flex items-center gap-[23px]" dir="ltr">
         <button
           type="button"
@@ -254,16 +197,6 @@ function AttachmentsTab({ seed, uploader }) {
         >
           <span className="relative size-8 shrink-0 overflow-hidden" aria-hidden>
             <img src="/ent/filter.svg" alt="" className="absolute inset-0 size-full max-w-none" />
-          </span>
-        </button>
-        <button
-          type="button"
-          onClick={upload}
-          className="h-[43px] w-[149px] rounded-[10px] bg-[#052c65] text-white text-[16px] font-semibold inline-flex items-center justify-center gap-2 cursor-pointer hover:opacity-90"
-        >
-          <span>رفع ملف</span>
-          <span className="relative size-6 shrink-0 overflow-hidden" aria-hidden>
-            <img src="/ent/plus-white.svg" alt="" className="absolute inset-0 size-full max-w-none" />
           </span>
         </button>
       </div>
@@ -290,29 +223,7 @@ function AttachmentsTab({ seed, uploader }) {
                 }`}
               >
                 <td className={`${cell} text-right font-medium`}>{f.name}</td>
-                <td className="py-2 px-3 whitespace-nowrap">
-                  <div className="relative inline-flex min-w-[200px] max-w-full">
-                    <select
-                      dir="rtl"
-                      value={f.directedTo || DIRECTED_TO_OPTIONS[0]}
-                      onChange={(e) => setFileDirectedTo(f.id, e.target.value)}
-                      aria-label={`موجهة إلى — ${f.name}`}
-                      className="w-full appearance-none rounded-[10px] border border-[rgba(18,36,67,0.15)] bg-white py-2 pl-9 pr-3 text-[15px] font-semibold tracking-[0.15px] text-[#052c65]/80 text-right cursor-pointer outline-none hover:border-[#052c65]/40 focus:border-[#0986ed]"
-                    >
-                      {DIRECTED_TO_OPTIONS.map((opt) => (
-                        <option key={opt} value={opt}>{opt}</option>
-                      ))}
-                    </select>
-                    <span
-                      aria-hidden
-                      className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 bg-[#052c65]/70"
-                      style={{
-                        WebkitMask: 'url("/it-quick-chevron.png") center / contain no-repeat',
-                        mask: 'url("/it-quick-chevron.png") center / contain no-repeat',
-                      }}
-                    />
-                  </div>
-                </td>
+                <td className={cell}>{f.directedTo || "—"}</td>
                 <td className={cell}>
                   <span className="inline-flex items-center justify-center gap-1.5">
                     <span className="relative size-6 shrink-0 overflow-hidden" aria-hidden>
@@ -353,16 +264,9 @@ function AttachmentsTab({ seed, uploader }) {
       <ItFilterModal
         open={filterOpen}
         onClose={() => setFilterOpen(false)}
-        onClear={() => {
-          setType("");
-          setDirectedTo("");
-          setBy("");
-          setUploadedAt("");
-          setFilterOpen(false);
-        }}
+        onClear={() => { setType(""); setBy(""); setUploadedAt(""); setFilterOpen(false); }}
         fields={[
           { label: "نوع الملف", value: type, onChange: setType, options: typeOptions },
-          { label: "موجهة إلى", value: directedTo, onChange: setDirectedTo, options: DIRECTED_TO_OPTIONS },
           { label: "بواسطة", value: by, onChange: setBy, options: byOptions },
           { label: "تاريخ الرفع", type: "date", value: uploadedAt, onChange: setUploadedAt },
         ]}
@@ -371,7 +275,6 @@ function AttachmentsTab({ seed, uploader }) {
   );
 }
 
-/** الملاحظات — بطاقة إضافة + قائمة (Figma 1706:10056) */
 function NotesTab({ requestId, author }) {
   const [notes, setNotes] = useState(() => loadNotes(requestId));
   const [draft, setDraft] = useState("");
@@ -410,38 +313,26 @@ function NotesTab({ requestId, author }) {
             <button
               type="button"
               onClick={() => setAdding(true)}
-              className="bg-[#052c65] text-white rounded-[10px] h-[43px] px-4 text-[16px] font-semibold flex items-center gap-2 shrink-0 cursor-pointer"
+              className="bg-[#052c65] text-white rounded-[10px] h-[43px] px-4 text-[16px] font-semibold inline-flex items-center gap-2 shrink-0 cursor-pointer"
             >
-              <Plus size={18} />
-              إضافة ملاحظة
+              <Plus size={18} /> إضافة ملاحظة
             </button>
           </div>
         ) : (
           <div className="space-y-3" dir="rtl">
-            <div className="text-[14px] font-semibold text-[#052C65] text-right">ملاحظة جديدة</div>
             <textarea
-              autoFocus
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              rows={4}
+              rows={3}
+              className="w-full border border-[#d8d8d8] rounded-[10px] p-3 text-[15px] text-[#052c65] text-right outline-none focus:border-[#0986ed]"
               placeholder="اكتب ملاحظتك هنا..."
-              className="w-full border border-[#D8D8D8] rounded-lg py-2.5 px-3 text-[14px] text-right placeholder:text-gray-400 resize-none focus:outline-none focus:border-primary"
             />
-            <div className="flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => { setDraft(""); setAdding(false); }}
-                className="rounded-lg px-4 py-2.5 text-[14px] text-[#404040] border border-[#D8D8D8] hover:bg-page cursor-pointer"
-              >
+            <div className="flex items-center gap-3 justify-end">
+              <button type="button" onClick={() => { setAdding(false); setDraft(""); }} className="text-[#7f8999] text-[15px] cursor-pointer">
                 إلغاء
               </button>
-              <button
-                type="button"
-                onClick={addNote}
-                disabled={!draft.trim()}
-                className="bg-[#052c65] text-white rounded-lg px-4 py-2.5 text-[14px] disabled:opacity-40 cursor-pointer"
-              >
-                حفظ الملاحظة
+              <button type="button" onClick={addNote} className="bg-[#052c65] text-white rounded-[10px] h-[40px] px-5 text-[15px] font-semibold cursor-pointer">
+                حفظ
               </button>
             </div>
           </div>
@@ -479,59 +370,36 @@ function NotesTab({ requestId, author }) {
   );
 }
 
-/** تفاصيل الطلب — Figma 1706:8969 / 9252 / 9783 / 10056 */
+/** تفاصيل الطلب — مراجعة مشرف الجهة (Figma 1689:4099 / 1689:5203) */
 export default function RequestDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { name } = useAuth();
   const [tab, setTab] = useState("info");
-  const [values, setValues] = useState({});
-  const [incompleteOpen, setIncompleteOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
-  const [draftSaved, setDraftSaved] = useState(false);
+  const [modifyOpen, setModifyOpen] = useState(false);
+  const [uiStatus, setUiStatus] = useState(null);
 
-  const row = entRequiredRows.find((r) => String(r.id) === String(id));
-  const req = entRequestDetail;
+  const row = esRequiredRows.find((r) => String(r.id) === String(id));
+  const req = esRequestDetail;
   const matrix = req.matrix;
+  const values = req.matrixValues || {};
   const author = name || req.officer;
+  const status = uiStatus || row?.status || req.status;
+  const isApproved = status === "معتمدة" || status === "معتمد";
+  const isModify = status === "مطلوب تعديل" || status === "تعديل";
+  const showActions = !isApproved;
 
   useEffect(() => {
     setTab("info");
-    setDraftSaved(false);
-    try {
-      const raw = localStorage.getItem(`mped-ent-draft-${id}`);
-      setValues(raw ? JSON.parse(raw) : {});
-    } catch {
-      setValues({});
-    }
+    setUiStatus(null);
   }, [id]);
-
-  const filledCount = useMemo(
-    () => Object.values(values).filter((v) => String(v).trim() !== "").length,
-    [values],
-  );
-
-  const setValue = (key, v) => setValues((s) => ({ ...s, [key]: v }));
-
-  const submit = () => {
-    if (filledCount < matrix.requiredCount) setIncompleteOpen(true);
-    else setSuccessOpen(true);
-  };
-
-  const saveDraft = () => {
-    try {
-      localStorage.setItem(`mped-ent-draft-${id}`, JSON.stringify(values));
-    } catch {
-      /* ignore quota */
-    }
-    setDraftSaved(true);
-  };
 
   return (
     <Layout title="البيانات المطلوبة">
       <div className="page-shell space-y-5 pb-28">
         <div className="flex items-center gap-2 text-right" dir="rtl">
-          <Link to="/ent/required" className="text-[20px] font-medium text-[#adb5bd] hover:text-primary">
+          <Link to="/es/required" className="text-[20px] font-medium text-[#adb5bd] hover:text-primary">
             البيانات المطلوبة
           </Link>
           <ChevronLeft size={22} className="text-[#adb5bd] shrink-0" />
@@ -540,21 +408,20 @@ export default function RequestDetail() {
 
         <div className="flex flex-wrap items-center gap-4" dir="rtl">
           <h2 className="text-[26px] font-bold text-[#052c65]">{row?.title || req.name}</h2>
-          <StatusBadge status={row?.status || req.status} />
         </div>
 
         <div className="flex flex-wrap gap-5" dir="rtl">
           <InfoTile
-            icon={FilePlus}
-            label="المرحلة"
-            value={row?.stageLabel || req.stage}
-            iconBg="rgba(151,71,255,0.3)"
-            iconColor="#9747FF"
+            icon={FileClock}
+            label="الحالة"
+            value={<StatusBadge status={status} size="lg" />}
+            iconBg={statusTileChrome(status).bg}
+            iconColor={statusTileChrome(status).fg}
           />
           <InfoTile
             icon={Monitor}
             label="الإدارة العامة"
-            value={req.admin}
+            value={row?.admin || req.admin}
             iconBg="rgba(9,134,237,0.3)"
             iconColor="#0986ED"
           />
@@ -600,20 +467,12 @@ export default function RequestDetail() {
                 <PairTable rows={Object.entries(req.yearInfo)} />
               </div>
             )}
-
             {tab === "fulfillment" && (
-              <FulfillmentMatrix
-                matrix={matrix}
-                values={values}
-                onChange={setValue}
-                onBulkChange={setValues}
-              />
+              <FulfillmentMatrix matrix={matrix} values={values} />
             )}
-
             {tab === "attachments" && (
-              <AttachmentsTab seed={req.attachments} uploader={author} />
+              <AttachmentsTab seed={req.attachments} />
             )}
-
             {tab === "notes" && (
               <NotesTab requestId={id} author={author} />
             )}
@@ -621,46 +480,48 @@ export default function RequestDetail() {
         </div>
       </div>
 
-      {/* Footer actions — Figma 2326:605 */}
-      <div className="sticky bottom-0 z-10 bg-[#f9f9f9] border-t border-[#eaeaeb] px-4 sm:px-6 xl:px-8 py-4">
-        <div className="flex items-center justify-between gap-4 max-w-[1535.5px] mx-auto" dir="rtl">
-          <button
-            type="button"
-            onClick={saveDraft}
-            className="bg-[#adb5bd] text-white rounded-[8px] h-[41px] w-[195px] max-w-full text-[18px] sm:text-[20px] font-semibold cursor-pointer hover:opacity-90"
-          >
-            حفظ كمسودة
-          </button>
-          <button
-            type="button"
-            onClick={submit}
-            className="bg-[#0986ed] text-white rounded-[8px] h-[49px] w-[288px] max-w-full text-[18px] font-normal cursor-pointer hover:opacity-90"
-          >
-            إرسال لمشرف الجهة
-          </button>
+      {showActions && (
+        <div className="sticky bottom-0 z-10 bg-[#f9f9f9] border-t border-[#eaeaeb] px-4 sm:px-6 xl:px-8 py-4">
+          <div className="flex items-center justify-start gap-[34px] max-w-[1535.5px] mx-auto" dir="ltr">
+            <button
+              type="button"
+              onClick={() => setSuccessOpen(true)}
+              className="bg-[#16a34a] text-white rounded-[8px] h-[49px] w-[333px] max-w-full text-[18px] font-normal cursor-pointer hover:opacity-90"
+            >
+              اعتماد نهائي و إرساله
+            </button>
+            {!isModify && (
+              <button
+                type="button"
+                onClick={() => setModifyOpen(true)}
+                className="bg-[#0986ed] text-white rounded-[8px] h-[49px] w-[226px] max-w-full text-[18px] font-normal cursor-pointer hover:opacity-90"
+              >
+                طلب تعديل
+              </button>
+            )}
+          </div>
         </div>
-      </div>
-
-      <DataIncompleteModal
-        open={incompleteOpen}
-        onClose={() => setIncompleteOpen(false)}
-        onContinue={() => { setIncompleteOpen(false); setTab("fulfillment"); }}
-        required={matrix.requiredCount}
-        current={filledCount}
-      />
+      )}
 
       <SuccessModal
         open={successOpen}
-        message="تم إرسال البيانات بنجاح"
-        subtitle="تم إرسال البيانات والملاحظات والملفات للمراجعة"
-        onClose={() => { setSuccessOpen(false); navigate("/ent/required"); }}
+        message="تم اعتماد البيانات المطلوبة و إرسالها"
+        subtitle="تم إرسال البيانات للمراجعة والاعتماد النهائي"
+        onClose={() => {
+          setSuccessOpen(false);
+          setUiStatus("معتمدة");
+          navigate("/es/required");
+        }}
       />
 
       <SuccessModal
-        open={draftSaved}
-        message="تم حفظ المسودة"
-        subtitle="يمكنك العودة لاحقاً لاستكمال البيانات"
-        onClose={() => setDraftSaved(false)}
+        open={modifyOpen}
+        message="تم إرسال طلب التعديل"
+        subtitle="سيُعاد الطلب لموظف الجهة لاستكمال التعديلات"
+        onClose={() => {
+          setModifyOpen(false);
+          setUiStatus("تعديل");
+        }}
       />
     </Layout>
   );

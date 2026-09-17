@@ -365,26 +365,80 @@ export default function FormBuilder() {
 
   return (
     <Layout title="الطلبات">
-      <div className={`flex flex-col ${inManual ? "h-full min-h-0 overflow-hidden" : "min-h-full"}`}>
-        <div className={`page-shell page-shell--flush flex-1 flex flex-col min-h-0 ${inManual ? "overflow-hidden" : ""}`}>
-          <div
-            className={`flex flex-1 flex-col min-h-0 pt-8 xl:pt-10 ${
-              inManual ? "gap-10 pb-0 overflow-hidden" : "gap-10 pb-8"
-            }`}
-          >
-            <div className="flex items-center gap-2 text-[15px] text-muted shrink-0" dir="rtl">
-              <Link to="/it/requests" className="hover:text-primary">
-                الطلبات
-              </Link>
-              <ChevronLeft size={16} className="text-[#adb5bd] shrink-0" />
-              <span className="text-[#052c65] font-semibold">إنشاء نموذج البيان</span>
-            </div>
-
-            <div className="shrink-0">
+      <div
+        className={
+          inManual
+            ? "relative h-full min-h-0 overflow-hidden"
+            : "min-h-full flex flex-col"
+        }
+      >
+        {inManual ? (
+          <div className="absolute inset-0 flex flex-col overflow-hidden">
+            <div className="page-shell page-shell--flush shrink-0 pt-8 xl:pt-10 space-y-10">
+              <div className="flex items-center gap-2 text-[15px] text-muted" dir="rtl">
+                <Link to="/it/requests" className="hover:text-primary">
+                  الطلبات
+                </Link>
+                <ChevronLeft size={16} className="text-[#adb5bd] shrink-0" />
+                <span className="text-[#052c65] font-semibold">إنشاء نموذج البيان</span>
+              </div>
               <BuilderStepper current={step} />
             </div>
+            {/* Full-bleed of the content column — outside page-shell padding (Figma 282:185). */}
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+              <StepStructure structure={structure} onChange={setStructure} />
+            </div>
+            <div className="z-10 h-[64px] shrink-0 bg-[#f9f9f9] border-t border-[#eaeaeb]">
+              <div className="page-shell h-full flex items-center justify-between !py-0" dir="ltr">
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={step === 2 ? submit : next}
+                    disabled={nextDisabled}
+                    className={`${BTN} bg-[#0986ed] text-white disabled:opacity-40 disabled:cursor-not-allowed`}
+                  >
+                    {nextLabel}
+                  </button>
+                  {step > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => navigate("/it/requests")}
+                      className={`${BTN} bg-[#e0e0e0] text-[#052c65]`}
+                    >
+                      حفظ كمسودة
+                    </button>
+                  )}
+                </div>
+                {step > 0 ? (
+                  <button
+                    type="button"
+                    onClick={back}
+                    className={`${BTN} bg-[#e0e0e0] text-[#1f254b]`}
+                  >
+                    السابق
+                  </button>
+                ) : (
+                  <span className="min-w-[140px]" aria-hidden="true" />
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+          <div className="page-shell page-shell--flush flex-1 flex flex-col min-h-0">
+            <div className="flex flex-1 flex-col min-h-0 pt-8 xl:pt-10 gap-10 pb-8">
+              <div className="flex items-center gap-2 text-[15px] text-muted shrink-0" dir="rtl">
+                <Link to="/it/requests" className="hover:text-primary">
+                  الطلبات
+                </Link>
+                <ChevronLeft size={16} className="text-[#adb5bd] shrink-0" />
+                <span className="text-[#052c65] font-semibold">إنشاء نموذج البيان</span>
+              </div>
 
-            <div className={inManual ? "flex-1 min-h-0 -mx-4 sm:-mx-6 xl:-mx-8 flex flex-col overflow-hidden" : ""}>
+              <div className="shrink-0">
+                <BuilderStepper current={step} />
+              </div>
+
               {step === 0 && <StepMetadata meta={meta} onChange={setMeta} />}
               {inChooser && (
                 <StepStructureMode
@@ -417,7 +471,6 @@ export default function FormBuilder() {
                   onValueChange={handleCellValueChange}
                 />
               )}
-              {inManual && <StepStructure structure={structure} onChange={setStructure} />}
               {step === 2 && (
                 <StepReview
                   meta={meta}
@@ -431,7 +484,6 @@ export default function FormBuilder() {
               )}
             </div>
           </div>
-        </div>
 
         <div className="sticky bottom-0 z-10 h-[64px] shrink-0 bg-[#f9f9f9] border-t border-[#eaeaeb]">
           <div className="page-shell h-full flex items-center justify-between !py-0" dir="ltr">
@@ -450,7 +502,7 @@ export default function FormBuilder() {
                   onClick={() => navigate("/it/requests")}
                   className={`${BTN} bg-[#e0e0e0] text-[#052c65]`}
                 >
-                  إلغاء
+                  حفظ كمسودة
                 </button>
               )}
             </div>
@@ -467,6 +519,8 @@ export default function FormBuilder() {
             )}
           </div>
         </div>
+          </>
+        )}
       </div>
 
       <input

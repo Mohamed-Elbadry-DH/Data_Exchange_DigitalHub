@@ -48,7 +48,8 @@ export const demoUsers = [
     name: "أ. هدى فؤاد",
     email: "entity.supervisor@capmas.gov.eg",
     password: "Mped@2026",
-    enabled: false,
+    enabled: true,
+    home: "/es",
   },
   {
     id: "external-entity",

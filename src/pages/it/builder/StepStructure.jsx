@@ -331,29 +331,36 @@ export default function StepStructure({ structure, onChange }) {
     onChange((s) => ({ ...s, [key]: s[key].filter((x) => x.id !== id) }));
 
   return (
-    <div className="flex flex-1 min-h-0 h-full overflow-hidden" dir="ltr">
-      <aside className="w-[320px] shrink-0 bg-[#dbe9f9] border-x border-[#d8d8d8] rounded-tr-[10px] flex flex-col min-h-0 h-full overflow-hidden">
-        <div className="px-8 pt-6 shrink-0">
-          <h3 className="text-[22px] font-bold text-[#052c65] text-right">أدوات بناء الهيكل</h3>
+    <div className="flex h-full min-h-0 min-w-0 flex-1 overflow-hidden" dir="ltr">
+      <aside className="flex h-full min-h-0 w-[320px] shrink-0 flex-col overflow-hidden rounded-tr-[10px] border-r border-t border-[#d8d8d8] bg-[#dbe9f9]">
+        <div className="shrink-0 px-8 pb-2 pt-[27px]">
+          <h3 className="whitespace-nowrap text-right text-[22px] font-semibold leading-none text-[#052c65]">
+            أدوات بناء الهيكل
+          </h3>
         </div>
-        <div className="px-[29px] py-6 border-b border-[#eaeaeb] shrink-0">
-          <div className="flex flex-col gap-[27px] w-[262px] mx-auto">
+        <div className="shrink-0 border-b border-[#eaeaeb] px-[29px] pb-[27px] pt-[27px]">
+          <div className="flex flex-col gap-[27px]">
             <ToolButton src="/it/icon-folder-plus.svg" label="إضافة مجموعة" onClick={() => openAdd("group")} />
             <ToolButton src="/it/icon-columns.svg" label="إضافة عمود" onClick={() => openAdd("column")} />
             <ToolButton src="/it/icon-rows.svg" label="إضافة صف" onClick={() => openAdd("row")} />
           </div>
         </div>
 
-        <div className="px-6 py-5 flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain">
-          <h3 className="text-[22px] font-bold text-[#052c65] text-right mb-4">هيكل الأعمدة والمجموعات</h3>
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <div className="shrink-0 px-8 pb-0 pt-8">
+            <h3 className="whitespace-nowrap text-right text-[22px] font-semibold leading-none text-[#052c65]">
+              هيكل الأعمدة والمجموعات
+            </h3>
+          </div>
 
+          <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain px-8 pb-5 pt-8">
           {!hasAnything ? (
-            <div className="flex flex-col items-center gap-4 text-center pt-6 w-[240px] mx-auto">
-              <span className="size-14 rounded-[14px] bg-[#f0f0f0] flex items-center justify-center overflow-hidden">
-                <img src="/it/icon-folder-open-lg.svg" alt="" className="size-8 object-contain" />
+            <div className="mx-auto flex w-[240px] flex-col items-center gap-5 text-center">
+              <span className="flex h-[73px] w-[77px] shrink-0 items-center justify-center overflow-hidden rounded-[20px] bg-[#f0f0f0]">
+                <img src="/it/icon-folder-open-lg.svg" alt="" className="size-[50px] object-contain" />
               </span>
-              <span className="text-[15px] font-bold text-[#052c65]">لا توجد عناصر</span>
-              <span className="text-[13px] font-medium text-[#adb5bd] leading-[22px]">
+              <span className="text-[18px] font-bold leading-none text-[#052c65]">لا توجد عناصر</span>
+              <span className="text-[16px] font-medium leading-[27px] text-[#adb5bd]">
                 ابدأ بإضافة مجموعة أو عمود لبناء هيكل الجدول
               </span>
             </div>
@@ -572,18 +579,19 @@ export default function StepStructure({ structure, onChange }) {
             </div>
           )}
         </div>
+        </div>
       </aside>
 
-      <div className="flex-1 min-w-0 min-h-0 overflow-auto bg-page" dir="rtl">
+      <div className="min-h-0 min-w-0 flex-1 overflow-auto overscroll-y-contain bg-page" dir="rtl">
         {hasAnything ? (
           <TablePreview structure={structure} />
         ) : (
-          <div className="h-full min-h-[420px] flex flex-col items-center justify-center gap-4 text-center">
-            <span className="size-16 rounded-[12px] bg-[#e9ecef] flex items-center justify-center overflow-hidden">
-              <img src="/it/icon-table.svg" alt="" className="size-10 object-contain" />
+          <div className="flex h-full flex-col items-center justify-center gap-5 text-center w-[263px] mx-auto">
+            <span className="size-[100px] rounded-[13px] bg-[#e9ecef] flex items-center justify-center overflow-hidden shrink-0">
+              <img src="/it/icon-table.svg" alt="" className="size-[67px] object-contain" />
             </span>
-            <span className="text-[18px] font-bold text-[#052c65]">معاينة الجدول</span>
-            <span className="text-[13px] font-medium text-[#adb5bd] max-w-[260px] leading-[22px]">
+            <span className="text-[22px] font-bold text-[#052c65] leading-none">معاينة الجدول</span>
+            <span className="text-[16px] font-medium text-[#adb5bd] leading-[25px]">
               أضف أعمدة ومجموعات من اللوحة الجانبية لرؤية معاينة الجدول
             </span>
           </div>
