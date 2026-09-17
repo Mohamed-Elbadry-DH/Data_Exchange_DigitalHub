@@ -68,23 +68,27 @@ export function extractExcelJsSnapshot(sheet) {
     maxRow = Math.max(maxRow, rowNumber);
     row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
       maxCol = Math.max(maxCol, colNumber);
-      const hasValue = cell.value != null && cell.value !== "";
-      if (!hasValue && !cellHasExportableStyle(cell)) return;
+      try {
+        const hasValue = cell.value != null && cell.value !== "";
+        if (!hasValue && !cellHasExportableStyle(cell)) return;
 
-      cells.push({
-        row: rowNumber,
-        column: colNumber,
-        value: serializeCellValue(cell.value),
-        text: cell.text != null ? String(cell.text) : valueToDisplay(cell.value),
-        numFmt: cell.numFmt || null,
-        formula: extractFormula(cell.value),
-        style: serializeStyle({
-          font: cell.font,
-          fill: cell.fill,
-          alignment: cell.alignment,
-          border: cell.border,
-        }),
-      });
+        cells.push({
+          row: rowNumber,
+          column: colNumber,
+          value: serializeCellValue(cell.value),
+          text: safeCellText(cell),
+          numFmt: cell.numFmt || null,
+          formula: extractFormula(cell.value),
+          style: serializeStyle({
+            font: cell.font,
+            fill: cell.fill,
+            alignment: cell.alignment,
+            border: cell.border,
+          }),
+        });
+      } catch {
+        // Skip broken cells (e.g. ExcelJS MergeValue with null master) — keep sheet parseable.
+      }
     });
   });
 
@@ -137,6 +141,19 @@ function valueToDisplay(value) {
   const v = serializeCellValue(value);
   if (v == null) return "";
   return String(v);
+}
+
+/**
+ * ExcelJS `cell.text` calls MergeValue.toString() which does `this.value.toString()`
+ * and throws when the merge master value is null (common in CAPMAS sheets).
+ */
+function safeCellText(cell) {
+  try {
+    const t = cell.text;
+    return t != null ? String(t) : "";
+  } catch {
+    return valueToDisplay(cell.value);
+  }
 }
 
 function cellHasExportableStyle(cell) {
